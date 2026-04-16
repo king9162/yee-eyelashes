@@ -1,26 +1,49 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-cormorant), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-montserrat), system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --gold:        #C9A84C;
+  --gold-light:  #DFC27A;
+  --gold-muted:  rgba(201, 168, 76, 0.15);
+  --cream:       #F8F5EF;
+  --cream-deep:  #F0EBE1;
+  --ink:         #1C1C1C;
 }
+
+/* ── Base ─────────────────────────────── */
+html  { scroll-behavior: smooth; }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  color: var(--ink);
+  background: #fff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: 0.01em;
+}
+
+/* Headings use Cormorant */
+h1, h2, h3 {
+  font-family: var(--font-serif);
+  font-weight: 300;
+  letter-spacing: -0.01em;
+}
+
+/* ── Global link resets ──────────────── */
+a { text-decoration: none; }
+
+/* ── Scrollbar ───────────────────────── */
+::-webkit-scrollbar       { width: 3px; }
+::-webkit-scrollbar-track { background: #fafafa; }
+::-webkit-scrollbar-thumb { background: rgba(201, 168, 76, 0.35); }
+::-webkit-scrollbar-thumb:hover { background: #C9A84C; }
+
+/* ── Selection ───────────────────────── */
+::selection {
+  background: rgba(201, 168, 76, 0.2);
+  color: #1C1C1C;
 }
