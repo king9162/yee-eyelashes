@@ -5,7 +5,6 @@ import Hero from "@/components/sections/Hero";
 import ServicesPreview from "@/components/sections/ServicesPreview";
 import GalleryPreview from "@/components/sections/GalleryPreview";
 import Testimonials from "@/components/sections/Testimonials";
-import InstagramFeed from "@/components/sections/InstagramFeed";
 import FAQSection from "@/components/sections/FAQSection";
 import ContactSection from "@/components/sections/ContactSection";
 import AftercareTips from "@/components/sections/AftercareTips";
@@ -60,7 +59,6 @@ export default async function HomePage({ params }: Props) {
       <ServicesPreview lang={lang} />
       <GalleryPreview lang={lang} />
       <Testimonials lang={lang} />
-      <InstagramFeed lang={lang} />
       <FAQSection lang={lang} />
       <AftercareTips lang={lang} />
       <ContactSection lang={lang} />
