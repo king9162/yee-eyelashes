@@ -1,7 +1,7 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM   = process.env.RESEND_FROM_EMAIL ?? "booking@yeeeyelashes.com";
+const FROM = process.env.RESEND_FROM_EMAIL ?? "booking@yeeeyelashes.com";
+const getResend = () => new Resend(process.env.RESEND_API_KEY ?? "placeholder");
 
 export type BookingEmailData = {
   name:          string;
@@ -142,7 +142,7 @@ export async function sendConfirmationEmail(data: BookingEmailData) {
 </body>
 </html>`;
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from:    `Yee Eyelashes <${FROM}>`,
     to:      data.email,
     subject: `Appointment Request Received — ${data.serviceLabel} on ${formattedDate}`,
