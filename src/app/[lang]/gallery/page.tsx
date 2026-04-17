@@ -50,7 +50,7 @@ export default async function GalleryPage({ params }: Props) {
           ? "瀏覽我們的最新作品——每一套都是為您量身打造。"
           : "Browse our latest work — every set crafted to perfection."}
       />
-      <GalleryGrid />
+      <GalleryGrid lang={lang} />
     </div>
   );
 }

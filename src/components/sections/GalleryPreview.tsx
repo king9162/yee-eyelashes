@@ -18,29 +18,18 @@ export default function GalleryPreview({ lang }: Props) {
           eyebrow={zh ? "作品集" : "Portfolio"}
         />
 
-        {/* Coming soon grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-14">
-
-          {/* Large left tile — row-span-2 */}
-          <div className="row-span-2 relative overflow-hidden bg-[#EDEAE3] min-h-[340px] flex flex-col items-center justify-center gap-5">
-            <div className="w-px h-10 bg-[#C9A84C]/30" />
-            <p className="text-[9px] uppercase tracking-[0.55em] text-[#C9A84C]">
-              {zh ? "即將推出" : "Coming Soon"}
-            </p>
-            <div className="w-px h-10 bg-[#C9A84C]/30" />
-          </div>
-
-          {/* 4 smaller tiles */}
-          {[...Array(4)].map((_, i) => (
-            <div
-              key={i}
-              className="relative aspect-square overflow-hidden bg-[#E8E4DC] flex items-center justify-center"
-            >
-              <p className="text-[8px] uppercase tracking-[0.45em] text-[#C9A84C]/50">
-                {zh ? "即將推出" : "Coming Soon"}
-              </p>
-            </div>
-          ))}
+        {/* Coming soon */}
+        <div className="flex flex-col items-center justify-center gap-6 py-24 mb-14 bg-[#EDEAE3]">
+          <div className="w-px h-12 bg-[#C9A84C]/30" />
+          <p className="text-[9px] uppercase tracking-[0.6em] text-[#C9A84C]">
+            {zh ? "作品集即將推出" : "Portfolio Coming Soon"}
+          </p>
+          <p className="text-[13px] text-neutral-400 tracking-[0.02em] text-center max-w-sm leading-[1.9]">
+            {zh
+              ? "我們正在整理最新的作品，敬請期待。"
+              : "We're curating our latest work. Stay tuned."}
+          </p>
+          <div className="w-px h-12 bg-[#C9A84C]/30" />
         </div>
 
         {/* CTA */}
