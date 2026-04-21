@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 
 const slides = [
@@ -13,12 +13,15 @@ const slides = [
 export default function HeroSlider() {
   const [current, setCurrent] = useState(0);
 
+  const prev = useCallback(() =>
+    setCurrent((c) => (c - 1 + slides.length) % slides.length), []);
+  const next = useCallback(() =>
+    setCurrent((c) => (c + 1) % slides.length), []);
+
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % slides.length);
-    }, 5000);
+    const timer = setInterval(next, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [next]);
 
   return (
     <>
@@ -42,6 +45,28 @@ export default function HeroSlider() {
 
       {/* Dark overlay */}
       <div className="absolute inset-0 bg-[#1C1C1C]/72" />
+
+      {/* Left arrow */}
+      <button
+        onClick={prev}
+        aria-label="Previous slide"
+        className="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center text-white/50 hover:text-white transition-colors duration-200"
+      >
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+      </button>
+
+      {/* Right arrow */}
+      <button
+        onClick={next}
+        aria-label="Next slide"
+        className="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center text-white/50 hover:text-white transition-colors duration-200"
+      >
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
+      </button>
 
       {/* Dot indicators */}
       <div className="absolute bottom-7 left-1/2 -translate-x-1/2 flex gap-2 z-20">

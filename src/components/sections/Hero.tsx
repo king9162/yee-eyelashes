@@ -11,7 +11,7 @@ export default function Hero({ lang }: Props) {
   return (
     <section
       className="relative w-full bg-[#1C1C1C] flex items-end overflow-hidden"
-      style={{ height: "clamp(500px, 68vh, 800px)" }}
+      style={{ height: "clamp(580px, 82vh, 920px)" }}
     >
       {/* Auto-sliding background photos */}
       <HeroSlider />

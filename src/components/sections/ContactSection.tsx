@@ -115,9 +115,9 @@ export default function ContactSection({ lang }: Props) {
             </div>
 
             {/* Google Maps embed */}
-            <div className="w-full h-56 overflow-hidden border border-neutral-200/60">
+            <div className="w-full h-80 overflow-hidden border border-neutral-200/60">
               <iframe
-                src="https://maps.google.com/maps?q=278+Plandome+Rd,+Manhasset,+NY+11030&output=embed"
+                src="https://maps.google.com/maps?q=Yee+Eyelashes+278+Plandome+Rd+Manhasset+NY+11030&output=embed&hl=en"
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}
