@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Lang, getTranslations } from "@/i18n";
+import HeroSlider from "@/components/ui/HeroSlider";
 
 type Props = { lang: Lang };
 
@@ -13,17 +13,8 @@ export default function Hero({ lang }: Props) {
       className="relative w-full bg-[#1C1C1C] flex items-end overflow-hidden"
       style={{ height: "clamp(500px, 68vh, 800px)" }}
     >
-      {/* Background photo */}
-      <Image
-        src="/images/studio-hero.jpg"
-        alt="Yee Eyelashes studio interior"
-        fill
-        priority
-        className="object-cover object-center"
-        sizes="100vw"
-      />
-      {/* Dark overlay */}
-      <div className="absolute inset-0 bg-[#1C1C1C]/78" />
+      {/* Auto-sliding background photos */}
+      <HeroSlider />
 
       {/* Subtle grain texture overlay */}
       <div className="absolute inset-0 opacity-[0.03]"

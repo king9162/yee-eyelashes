@@ -11,6 +11,6 @@ export const contact = {
   tiktok: "@yee_lashesny",
   tiktokUrl: "https://www.tiktok.com/@yee_lashesny",
   hours: [
-    { days: "Mon – Sun", daysZh: "星期一至日", time: "10:00 AM – 7:30 PM" },
+    { days: "Mon – Sun", daysZh: "星期一至日", time: "9:30 AM – 7:30 PM" },
   ],
 };

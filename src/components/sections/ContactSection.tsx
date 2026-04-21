@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { Lang, getTranslations } from "@/i18n";
 import { contact } from "@/data/contact";
 import SectionTitle from "@/components/ui/SectionTitle";
@@ -113,17 +112,6 @@ export default function ContactSection({ lang }: Props) {
                   ))}
                 </div>
               </div>
-            </div>
-
-            {/* Studio welcome photo */}
-            <div className="relative w-full h-48 overflow-hidden mb-4 border border-neutral-100">
-              <Image
-                src="/images/studio-welcome.jpg"
-                alt="Yee Eyelashes welcome — 278 Plandome Rd, Manhasset NY"
-                fill
-                className="object-cover object-center"
-                sizes="(max-width: 1024px) 100vw, 560px"
-              />
             </div>
 
             {/* Google Maps embed */}
