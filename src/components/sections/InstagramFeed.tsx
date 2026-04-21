@@ -5,9 +5,9 @@ import { contact } from "@/data/contact";
 type Props = { lang: Lang };
 
 const photos = [
-  { src: "/images/gallery-1.jpg", alt: "Lash extension result at Yee Eyelashes" },
-  { src: "/images/gallery-2.jpg", alt: "Lash extension result at Yee Eyelashes" },
-  { src: "/images/gallery-3.jpg", alt: "Lash extension result at Yee Eyelashes" },
+  { src: "/images/studio-logo.jpg",   alt: "Yee Eyelashes studio — Manhasset, NY" },
+  { src: "/images/studio-lounge.jpg", alt: "Yee Eyelashes waiting lounge" },
+  { src: "/images/studio-detail.jpg", alt: "Yee Eyelashes studio detail" },
 ];
 
 export default function InstagramFeed({ lang }: Props) {
