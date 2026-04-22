@@ -6,12 +6,14 @@ import { type Lang } from "@/i18n";
 type ServiceRow = {
   name: string;
   nameZh: string;
-  price: number;
+  price?: number;
+  priceLabel?: string;   // for ranges like "$30–$150"
   duration?: string;
   note?: string;
   noteZh?: string;
   desc?: string;
   descZh?: string;
+  isGroupHeader?: boolean;
 };
 
 type Material = {
@@ -49,62 +51,21 @@ const categories: Category[] = [
       },
     ],
     items: [
-      {
-        name: "Classic - 60pc — New Set",
-        nameZh: "經典入門款 60根 — 全新嫁接",
-        price: 60,
-        duration: "50 min",
-        desc: "60pcs lashes on each eye, creating a Super Natural look.\n\nPlease note that this service is based on mink lashes. Upgrades to other types of eyelashes are subject to price adjustments.",
-        descZh: "每眼精心嫁接 60 根睫毛，打造極致自然的裸妝感。\n\n注意：本服務以 Mink 睫毛為基礎，升級其他材質需額外補差價。",
-      },
-      {
-        name: "Classic Natural - 80pc — New Set",
-        nameZh: "經典自然款 80根 — 全新嫁接",
-        price: 80,
-        duration: "1 hr",
-        desc: "The most natural, barely-there enhancement. Perfect for clients who want a soft, subtle look like naturally fuller lashes. Light length and definition with 80 lashes applied to each eye.\n\nPlease note that this service is based on mink lashes. Upgrades to other types of eyelashes are subject to price adjustments.",
-        descZh: "最自然的裸妝提升，彷彿睫毛天生豐盈。適合追求低調、柔和感的客人，每眼嫁接 80 根，輕盈增添長度與輪廓。\n\n注意：本服務以 Mink 睫毛為基礎，升級其他材質需額外補差價。",
-      },
-      {
-        name: "Classic Signature - 100pc — New Set",
-        nameZh: "經典精選款 100根 — 全新嫁接",
-        price: 100,
-        duration: "1.5 hr",
-        desc: "A soft, balanced enhancement between natural and defined. Adds gentle volume and length for a clean, polished look like perfectly applied mascara.\n\nPlease note that this service is based on mink lashes. Upgrades to other types of eyelashes are subject to price adjustments.",
-        descZh: "介於自然與精緻之間的平衡美感，輕柔增添量感與長度，宛如完美刷上睫毛膏的效果。\n\n注意：本服務以 Mink 睫毛為基礎，升級其他材質需額外補差價。",
-      },
-      {
-        name: "Classic Full - 120pc — New Set",
-        nameZh: "經典全套款 120根 — 全新嫁接",
-        price: 120,
-        duration: "1.5 hr",
-        desc: "Perfect for clients who want effortless beauty without daily mascara. This set creates a naturally enhanced look with soft length and volume like the perfect combination of mascara and a lash curler. 120 lashes are carefully applied to each eye for a refined, polished finish.\n\nPlease note that this service is based on mink lashes. Upgrades to other types of eyelashes are subject to price adjustments.",
-        descZh: "適合想要免去日常睫毛膏煩惱的客人，打造宛如睫毛膏搭配夾睫毛器的自然捲翹效果。每眼精心嫁接 120 根，呈現精緻完美的妝感。\n\n注意：本服務以 Mink 睫毛為基礎，升級其他材質需額外補差價。",
-      },
-      {
-        name: "Hybrid Set — New Set",
-        nameZh: "混合全套 — 全新嫁接",
-        price: 140,
-        duration: "1.5 hr",
-        desc: "This is the combination of the Classic Set and 3D Volume Set. Hybrid lashes will give you more volume and a fluffier look.\n\nPlease note that this service is based on mink lashes. Upgrades to other types of eyelashes are subject to price adjustment.",
-        descZh: "結合經典單根與 3D 豐盈的混合嫁接，層次更豐富，蓬鬆感更強。\n\n注意：本服務以 Mink 睫毛為基礎，升級其他材質需額外補差價。",
-      },
-      {
-        name: "Volume Set — New Set",
-        nameZh: "豐盈全套 — 全新嫁接",
-        price: 140,
-        duration: "1.5 hr",
-        desc: "A fuller, fluffier look with enhanced density and depth. Multiple lightweight lashes are applied to each natural lash, creating a soft yet dramatic finish. Perfect for clients who love bold, glamorous lashes.\n\nPlease note that this service is based on mink lashes. Upgrades to other types of eyelashes are subject to price adjustments.",
-        descZh: "極致豐盈蓬鬆，密度與層次全面提升。多根輕盈睫毛嫁接於每根天然睫毛，打造柔軟而戲劇性的效果，適合鍾愛濃郁魅力眼妝的客人。\n\n注意：本服務以 Mink 睫毛為基礎，升級其他材質需額外補差價。",
-      },
-      {
-        name: "Design Set — New Set",
-        nameZh: "設計師套組 — 全新嫁接",
-        price: 150,
-        duration: "1.5 hr",
-        desc: "The lash artist will design the most suitable eyelash for the client, for example Wispy and Anime looking eyelashes. The lash artist will introduce you to different choices of combinations at our studio.\n\nPlease note that this service is based on light volume lashes. Upgrades to Dramatic volume eyelashes are subject to price adjustments.",
-        descZh: "由技師為您量身設計最適合的睫毛造型，例如羽毛感、動漫感等風格。技師會在到訪時為您介紹多種組合選擇。\n\n注意：本服務以輕豐盈睫毛為基礎，升級至濃密豐盈款需額外補差價。",
-      },
+      { name: "Mink / Silk",           nameZh: "Mink / Silk",           isGroupHeader: true },
+      { name: "Mink/Silk 60pcs — New Set",  nameZh: "Mink/Silk 60根 — 全新嫁接",  priceLabel: "$30–$150",  duration: "30–60min" },
+      { name: "Mink/Silk 80pcs — New Set",  nameZh: "Mink/Silk 80根 — 全新嫁接",  priceLabel: "$40–$170",  duration: "35–75min" },
+      { name: "Mink/Silk 100pcs — New Set", nameZh: "Mink/Silk 100根 — 全新嫁接", priceLabel: "$50–$220",  duration: "40min–1hr 30min" },
+      { name: "Mink/Silk 120pcs — New Set", nameZh: "Mink/Silk 120根 — 全新嫁接", priceLabel: "$60–$260",  duration: "45min–1hr 45min" },
+      { name: "Mink/Silk 140pcs — New Set", nameZh: "Mink/Silk 140根 — 全新嫁接", priceLabel: "$70–$280",  duration: "50min–2hr" },
+      { name: "Mink/Silk 180pcs — New Set", nameZh: "Mink/Silk 180根 — 全新嫁接", priceLabel: "$80–$340",  duration: "55min–2hr 15min" },
+
+      { name: "Premium / Cashmere",    nameZh: "Premium / Cashmere",    isGroupHeader: true },
+      { name: "Premium/Cashmere 60pcs — New Set",  nameZh: "Premium/Cashmere 60根 — 全新嫁接",  priceLabel: "$50–$180",  duration: "30–60min" },
+      { name: "Premium/Cashmere 80pcs — New Set",  nameZh: "Premium/Cashmere 80根 — 全新嫁接",  priceLabel: "$80–$200",  duration: "35–75min" },
+      { name: "Premium/Cashmere 100pcs — New Set", nameZh: "Premium/Cashmere 100根 — 全新嫁接", priceLabel: "$70–$250",  duration: "40min–1hr 30min" },
+      { name: "Premium/Cashmere 120pcs — New Set", nameZh: "Premium/Cashmere 120根 — 全新嫁接", priceLabel: "$80–$290",  duration: "45min–1hr 45min" },
+      { name: "Premium/Cashmere 140pcs — New Set", nameZh: "Premium/Cashmere 140根 — 全新嫁接", priceLabel: "$90–$310",  duration: "50min–2hr" },
+      { name: "Premium/Cashmere 180pcs — New Set", nameZh: "Premium/Cashmere 180根 — 全新嫁接", priceLabel: "$100–$370", duration: "55min–2hr 15min" },
     ],
   },
   {
@@ -112,18 +73,31 @@ const categories: Category[] = [
     label: "Fills & Care",
     labelZh: "補睫與護理",
     items: [
-      { name: "1 Week Refill",     nameZh: "一週補睫",   price: 40, duration: "1 hr", note: "4–7 days",   noteZh: "4–7 天後" },
-      { name: "2 Week Refill",     nameZh: "兩週補睫",   price: 50, duration: "1 hr", note: "8–14 days",  noteZh: "8–14 天後" },
-      { name: "3 Week Refill",     nameZh: "三週補睫",   price: 70, duration: "1 hr", note: "15–21 days", noteZh: "15–21 天後" },
-      { name: "Lash Lift",         nameZh: "睫毛燙翹",   price: 60, duration: "1 hr" },
-      { name: "Tint",              nameZh: "睫毛染色",   price: 30, duration: "30 min" },
-      { name: "Lash Lift + Tint",  nameZh: "燙翹加染色", price: 80, duration: "75 min" },
-      { name: "Eyelash Removal",   nameZh: "睫毛卸除",   price: 20, duration: "20 min" },
-      { name: "Bottom Lashes",     nameZh: "下睫毛",     price: 30 },
-      { name: "Colored Lashes",    nameZh: "彩色睫毛",   price: 15 },
-      { name: "Brow Tint",         nameZh: "眉毛染色",   price: 30 },
-      { name: "Eyebrow Wax",       nameZh: "眉型蜜蠟",   price: 15 },
-      { name: "Lip or Chin Wax",   nameZh: "唇部或下巴蜜蠟", price: 10 },
+      { name: "Refills",        nameZh: "補睫",     isGroupHeader: true },
+      { name: "1 Week Refill",  nameZh: "一週補睫", price: 40, duration: "1hr", note: "4–7 days",   noteZh: "4–7 天後" },
+      { name: "2 Week Refill",  nameZh: "兩週補睫", price: 50, duration: "1hr", note: "8–14 days",  noteZh: "8–14 天後" },
+      { name: "3 Week Refill",  nameZh: "三週補睫", price: 70, duration: "1hr", note: "15–21 days", noteZh: "15–21 天後" },
+
+      { name: "Other Services",         nameZh: "其他服務", isGroupHeader: true },
+      { name: "Eyelash Lift",           nameZh: "睫毛燙翹",       price: 79, duration: "45min" },
+      { name: "Eyelash Tinting",        nameZh: "睫毛染色",       price: 20, duration: "20min" },
+      { name: "Bottom Lash Tinting",    nameZh: "下睫毛染色",     price: 20, duration: "20min" },
+      { name: "Top & Bottom Lash Tinting", nameZh: "上下睫毛染色", price: 30, duration: "30min" },
+      { name: "Eyebrow Tinting",        nameZh: "眉毛染色",       price: 30, duration: "20min" },
+      { name: "Bottom Lash Extension",  nameZh: "下睫毛嫁接",     price: 30, duration: "30min" },
+      { name: "Color Lash Extension",   nameZh: "彩色睫毛嫁接",   price: 25, duration: "20min" },
+      { name: "Eyelash Removal",        nameZh: "睫毛卸除",       price: 20, duration: "20min" },
+
+      { name: "Brow Care",  nameZh: "眉毛護理", isGroupHeader: true },
+      { name: "Brows Lamination & Tinting & Shaping", nameZh: "眉毛定型 + 染色 + 修型", price: 75, duration: "45min" },
+      { name: "Brows Lamination & Shaping",           nameZh: "眉毛定型 + 修型",       price: 60, duration: "35min" },
+
+      { name: "Waxing",    nameZh: "蜜蠟除毛", isGroupHeader: true },
+      { name: "Eyebrow",   nameZh: "眉型蜜蠟", price: 10, duration: "15min" },
+      { name: "Cheeks",    nameZh: "臉頰蜜蠟", price: 15, duration: "15min" },
+      { name: "Chin",      nameZh: "下巴蜜蠟", price: 20, duration: "15min" },
+      { name: "Upper Lip", nameZh: "上唇蜜蠟", price: 10, duration: "10min" },
+      { name: "Lower Lip", nameZh: "下唇蜜蠟", price: 10, duration: "10min" },
     ],
   },
   {
@@ -131,17 +105,20 @@ const categories: Category[] = [
     label: "PMU",
     labelZh: "半永久彩妝",
     items: [
-      { name: "Microblading",                          nameZh: "飄眉",                  price: 599, duration: "2.5 hr" },
-      { name: "Combination Brows",                     nameZh: "組合眉",                price: 650, duration: "2.5 hr" },
-      { name: "Ombre Powder Brows",                    nameZh: "霧眉",                  price: 599, duration: "2.5 hr" },
-      { name: "Nano Hairstroke Brows",                 nameZh: "納米髮絲眉",            price: 599, duration: "2.5 hr" },
-      { name: "6–8 Week Touch Up",                     nameZh: "6–8 週補色",            price: 150, duration: "1.5 hr", note: "Existing clients only", noteZh: "現有客戶限定" },
-      { name: "Lip Blush",                             nameZh: "唇部暈染",              price: 599, duration: "2.5 hr", note: "Includes 6–8 week touch up", noteZh: "含 6–8 週補色" },
-      { name: "Classic Eyeliner (Top Liner)",          nameZh: "經典眼線（上眼線）",    price: 380, duration: "2.5 hr" },
-      { name: "Lash Line Enhancement (Top Liner)",     nameZh: "睫毛根部填充（上眼線）",price: 350, duration: "2.5 hr" },
-      { name: "Add-On Bottom Liner",                   nameZh: "加購下眼線",            price: 100, note: "Add-on only", noteZh: "加購項目" },
-      { name: "Brow Lamination + Tinting + Shaping",  nameZh: "眉毛定型 + 染色 + 修型",price: 75,  duration: "1 hr" },
-      { name: "Brow Lamination + Shaping",             nameZh: "眉毛定型 + 修型",       price: 60,  duration: "1 hr" },
+      { name: "Brows (PMU)", nameZh: "眉毛（半永久）", isGroupHeader: true },
+      { name: "Microblading",           nameZh: "飄眉",         price: 599, duration: "2hr" },
+      { name: "Combination Brows",      nameZh: "組合眉",       price: 650, duration: "2hr 30min" },
+      { name: "Ombre Powder Brows",     nameZh: "霧眉",         price: 599, duration: "2hr" },
+      { name: "Nano Hairstroke Brows",  nameZh: "納米髮絲眉",   price: 599, duration: "2hr 30min" },
+      { name: "6–8 Week Touch Up",      nameZh: "6–8 週補色",   price: 150, duration: "1hr 30min", note: "Existing clients only", noteZh: "現有客戶限定" },
+
+      { name: "Lip", nameZh: "唇部", isGroupHeader: true },
+      { name: "6–8 Week Touch Up", nameZh: "6–8 週補色", price: 150, duration: "1hr 30min" },
+
+      { name: "Eyes", nameZh: "眼部", isGroupHeader: true },
+      { name: "Classic Eyeliner (Top Liner)",      nameZh: "經典眼線（上眼線）",     price: 380, duration: "1hr 30min" },
+      { name: "Lash Line Enhancement (Top Liner)", nameZh: "睫毛根部填充（上眼線）", price: 350, duration: "1hr 15min" },
+      { name: "Add-On Bottom Liner",               nameZh: "加購下眼線",             price: 100, duration: "30min", note: "Add-on only", noteZh: "加購項目" },
     ],
   },
 ];
@@ -173,7 +150,7 @@ export default function ServicesAccordion({ lang }: Props) {
               </span>
             </button>
 
-            <div className={`overflow-hidden transition-all duration-400 ease-in-out ${isOpen ? "max-h-[4000px] opacity-100" : "max-h-0 opacity-0"}`}>
+            <div className={`overflow-hidden transition-all duration-400 ease-in-out ${isOpen ? "max-h-[6000px] opacity-100" : "max-h-0 opacity-0"}`}>
               <div className="pb-8">
 
                 {/* Lash materials guide */}
@@ -198,8 +175,20 @@ export default function ServicesAccordion({ lang }: Props) {
 
                 {/* Service rows */}
                 {cat.items.map((item, j) => {
+                  /* Group sub-header */
+                  if (item.isGroupHeader) {
+                    return (
+                      <div key={j} className="pt-6 pb-2 first:pt-0">
+                        <p className="text-[9px] uppercase tracking-[0.45em] text-[#C9A84C]">
+                          {lang === "zh" ? item.nameZh : item.name}
+                        </p>
+                      </div>
+                    );
+                  }
+
                   const descText = lang === "zh" ? item.descZh : item.desc;
                   const descParts = descText ? descText.split("\n\n") : [];
+                  const displayPrice = item.priceLabel ?? (item.price != null ? `$${item.price}` : null);
 
                   return (
                     <div key={j} className="py-5 border-b border-neutral-100 last:border-0">
@@ -227,7 +216,9 @@ export default function ServicesAccordion({ lang }: Props) {
                           )}
                         </div>
                         <div className="flex flex-col items-end gap-1 flex-shrink-0 pt-0.5">
-                          <span className="text-[13px] text-[#C9A84C]">${item.price}</span>
+                          {displayPrice && (
+                            <span className="text-[13px] text-[#C9A84C]">{displayPrice}</span>
+                          )}
                           {item.duration && (
                             <span className="text-[11px] text-neutral-300 whitespace-nowrap">{item.duration}</span>
                           )}
