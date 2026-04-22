@@ -87,7 +87,7 @@ const categories: Category[] = [
       ms(100, 120, "1hr 30min", 70, "40min", 80, "50min", 90,  "1hr",      250, "1hr 30min"),
       ms(120, 140, "1hr 45min", 80, "45min", 90, "55min", 100, "1hr 5min", 290, "1hr 45min"),
       ms(140, 150, "2hr",       90, "50min", 100,"1hr",   110, "1hr 10min",310, "2hr"),
-      ms(180, 180, "2hr 15min", 100,"55min", 110,"1hr 5min",120,"1hr 20min",370, "2hr 15min"),
+      ms(180, 180, "2hr 15min", 100,"55min", 110,"1hr 5min",130,"1hr 20min",370, "2hr 15min"),
     ],
   },
   {
