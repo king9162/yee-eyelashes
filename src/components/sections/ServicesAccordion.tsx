@@ -3,17 +3,25 @@
 import { useState } from "react";
 import { type Lang } from "@/i18n";
 
+type SubOption = {
+  label: string;
+  labelZh: string;
+  price: number;
+  duration: string;
+};
+
 type ServiceRow = {
   name: string;
   nameZh: string;
   price?: number;
-  priceLabel?: string;   // for ranges like "$30–$150"
+  priceLabel?: string;
   duration?: string;
   note?: string;
   noteZh?: string;
   desc?: string;
   descZh?: string;
   isGroupHeader?: boolean;
+  options?: SubOption[];
 };
 
 type Material = {
@@ -30,6 +38,20 @@ type Category = {
   materials?: Material[];
   items: ServiceRow[];
 };
+
+const ms: (pcs: number, newPrice: number, newDur: string, w1: number, w1d: string, w2: number, w2d: string, w3: number, w3d: string, pkg: number, pkgDur: string) => ServiceRow =
+  (pcs, newPrice, newDur, w1, w1d, w2, w2d, w3, w3d, pkg, pkgDur) => ({
+    name: `${pcs}pcs`,
+    nameZh: `${pcs}根`,
+    price: newPrice,
+    duration: newDur,
+    options: [
+      { label: "1 Week Refill", labelZh: "一週補睫", price: w1, duration: w1d },
+      { label: "2 Week Refill", labelZh: "兩週補睫", price: w2, duration: w2d },
+      { label: "3 Week Refill", labelZh: "三週補睫", price: w3, duration: w3d },
+      { label: "3 Times Package", labelZh: "三次套裝", price: pkg, duration: pkgDur },
+    ],
+  });
 
 const categories: Category[] = [
   {
@@ -51,21 +73,21 @@ const categories: Category[] = [
       },
     ],
     items: [
-      { name: "Mink / Silk",           nameZh: "Mink / Silk",           isGroupHeader: true },
-      { name: "Mink/Silk 60pcs — New Set",  nameZh: "Mink/Silk 60根 — 全新嫁接",  priceLabel: "$30–$150",  duration: "30–60min" },
-      { name: "Mink/Silk 80pcs — New Set",  nameZh: "Mink/Silk 80根 — 全新嫁接",  priceLabel: "$40–$170",  duration: "35–75min" },
-      { name: "Mink/Silk 100pcs — New Set", nameZh: "Mink/Silk 100根 — 全新嫁接", priceLabel: "$50–$220",  duration: "40min–1hr 30min" },
-      { name: "Mink/Silk 120pcs — New Set", nameZh: "Mink/Silk 120根 — 全新嫁接", priceLabel: "$60–$260",  duration: "45min–1hr 45min" },
-      { name: "Mink/Silk 140pcs — New Set", nameZh: "Mink/Silk 140根 — 全新嫁接", priceLabel: "$70–$280",  duration: "50min–2hr" },
-      { name: "Mink/Silk 180pcs — New Set", nameZh: "Mink/Silk 180根 — 全新嫁接", priceLabel: "$80–$340",  duration: "55min–2hr 15min" },
+      { name: "Mink / Silk — New Set",        nameZh: "Mink / Silk — 全新嫁接",        isGroupHeader: true },
+      ms(60,  60,  "1hr",       30, "30min", 40, "40min", 50,  "50min",    150, "1hr"),
+      ms(80,  80,  "1hr 15min", 40, "35min", 50, "45min", 60,  "55min",    170, "1hr 15min"),
+      ms(100, 100, "1hr 30min", 50, "40min", 60, "50min", 70,  "1hr",      220, "1hr 30min"),
+      ms(120, 120, "1hr 45min", 60, "45min", 70, "55min", 80,  "1hr 5min", 260, "1hr 45min"),
+      ms(140, 130, "2hr",       70, "50min", 80, "1hr",   90,  "1hr 10min",280, "2hr"),
+      ms(180, 160, "2hr 15min", 80, "55min", 90, "1hr 5min", 110, "1hr 20min", 340, "2hr 15min"),
 
-      { name: "Premium / Cashmere",    nameZh: "Premium / Cashmere",    isGroupHeader: true },
-      { name: "Premium/Cashmere 60pcs — New Set",  nameZh: "Premium/Cashmere 60根 — 全新嫁接",  priceLabel: "$50–$180",  duration: "30–60min" },
-      { name: "Premium/Cashmere 80pcs — New Set",  nameZh: "Premium/Cashmere 80根 — 全新嫁接",  priceLabel: "$80–$200",  duration: "35–75min" },
-      { name: "Premium/Cashmere 100pcs — New Set", nameZh: "Premium/Cashmere 100根 — 全新嫁接", priceLabel: "$70–$250",  duration: "40min–1hr 30min" },
-      { name: "Premium/Cashmere 120pcs — New Set", nameZh: "Premium/Cashmere 120根 — 全新嫁接", priceLabel: "$80–$290",  duration: "45min–1hr 45min" },
-      { name: "Premium/Cashmere 140pcs — New Set", nameZh: "Premium/Cashmere 140根 — 全新嫁接", priceLabel: "$90–$310",  duration: "50min–2hr" },
-      { name: "Premium/Cashmere 180pcs — New Set", nameZh: "Premium/Cashmere 180根 — 全新嫁接", priceLabel: "$100–$370", duration: "55min–2hr 15min" },
+      { name: "Premium / Cashmere — New Set",  nameZh: "Premium / Cashmere — 全新嫁接",  isGroupHeader: true },
+      ms(60,  80,  "1hr",       50, "30min", 60, "40min", 70,  "50min",    180, "1hr"),
+      ms(80,  100, "1hr 15min", 60, "35min", 70, "45min", 80,  "55min",    200, "1hr 15min"),
+      ms(100, 120, "1hr 30min", 70, "40min", 80, "50min", 90,  "1hr",      250, "1hr 30min"),
+      ms(120, 140, "1hr 45min", 80, "45min", 90, "55min", 100, "1hr 5min", 290, "1hr 45min"),
+      ms(140, 150, "2hr",       90, "50min", 100,"1hr",   110, "1hr 10min",310, "2hr"),
+      ms(180, 180, "2hr 15min", 100,"55min", 110,"1hr 5min",120,"1hr 20min",370, "2hr 15min"),
     ],
   },
   {
@@ -78,15 +100,15 @@ const categories: Category[] = [
       { name: "2 Week Refill",  nameZh: "兩週補睫", price: 50, duration: "1hr", note: "8–14 days",  noteZh: "8–14 天後" },
       { name: "3 Week Refill",  nameZh: "三週補睫", price: 70, duration: "1hr", note: "15–21 days", noteZh: "15–21 天後" },
 
-      { name: "Other Services",         nameZh: "其他服務", isGroupHeader: true },
-      { name: "Eyelash Lift",           nameZh: "睫毛燙翹",       price: 79, duration: "45min" },
-      { name: "Eyelash Tinting",        nameZh: "睫毛染色",       price: 20, duration: "20min" },
-      { name: "Bottom Lash Tinting",    nameZh: "下睫毛染色",     price: 20, duration: "20min" },
-      { name: "Top & Bottom Lash Tinting", nameZh: "上下睫毛染色", price: 30, duration: "30min" },
-      { name: "Eyebrow Tinting",        nameZh: "眉毛染色",       price: 30, duration: "20min" },
-      { name: "Bottom Lash Extension",  nameZh: "下睫毛嫁接",     price: 30, duration: "30min" },
-      { name: "Color Lash Extension",   nameZh: "彩色睫毛嫁接",   price: 25, duration: "20min" },
-      { name: "Eyelash Removal",        nameZh: "睫毛卸除",       price: 20, duration: "20min" },
+      { name: "Other Services",                nameZh: "其他服務", isGroupHeader: true },
+      { name: "Eyelash Lift",                  nameZh: "睫毛燙翹",       price: 79, duration: "45min" },
+      { name: "Eyelash Tinting",               nameZh: "睫毛染色",       price: 20, duration: "20min" },
+      { name: "Bottom Lash Tinting",           nameZh: "下睫毛染色",     price: 20, duration: "20min" },
+      { name: "Top & Bottom Lash Tinting",     nameZh: "上下睫毛染色",   price: 30, duration: "30min" },
+      { name: "Eyebrow Tinting",               nameZh: "眉毛染色",       price: 30, duration: "20min" },
+      { name: "Bottom Lash Extension",         nameZh: "下睫毛嫁接",     price: 30, duration: "30min" },
+      { name: "Color Lash Extension",          nameZh: "彩色睫毛嫁接",   price: 25, duration: "20min" },
+      { name: "Eyelash Removal",               nameZh: "睫毛卸除",       price: 20, duration: "20min" },
 
       { name: "Brow Care",  nameZh: "眉毛護理", isGroupHeader: true },
       { name: "Brows Lamination & Tinting & Shaping", nameZh: "眉毛定型 + 染色 + 修型", price: 75, duration: "45min" },
@@ -127,7 +149,15 @@ type Props = { lang: Lang };
 
 export default function ServicesAccordion({ lang }: Props) {
   const [open, setOpen] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
   const toggle = (id: string) => setOpen((prev) => (prev === id ? null : id));
+  const toggleOpts = (key: string) =>
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
 
   return (
     <div className="max-w-[680px] mx-auto px-6 sm:px-10 pt-16 pb-32">
@@ -150,7 +180,7 @@ export default function ServicesAccordion({ lang }: Props) {
               </span>
             </button>
 
-            <div className={`overflow-hidden transition-all duration-400 ease-in-out ${isOpen ? "max-h-[6000px] opacity-100" : "max-h-0 opacity-0"}`}>
+            <div className={`overflow-hidden transition-all duration-400 ease-in-out ${isOpen ? "max-h-[9000px] opacity-100" : "max-h-0 opacity-0"}`}>
               <div className="pb-8">
 
                 {/* Lash materials guide */}
@@ -175,7 +205,6 @@ export default function ServicesAccordion({ lang }: Props) {
 
                 {/* Service rows */}
                 {cat.items.map((item, j) => {
-                  /* Group sub-header */
                   if (item.isGroupHeader) {
                     return (
                       <div key={j} className="pt-6 pb-2 first:pt-0">
@@ -186,13 +215,14 @@ export default function ServicesAccordion({ lang }: Props) {
                     );
                   }
 
-                  const descText = lang === "zh" ? item.descZh : item.desc;
-                  const descParts = descText ? descText.split("\n\n") : [];
+                  const optKey = `${cat.id}-${j}`;
+                  const optsOpen = expanded.has(optKey);
                   const displayPrice = item.priceLabel ?? (item.price != null ? `$${item.price}` : null);
 
                   return (
-                    <div key={j} className="py-5 border-b border-neutral-100 last:border-0">
-                      <div className="flex items-start justify-between gap-6">
+                    <div key={j} className="border-b border-neutral-100 last:border-0">
+                      {/* Main row */}
+                      <div className="py-5 flex items-start justify-between gap-6">
                         <div className="flex-1">
                           <p className="text-[13px] text-[#1C1C1C] tracking-[0.01em] leading-snug">
                             {lang === "zh" ? item.nameZh : item.name}
@@ -202,17 +232,17 @@ export default function ServicesAccordion({ lang }: Props) {
                               {lang === "zh" ? item.noteZh : item.note}
                             </p>
                           )}
-                          {descParts.length > 0 && (
-                            <div className="mt-3 space-y-2">
-                              <p className="text-[12px] text-neutral-400 leading-[1.8]">
-                                {descParts[0]}
-                              </p>
-                              {descParts[1] && (
-                                <p className="text-[11px] text-neutral-300 leading-[1.7] italic">
-                                  {descParts[1]}
-                                </p>
-                              )}
-                            </div>
+                          {/* Options toggle */}
+                          {item.options && (
+                            <button
+                              onClick={() => toggleOpts(optKey)}
+                              className="mt-2 flex items-center gap-1 text-[10px] uppercase tracking-[0.25em] text-neutral-400 hover:text-[#C9A84C] transition-colors duration-200"
+                            >
+                              {lang === "zh" ? "更多選項" : "More options"}
+                              <span className={`transition-transform duration-200 ${optsOpen ? "rotate-180" : ""}`}>
+                                ↓
+                              </span>
+                            </button>
                           )}
                         </div>
                         <div className="flex flex-col items-end gap-1 flex-shrink-0 pt-0.5">
@@ -224,6 +254,23 @@ export default function ServicesAccordion({ lang }: Props) {
                           )}
                         </div>
                       </div>
+
+                      {/* Options dropdown */}
+                      {item.options && (
+                        <div className={`overflow-hidden transition-all duration-300 ${optsOpen ? "max-h-[400px] opacity-100 pb-4" : "max-h-0 opacity-0"}`}>
+                          <div className="grid grid-cols-2 gap-2">
+                            {item.options.map((opt, k) => (
+                              <div key={k} className="border border-neutral-100 px-4 py-3">
+                                <p className="text-[11px] text-[#1C1C1C] tracking-[0.01em] mb-1">
+                                  {lang === "zh" ? opt.labelZh : opt.label}
+                                </p>
+                                <p className="text-[12px] text-[#C9A84C]">${opt.price}</p>
+                                <p className="text-[10px] text-neutral-300 mt-0.5">{opt.duration}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
