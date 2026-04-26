@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { getSquareClient } from "@/lib/square";
 
-const DEPOSIT_CENTS = 3000n; // $30.00 non-refundable deposit
+const DEPOSIT_CENTS = BigInt(3000); // $30.00 non-refundable deposit
 
 function parseDurationMin(d: string): number {
   let mins = 0;
