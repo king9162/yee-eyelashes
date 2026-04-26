@@ -26,7 +26,7 @@ export const services: ServiceCategory[] = [
       {
         name: "Classic Natural",
         nameZh: "經典自然款",
-        descriptionEn: "80 precisely placed extensions — the gold standard for a polished, mascara-free morning. Clean, refined, and effortlessly elegant. Perfect for first-timers and everyday wear.",
+        descriptionEn: "80 precisely placed extensions, the gold standard for a polished, mascara-free morning. Clean, refined, and effortlessly elegant. Perfect for first-timers and everyday wear.",
         descriptionZh: "80 根精準嫁接——打造無需睫毛膏的精緻早晨。乾淨、細膩、毫不費力的優雅。初次體驗與日常配戴的最佳選擇。",
         price: 80,
         duration: "75 min",
@@ -36,7 +36,7 @@ export const services: ServiceCategory[] = [
       {
         name: "Classic Signature",
         nameZh: "經典精選款",
-        descriptionEn: "100 lashes meticulously chosen for your eye shape. Subtle enough for the boardroom, refined enough for dinner. Our most popular enhancement — wake up effortlessly ready.",
+        descriptionEn: "100 lashes meticulously chosen for your eye shape. Subtle enough for the boardroom, refined enough for dinner. Our most popular enhancement. Wake up effortlessly ready.",
         descriptionZh: "100 根根據您眼型精心挑選。低調到可以進會議室，精緻到足以出席晚宴。我們最受歡迎的選擇——每天醒來即刻呈現最佳狀態。",
         price: 100,
         duration: "90 min",
@@ -47,7 +47,7 @@ export const services: ServiceCategory[] = [
       {
         name: "Classic Full",
         nameZh: "經典全套款",
-        descriptionEn: "120 extensions for a complete, lush look without the drama. Maximum definition, natural finish — the closest thing to the most perfect lashes you were born with.",
+        descriptionEn: "120 extensions for a complete, lush look without the drama. Maximum definition, natural finish, the closest thing to the most perfect lashes you were born with.",
         descriptionZh: "120 根打造豐盈完整效果，卻不失自然感。極致清晰度，自然妝感收尾——無限接近天生完美睫毛的存在。",
         price: 120,
         duration: "105 min",
@@ -57,7 +57,7 @@ export const services: ServiceCategory[] = [
       {
         name: "Hybrid Set",
         nameZh: "混合全套",
-        descriptionEn: "The intelligent balance between natural and dramatic. Classic lashes layered with handcrafted volume fans create undeniable texture and depth — the look that gets noticed for all the right reasons.",
+        descriptionEn: "The intelligent balance between natural and dramatic. Classic lashes layered with handcrafted volume fans create undeniable texture and depth, the look that gets noticed for all the right reasons.",
         descriptionZh: "自然與戲劇感之間的完美平衡。經典睫毛結合手工豐盈扇形，創造無可忽視的層次感與深度——那種讓人忍不住多看幾眼的妝感。",
         price: 120,
         duration: "2 hrs",
@@ -82,7 +82,7 @@ export const services: ServiceCategory[] = [
       {
         name: "1 Week Refill",
         nameZh: "一週補睫",
-        descriptionEn: "Keep your lashes looking freshly applied — recommended for clients who want maximum fullness at all times.",
+        descriptionEn: "Keep your lashes looking freshly applied, recommended for clients who want maximum fullness at all times.",
         descriptionZh: "保持睫毛剛嫁接的豐盈感——適合追求全程最佳狀態的客戶。",
         price: 40,
         note: "4–7 days since last appointment",
@@ -123,14 +123,14 @@ export const services: ServiceCategory[] = [
       {
         name: "Tint",
         nameZh: "睫毛染色",
-        descriptionEn: "Intensify your natural lashes with professional pigment — darker, bolder, more defined. No mascara. No smudging. Pure effortless definition from morning to night.",
+        descriptionEn: "Intensify your natural lashes with professional pigment for darker, bolder, more defined results. No mascara. No smudging. Pure effortless definition from morning to night.",
         descriptionZh: "以專業染料深化天然睫毛——更深、更濃、更有輪廓。無需睫毛膏。不會暈染。從早到晚純粹的輕鬆美麗。",
         price: 30,
       },
       {
         name: "Lash Lift + Tint",
         nameZh: "睫毛燙翹加染色",
-        descriptionEn: "Our most-booked combo. Lifted, curled, darkened, and defined — your eyes transformed in under 60 minutes. The ultimate low-maintenance luxury for the modern woman.",
+        descriptionEn: "Our most-booked combo. Lifted, curled, darkened, and defined. Your eyes transformed in under 60 minutes. The ultimate low-maintenance luxury for the modern woman.",
         descriptionZh: "我們最受預約的組合。翹起、捲曲、加深、清晰——60 分鐘內讓雙眼煥然一新。現代女性的極致低維護奢享。",
         price: 80,
         popular: true,

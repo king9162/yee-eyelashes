@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
         openGraph: {
           title: "聯絡我們 | YEE EYELASHES 曼哈薩特",
           description: "Yee Eyelashes 位於 278 Plandome Rd，曼哈薩特，紐約。週一至日 10 AM–7:30 PM 開放預約。",
-          url: "https://yeeeyelashes.com/zh/contact",
+          url: "https://www.yeelashesny.com/zh/contact",
           type: "website",
           locale: "zh_TW",
           siteName: "Yee Eyelashes",
@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
         openGraph: {
           title: "Contact Yee Eyelashes | Manhasset, NY",
           description: "278 Plandome Rd 2FL, Manhasset, NY 11030. Open Mon–Sun 10 AM–7:30 PM. Call 929-806-2467.",
-          url: "https://yeeeyelashes.com/en/contact",
+          url: "https://www.yeelashesny.com/en/contact",
           type: "website",
           locale: "en_US",
           siteName: "Yee Eyelashes",
@@ -47,7 +47,7 @@ export default async function ContactPage({ params }: Props) {
         title={lang === "zh" ? "聯絡我們" : "Get in Touch"}
         subtitle={lang === "zh"
           ? "我們很樂意聆聽您的需求，並為您提供最佳建議。"
-          : "We'd love to hear from you — reach out any time."}
+          : "We'd love to hear from you. Reach out any time."}
       />
       <ContactSection lang={lang} />
     </div>

@@ -13,11 +13,25 @@ export default function ContactSection({ lang }: Props) {
   const t = getTranslations(lang);
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
   const [submitted, setSubmitted] = useState(false);
+  const [loading,   setLoading]   = useState(false);
+  const [error,     setError]     = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: connect to backend
-    setSubmitted(true);
+    setLoading(true); setError("");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      if (!res.ok) throw new Error();
+      setSubmitted(true);
+    } catch {
+      setError(lang === "zh" ? "發送失敗，請稍後再試。" : "Failed to send. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const infoItems = [
@@ -115,7 +129,7 @@ export default function ContactSection({ lang }: Props) {
             </div>
 
             {/* Google Maps embed */}
-            <div className="w-full h-80 overflow-hidden border border-neutral-200/60">
+            <div className="w-full h-56 sm:h-72 md:h-80 overflow-hidden border border-neutral-200/60">
               <iframe
                 src="https://maps.google.com/maps?q=Yee+Eyelashes+278+Plandome+Rd+Manhasset+NY+11030&output=embed&hl=en"
                 width="100%"
@@ -189,11 +203,13 @@ export default function ContactSection({ lang }: Props) {
                     placeholder={t.contact.form.message}
                   />
                 </div>
+                {error && <p className="text-[12px] text-red-400">{error}</p>}
                 <button
                   type="submit"
-                  className="w-full bg-neutral-900 text-white text-[10px] uppercase tracking-[0.25em] py-4 font-medium hover:bg-[#C9A84C] hover:text-black transition-all duration-300"
+                  disabled={loading}
+                  className="w-full bg-neutral-900 text-white text-[10px] uppercase tracking-[0.25em] py-4 font-medium hover:bg-[#C9A84C] hover:text-black transition-all duration-300 disabled:opacity-50"
                 >
-                  {t.contact.form.submit}
+                  {loading ? (lang === "zh" ? "發送中..." : "Sending...") : t.contact.form.submit}
                 </button>
               </form>
             )}

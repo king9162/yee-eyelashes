@@ -51,11 +51,11 @@ export default function Header({ lang }: Props) {
               <Image
                 src="/images/yee-logo-v1-cropped.png"
                 alt="Yee Eyelashes"
-                width={4000}
-                height={1340}
+                width={800}
+                height={268}
                 className="h-[105px] w-auto transition-opacity duration-300 group-hover:opacity-75"
+                sizes="320px"
                 priority
-                unoptimized
               />
             </Link>
           </div>
@@ -86,7 +86,7 @@ export default function Header({ lang }: Props) {
             <LanguageSwitcher currentLang={lang} />
             <Link
               href={`/${lang}/booking`}
-              className="text-[10px] uppercase tracking-[0.3em] text-neutral-500 px-7 py-[10px] border border-neutral-300 hover:border-[#C9A84C] hover:text-[#C9A84C] transition-all duration-500 whitespace-nowrap"
+              className="text-[10px] uppercase tracking-[0.3em] text-neutral-500 px-7 py-3 border border-neutral-300 hover:border-[#C9A84C] hover:text-[#C9A84C] transition-all duration-500 whitespace-nowrap"
             >
               {t.nav.booking}
             </Link>
@@ -102,6 +102,7 @@ export default function Header({ lang }: Props) {
               width={4000}
               height={1340}
               className="h-[38px] w-auto transition-opacity duration-300 group-hover:opacity-75"
+              sizes="120px"
               priority
             />
           </Link>
@@ -110,7 +111,7 @@ export default function Header({ lang }: Props) {
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="Toggle menu"
-              className="flex flex-col gap-[5px] p-1"
+              className="flex flex-col gap-[5px] p-3"
             >
               <span className={cn("block w-[22px] h-px bg-neutral-700 transition-all duration-300 origin-center", menuOpen && "rotate-45 translate-y-[6px]")} />
               <span className={cn("block w-[22px] h-px bg-neutral-700 transition-all duration-300", menuOpen && "opacity-0 scale-x-0")} />

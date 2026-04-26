@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Lang, getTranslations } from "@/i18n";
 import SectionTitle from "@/components/ui/SectionTitle";
@@ -18,18 +19,16 @@ export default function GalleryPreview({ lang }: Props) {
           eyebrow={zh ? "作品集" : "Portfolio"}
         />
 
-        {/* Coming soon */}
-        <div className="flex flex-col items-center justify-center gap-6 py-24 mb-14 bg-[#EDEAE3]">
-          <div className="w-px h-12 bg-[#C9A84C]/30" />
-          <p className="text-[9px] uppercase tracking-[0.6em] text-[#C9A84C]">
-            {zh ? "作品集即將推出" : "Portfolio Coming Soon"}
-          </p>
-          <p className="text-[13px] text-neutral-400 tracking-[0.02em] text-center max-w-sm leading-[1.9]">
-            {zh
-              ? "我們正在整理最新的作品，敬請期待。"
-              : "We're curating our latest work. Stay tuned."}
-          </p>
-          <div className="w-px h-12 bg-[#C9A84C]/30" />
+        {/* Brand showcase image */}
+        <div className="relative max-w-2xl mx-auto mb-14 overflow-hidden">
+          <Image
+            src="/images/brand-showcase.png"
+            alt="Yee Eyelashes — Define Your Beauty"
+            width={1200}
+            height={1200}
+            className="w-full h-auto object-cover"
+            sizes="(max-width: 768px) 100vw, 672px"
+          />
         </div>
 
         {/* CTA */}

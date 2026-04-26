@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
         openGraph: {
           title: "立即預約 | YEE EYELASHES 曼哈薩特",
           description: "預約您的專屬睫毛服務。電話或 Instagram 私訊均可，我們期待您的光臨。",
-          url: "https://yeeeyelashes.com/zh/booking",
+          url: "https://www.yeelashesny.com/zh/booking",
           type: "website", locale: "zh_TW", siteName: "Yee Eyelashes",
         },
       }
@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
         openGraph: {
           title: "Book Your Lash Appointment | YEE EYELASHES Manhasset NY",
           description: "Reserve your lash appointment at Yee Eyelashes. Classic, hybrid, volume & mega-volume sets in Manhasset, NY.",
-          url: "https://yeeeyelashes.com/en/booking",
+          url: "https://www.yeelashesny.com/en/booking",
           type: "website", locale: "en_US", siteName: "Yee Eyelashes",
         },
       };

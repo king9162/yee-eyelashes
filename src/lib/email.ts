@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 
-const FROM = process.env.RESEND_FROM_EMAIL ?? "booking@yeeeyelashes.com";
+const FROM = process.env.RESEND_FROM_EMAIL ?? "booking@yeelashesny.com";
 const getResend = () => new Resend(process.env.RESEND_API_KEY ?? "placeholder");
 
 export type BookingEmailData = {
@@ -12,6 +12,7 @@ export type BookingEmailData = {
   time:          string; // "10:00 AM"
   phone:         string;
   notes?:        string;
+  lang?:         string;
 };
 
 // Generate .ics calendar file content
@@ -34,7 +35,7 @@ function buildICS(data: BookingEmailData): string {
     "PRODID:-//Yee Eyelashes//Booking//EN",
     "METHOD:REQUEST",
     "BEGIN:VEVENT",
-    `UID:${now}@yeeeyelashes.com`,
+    `UID:${now}@yeelashesny.com`,
     `DTSTAMP:${now}`,
     `DTSTART;TZID=America/New_York:${dt}`,
     `DTEND;TZID=America/New_York:${dtEnd}`,
@@ -65,9 +66,23 @@ function formatDate(dateStr: string) {
   });
 }
 
+// ── 1. Booking received email (sent to client on submit) ─────────────────────
 export async function sendConfirmationEmail(data: BookingEmailData) {
-  const ics         = buildICS(data);
+  const ics           = buildICS(data);
   const formattedDate = formatDate(data.date);
+  const zh            = data.lang === "zh";
+
+  const title    = zh ? "預約確認" : "Booking Confirmed";
+  const greeting = zh
+    ? `您好 ${data.name}，您的預約已確認。期待與您見面！`
+    : `Hi ${data.name}, your appointment has been confirmed. We look forward to seeing you!`;
+  const calBtn   = zh ? "加入行事曆" : "Add to Calendar";
+  const policy   = zh
+    ? "請準時到達。如需取消或更改預約，請提前至少 24 小時通知我們。"
+    : "Please arrive on time. If you need to cancel or reschedule, notify us at least 24 hours in advance.";
+  const subject  = zh
+    ? `預約確認 — ${data.serviceLabel}・${formattedDate}`
+    : `Appointment Confirmed — ${data.serviceLabel} on ${formattedDate}`;
 
   const html = `
 <!DOCTYPE html>
@@ -80,62 +95,43 @@ export async function sendConfirmationEmail(data: BookingEmailData) {
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f5ef;padding:40px 20px;">
     <tr><td align="center">
       <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;max-width:560px;width:100%;">
-
-        <!-- Gold top bar -->
         <tr><td style="background:#C9A84C;height:4px;"></td></tr>
-
-        <!-- Header -->
         <tr><td style="padding:48px 48px 32px;text-align:center;border-bottom:1px solid #f0ece4;">
           <p style="margin:0 0 8px;font-size:10px;letter-spacing:0.5em;text-transform:uppercase;color:#C9A84C;">Yee Eyelashes</p>
-          <h1 style="margin:0;font-size:28px;font-weight:300;color:#1c1c1c;letter-spacing:-0.02em;">Appointment Confirmed</h1>
+          <h1 style="margin:0;font-size:28px;font-weight:300;color:#1c1c1c;letter-spacing:-0.02em;">${title}</h1>
         </td></tr>
-
-        <!-- Body -->
         <tr><td style="padding:40px 48px;">
-          <p style="margin:0 0 28px;font-size:14px;color:#777;line-height:1.8;">
-            Hi ${data.name}, your appointment has been received and is pending confirmation. We'll reach out shortly to confirm your slot.
-          </p>
-
-          <!-- Booking summary box -->
+          <p style="margin:0 0 28px;font-size:14px;color:#777;line-height:1.8;">${greeting}</p>
           <table width="100%" cellpadding="0" cellspacing="0" style="background:#fafaf8;border-left:2px solid #C9A84C;margin-bottom:28px;">
             <tr><td style="padding:28px 32px;">
               <table width="100%" cellpadding="0" cellspacing="0">
-                ${row("Service",  data.serviceLabel)}
-                ${row("Date",     formattedDate)}
-                ${row("Time",     data.time)}
-                ${row("Phone",    data.phone)}
-                ${data.notes ? row("Notes", data.notes) : ""}
+                ${row(zh ? "服務" : "Service",  data.serviceLabel)}
+                ${row(zh ? "日期" : "Date",     formattedDate)}
+                ${row(zh ? "時間" : "Time",     data.time)}
+                ${row(zh ? "電話" : "Phone",    data.phone)}
+                ${data.notes ? row(zh ? "備註" : "Notes", data.notes) : ""}
               </table>
             </td></tr>
           </table>
-
-          <!-- Add to calendar button -->
           <table cellpadding="0" cellspacing="0" style="margin:0 auto 32px;">
             <tr><td style="background:#1c1c1c;text-align:center;">
               <a href="cid:calendar.ics" style="display:inline-block;padding:14px 32px;font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:#ffffff;text-decoration:none;">
-                Add to Calendar
+                ${calBtn}
               </a>
             </td></tr>
           </table>
-
           <p style="margin:0 0 6px;font-size:13px;color:#999;line-height:1.8;">
             📍 278 Plandome Rd 2FL, Manhasset, NY 11030<br/>
             📞 <a href="tel:9298062467" style="color:#C9A84C;text-decoration:none;">929-806-2467</a><br/>
             📷 <a href="https://www.instagram.com/yee_lashesny" style="color:#C9A84C;text-decoration:none;">@yee_lashesny</a>
           </p>
-
-          <p style="margin:28px 0 0;font-size:12px;color:#bbb;line-height:1.8;">
-            Please arrive on time. If you need to cancel or reschedule, notify us at least 24 hours in advance.
-          </p>
+          <p style="margin:28px 0 0;font-size:12px;color:#bbb;line-height:1.8;">${policy}</p>
         </td></tr>
-
-        <!-- Footer -->
         <tr><td style="padding:24px 48px;background:#1c1c1c;text-align:center;">
           <p style="margin:0;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:#555;">
             © ${new Date().getFullYear()} Yee Eyelashes · Manhasset, NY
           </p>
         </td></tr>
-
       </table>
     </td></tr>
   </table>
@@ -145,13 +141,72 @@ export async function sendConfirmationEmail(data: BookingEmailData) {
   await getResend().emails.send({
     from:    `Yee Eyelashes <${FROM}>`,
     to:      data.email,
-    subject: `Appointment Request Received — ${data.serviceLabel} on ${formattedDate}`,
+    subject,
     html,
     attachments: [{
       filename:    "yee-eyelashes-appointment.ics",
       content:     Buffer.from(ics).toString("base64"),
       contentType: "text/calendar; method=REQUEST",
     }],
+  });
+}
+
+// ── 2. Betty notification (sent to owner when new booking arrives) ───────────
+export async function sendBettyNotification(data: BookingEmailData) {
+  const bettyEmail    = process.env.BETTY_EMAIL ?? "yeelashesny@gmail.com";
+  const formattedDate = formatDate(data.date);
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8" /></head>
+<body style="margin:0;padding:0;background:#f8f5ef;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f5ef;padding:40px 20px;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;max-width:560px;width:100%;">
+        <tr><td style="background:#C9A84C;height:4px;"></td></tr>
+        <tr><td style="padding:40px 48px 32px;text-align:center;border-bottom:1px solid #f0ece4;">
+          <p style="margin:0 0 8px;font-size:10px;letter-spacing:0.5em;text-transform:uppercase;color:#C9A84C;">Yee Eyelashes</p>
+          <h1 style="margin:0;font-size:24px;font-weight:300;color:#1c1c1c;">New Booking</h1>
+        </td></tr>
+        <tr><td style="padding:36px 48px;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#fafaf8;border-left:2px solid #C9A84C;">
+            <tr><td style="padding:24px 28px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                ${row("Client",  data.name)}
+                ${row("Phone",   data.phone)}
+                ${row("Email",   data.email)}
+                ${row("Service", data.serviceLabel)}
+                ${row("Date",    formattedDate)}
+                ${row("Time",    data.time)}
+                ${data.notes ? row("Notes", data.notes) : ""}
+              </table>
+            </td></tr>
+          </table>
+          <table cellpadding="0" cellspacing="0" style="margin:24px auto 0;">
+            <tr><td style="background:#1c1c1c;text-align:center;">
+              <a href="https://www.yeelashesny.com/admin" style="display:inline-block;padding:14px 32px;font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:#ffffff;text-decoration:none;">
+                View in Admin →
+              </a>
+            </td></tr>
+          </table>
+        </td></tr>
+        <tr><td style="padding:20px 48px;background:#1c1c1c;text-align:center;">
+          <p style="margin:0;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:#555;">
+            © ${new Date().getFullYear()} Yee Eyelashes · Manhasset, NY
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  await getResend().emails.send({
+    from:    `Yee Eyelashes <${FROM}>`,
+    to:      bettyEmail,
+    subject: `New Booking — ${data.name} · ${data.serviceLabel} on ${formattedDate}`,
+    html,
   });
 }
 

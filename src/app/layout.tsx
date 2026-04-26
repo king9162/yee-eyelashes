@@ -20,7 +20,7 @@ const montserrat = Montserrat({
 export const metadata: Metadata = {
   title: "YEE EYELASHES | Luxury Lash Extensions in Manhasset, NY",
   description:
-    "Yee Eyelashes — Manhasset's premier lash studio. Classic, hybrid, volume & mega-volume extensions. 278 Plandome Rd, NY. Serving Nassau County & Long Island.",
+    "Yee Eyelashes, Manhasset's premier lash studio. Classic, hybrid, volume & mega-volume extensions. 278 Plandome Rd, NY. Serving Nassau County & Long Island.",
   keywords: [
     "eyelash extensions Manhasset",
     "lash extensions Manhasset NY",
@@ -44,11 +44,25 @@ export const metadata: Metadata = {
   openGraph: {
     title: "YEE EYELASHES | Luxury Lash Extensions in Manhasset, NY",
     description:
-      "Bespoke lash extensions designed for the discerning woman. Classic, hybrid, volume & mega-volume sets — handcrafted in Manhasset, NY. Serving Nassau County.",
-    url: "https://yeeeyelashes.com",
+      "Bespoke lash extensions designed for the discerning woman. Classic, hybrid, volume & mega-volume sets, handcrafted in Manhasset, NY. Serving Nassau County.",
+    url: "https://www.yeelashesny.com",
     type: "website",
     locale: "en_US",
     siteName: "Yee Eyelashes",
+    images: [
+      {
+        url: "https://www.yeelashesny.com/api/og",
+        width: 1200,
+        height: 630,
+        alt: "Yee Eyelashes — Premier Lash Studio in Manhasset, NY",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "YEE EYELASHES | Luxury Lash Extensions in Manhasset, NY",
+    description: "Bespoke lash extensions in Manhasset, NY. Classic, hybrid, volume & mega-volume sets.",
+    images: ["https://www.yeelashesny.com/api/og"],
   },
   robots: {
     index: true,
@@ -61,7 +75,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: "https://yeeeyelashes.com",
+    canonical: "https://www.yeelashesny.com",
   },
 };
 
@@ -69,10 +83,10 @@ const localBusinessSchema = {
   "@context": "https://schema.org",
   "@type": "BeautySalon",
   name: "Yee Eyelashes",
-  image: "https://yeeeyelashes.com/images/yee-logo-v1-cropped.png",
+  image: "https://www.yeelashesny.com/images/yee-logo-v1-cropped.png",
   description:
     "Manhasset's premier lash studio specializing in bespoke classic, hybrid, volume, and mega-volume eyelash extensions. Serving Nassau County, Long Island.",
-  url: "https://yeeeyelashes.com",
+  url: "https://www.yeelashesny.com",
   telephone: "+1-929-806-2467",
   priceRange: "$$",
   address: {
@@ -88,10 +102,17 @@ const localBusinessSchema = {
     latitude: 40.7876,
     longitude: -73.6968,
   },
+  openingHoursSpecification: [
+    {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+      opens: "09:30",
+      closes: "19:00",
+    },
+  ],
   sameAs: [
     "https://www.instagram.com/yee_lashesny",
     "https://www.tiktok.com/@yee_lashesny",
-    "https://xhslink.com/m/1rt7w6tuczU",
   ],
   hasOfferCatalog: {
     "@type": "OfferCatalog",
@@ -100,10 +121,11 @@ const localBusinessSchema = {
       { "@type": "Offer", itemOffered: { "@type": "Service", name: "Classic Lash Extensions" } },
       { "@type": "Offer", itemOffered: { "@type": "Service", name: "Hybrid Lash Extensions" } },
       { "@type": "Offer", itemOffered: { "@type": "Service", name: "Volume Lash Extensions" } },
+      { "@type": "Offer", itemOffered: { "@type": "Service", name: "Mega Volume Lash Extensions" } },
       { "@type": "Offer", itemOffered: { "@type": "Service", name: "Lash Lift & Tint" } },
+      { "@type": "Offer", itemOffered: { "@type": "Service", name: "Permanent Makeup" } },
     ],
   },
-  servesCuisine: undefined,
   areaServed: [
     { "@type": "City", name: "Manhasset" },
     { "@type": "City", name: "Great Neck" },
@@ -122,6 +144,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${cormorant.variable} ${montserrat.variable}`}
       style={{ fontFamily: "var(--font-montserrat), sans-serif" }}
     >

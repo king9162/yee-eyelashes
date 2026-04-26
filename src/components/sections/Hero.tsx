@@ -11,7 +11,7 @@ export default function Hero({ lang }: Props) {
   return (
     <section
       className="relative w-full bg-[#1C1C1C] flex items-end overflow-hidden"
-      style={{ height: "clamp(580px, 82vh, 920px)" }}
+      style={{ height: "clamp(480px, 82vh, 920px)" }}
     >
       {/* Auto-sliding background photos */}
       <HeroSlider />
@@ -26,7 +26,7 @@ export default function Hero({ lang }: Props) {
       <div className="absolute top-6 left-6 sm:left-10 lg:left-16 xl:left-20 w-px h-16 bg-[#C9A84C]/20" />
 
       {/* Content */}
-      <div className="relative z-10 w-full px-6 sm:px-10 lg:px-16 xl:px-20 pb-16 lg:pb-20">
+      <div className="relative z-10 w-full px-6 sm:px-10 lg:px-16 xl:px-20 pb-10 sm:pb-16 lg:pb-20">
         <div className="max-w-[1400px] mx-auto flex items-end justify-between gap-8">
 
           <div>
@@ -53,7 +53,7 @@ export default function Hero({ lang }: Props) {
             {/* CTA */}
             <Link
               href={`/${lang}/booking`}
-              className="group inline-flex items-center gap-4 text-[10px] uppercase tracking-[0.28em] text-white"
+              className="group inline-flex items-center gap-4 text-[10px] uppercase tracking-[0.28em] text-white py-3"
             >
               <span className="border-b border-white/40 pb-px group-hover:border-[#C9A84C] group-hover:text-[#C9A84C] transition-all duration-300">
                 {t.hero.cta_primary}

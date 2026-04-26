@@ -28,16 +28,29 @@ function parseTime(t: string) {
   return { hour, minute };
 }
 
+export async function deleteCalendarEvent(eventId: string) {
+  try {
+    const auth     = getAuth();
+    const calendar = google.calendar({ version: "v3", auth });
+    await calendar.events.delete({
+      calendarId: process.env.GOOGLE_CALENDAR_ID!,
+      eventId,
+    });
+  } catch {
+    // ignore if already deleted
+  }
+}
+
 export async function createCalendarEvent(event: CalendarEventInput) {
   const auth     = getAuth();
   const calendar = google.calendar({ version: "v3", auth });
 
   const { hour, minute } = parseTime(event.time);
-  const start = new Date(`${event.date}T00:00:00`);
-  start.setHours(hour, minute, 0, 0);
-  const end = new Date(start.getTime() + event.durationMin * 60 * 1000);
-
-  const toISO = (d: Date) => d.toISOString().replace(/\.\d{3}Z$/, "-05:00"); // ET
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const startStr = `${event.date}T${pad(hour)}:${pad(minute)}:00`;
+  const endMin   = minute + event.durationMin;
+  const endHour  = hour + Math.floor(endMin / 60);
+  const endStr   = `${event.date}T${pad(endHour)}:${pad(endMin % 60)}:00`;
 
   const res = await calendar.events.insert({
     calendarId:  process.env.GOOGLE_CALENDAR_ID!,
@@ -45,9 +58,8 @@ export async function createCalendarEvent(event: CalendarEventInput) {
     requestBody: {
       summary:     event.summary,
       description: event.description,
-      start: { dateTime: toISO(start), timeZone: "America/New_York" },
-      end:   { dateTime: toISO(end),   timeZone: "America/New_York" },
-      attendees: [{ email: event.attendeeEmail, displayName: event.attendeeName }],
+      start: { dateTime: startStr, timeZone: "America/New_York" },
+      end:   { dateTime: endStr,   timeZone: "America/New_York" },
       reminders: {
         useDefault: false,
         overrides: [

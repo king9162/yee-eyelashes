@@ -21,11 +21,11 @@ export default function Testimonials({ lang }: Props) {
           {testimonials.map((testimonial) => (
             <div
               key={testimonial.id}
-              className="group bg-[#FAFAF8] hover:bg-[#F5F0E6] transition-colors duration-500 px-10 py-11 xl:px-12 xl:py-12 relative overflow-hidden"
+              className="group bg-[#FAFAF8] hover:bg-[#F5F0E6] transition-colors duration-500 px-6 py-8 sm:px-8 sm:py-9 lg:px-10 lg:py-11 xl:px-12 xl:py-12 relative overflow-hidden"
             >
               {/* Decorative oversized quote */}
               <div
-                className="absolute -top-3 right-8 text-[9rem] leading-none text-neutral-100 group-hover:text-[#C9A84C]/8 transition-colors duration-500 select-none pointer-events-none"
+                className="absolute -top-3 right-8 text-[6rem] sm:text-[9rem] leading-none text-neutral-100 group-hover:text-[#C9A84C]/8 transition-colors duration-500 select-none pointer-events-none"
                 style={{ fontFamily: "var(--font-serif)" }}
                 aria-hidden
               >

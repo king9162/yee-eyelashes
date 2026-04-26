@@ -1,10 +1,13 @@
 import { notFound } from "next/navigation";
 import { isValidLang, type Lang } from "@/i18n";
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import PromoBanner from "@/components/layout/PromoBanner";
-import BackToTop from "@/components/ui/BackToTop";
+
+const BackToTop  = dynamic(() => import("@/components/ui/BackToTop"));
+const DisableCopy = dynamic(() => import("@/components/ui/DisableCopy"));
 
 type Props = {
   children: React.ReactNode;
@@ -15,9 +18,11 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   const { lang } = await params;
   return {
     alternates: {
+      canonical: `https://www.yeelashesny.com/${lang}`,
       languages: {
-        "en": "/en",
-        "zh": "/zh",
+        "en": "https://www.yeelashesny.com/en",
+        "zh-TW": "https://www.yeelashesny.com/zh",
+        "x-default": "https://www.yeelashesny.com/en",
       },
     },
     ...(lang === "zh" && {
@@ -43,6 +48,7 @@ export default async function LangLayout({ children, params }: Props) {
       <main className="flex-1">{children}</main>
       <Footer lang={lang} />
       <BackToTop />
+      <DisableCopy />
     </div>
   );
 }

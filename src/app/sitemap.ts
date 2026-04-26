@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const BASE_URL = "https://yeeeyelashes.com";
+const BASE_URL = "https://www.yeelashesny.com";
 const langs = ["en", "zh"] as const;
 const pages = ["", "/services", "/gallery", "/booking", "/contact"] as const;
 

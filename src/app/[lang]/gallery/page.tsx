@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         openGraph: {
           title: "作品集 | YEE EYELASHES 睫毛嫁接作品",
           description: "Yee Eyelashes 真實作品展示 — 經典、混合、豐盈及超豐盈款式。紐約曼哈薩特頂級睫毛工作室。",
-          url: "https://yeeeyelashes.com/zh/gallery",
+          url: "https://www.yeelashesny.com/zh/gallery",
           type: "website",
           locale: "zh_TW",
           siteName: "Yee Eyelashes",
@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         openGraph: {
           title: "Lash Extension Gallery | YEE EYELASHES Manhasset NY",
           description: "Browse our portfolio of classic, hybrid, volume & mega-volume lash extensions. Premium artistry in Manhasset, Nassau County, NY.",
-          url: "https://yeeeyelashes.com/en/gallery",
+          url: "https://www.yeelashesny.com/en/gallery",
           type: "website",
           locale: "en_US",
           siteName: "Yee Eyelashes",
@@ -47,8 +47,8 @@ export default async function GalleryPage({ params }: Props) {
         eyebrow={lang === "zh" ? "作品集" : "Portfolio"}
         title={t.gallery_preview.heading}
         subtitle={lang === "zh"
-          ? "瀏覽我們的最新作品——每一套都是為您量身打造。"
-          : "Browse our latest work — every set crafted to perfection."}
+          ? "瀏覽我們的最新作品，每一套都是為您量身打造。"
+          : "Browse our latest work, every set crafted to perfection."}
       />
       <GalleryGrid lang={lang} />
     </div>

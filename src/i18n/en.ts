@@ -7,23 +7,23 @@ const en = {
     contact: "Contact",
   },
   promo: {
-    text: "✨ New Client Offer: Enjoy 20% off your first full set — mention this offer when booking.",
+    text: "✨ New Client Offer: Enjoy 20% off your first full set. Mention this offer when booking.",
     cta: "Book Now",
   },
   hero: {
     tagline: "Manhasset's Premier Lash Studio",
-    subtitle: "Bespoke eyelash extensions designed for the discerning woman. Each set is custom-crafted to complement your eye shape, lifestyle, and personal style — because effortless beauty is never an accident.",
+    subtitle: "Bespoke eyelash extensions designed for the discerning woman. Each set is custom-crafted to complement your eye shape, lifestyle, and personal style, because effortless beauty is never an accident.",
     cta_primary: "Book Your Appointment",
     cta_secondary: "Explore Services",
   },
   services_preview: {
     heading: "Precision Lash Artistry",
-    subheading: "Every set begins with a personalized consultation. We study your eye shape, bone structure, and desired look before applying a single lash — because exceptional results start with exceptional planning.",
+    subheading: "Every set begins with a personalized consultation. We study your eye shape, bone structure, and desired look before applying a single lash, because exceptional results start with exceptional planning.",
     cta: "View All Services",
   },
   gallery_preview: {
     heading: "The Yee Standard",
-    subheading: "From subtle refinement to full-volume drama — each set is a reflection of your individual beauty, crafted with obsessive attention to detail",
+    subheading: "From subtle refinement to full-volume drama, each set is a reflection of your individual beauty, crafted with obsessive attention to detail",
     cta: "View Full Gallery",
   },
   testimonials: {
@@ -41,7 +41,7 @@ const en = {
   },
   contact: {
     heading: "Visit Our Studio",
-    subheading: "Located on Plandome Road in Manhasset — serving Nassau County's most discerning clientele",
+    subheading: "Located on Plandome Road in Manhasset, serving Nassau County's most discerning clientele",
     address_label: "Location",
     address: "278 Plandome Rd 2FL, Manhasset, NY",
     phone_label: "Phone",
@@ -59,7 +59,7 @@ const en = {
   },
   booking: {
     heading: "Reserve Your Appointment",
-    subheading: "Premium lash artistry, perfectly scheduled around your life. Spots fill fast — secure yours today.",
+    subheading: "Premium lash artistry, perfectly scheduled around your life. Spots fill fast. Secure yours today.",
     note: "We'll confirm your appointment within 24 hours.",
     cta: "Book Now",
   },
