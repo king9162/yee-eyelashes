@@ -78,8 +78,8 @@ export async function sendConfirmationEmail(data: BookingEmailData) {
     : `Hi ${data.name}, your appointment has been confirmed. We look forward to seeing you!`;
   const calBtn   = zh ? "加入行事曆" : "Add to Calendar";
   const policy   = zh
-    ? "請準時到達。如需取消或更改預約，請提前至少 24 小時通知我們。"
-    : "Please arrive on time. If you need to cancel or reschedule, notify us at least 24 hours in advance.";
+    ? "訂金可抵扣服務費用。提前至少 24 小時取消或改期，可獲全額退款。預約前 24 小時內取消、無故缺席或遲到超過 15 分鐘，訂金將不予退還。"
+    : "A deposit is required to secure your appointment and will be applied toward your service total. Deposits are refundable or transferable with at least 24 hours' notice. Cancellations within 24 hours, no-shows, or late arrivals over 15 minutes may result in deposit forfeiture.";
   const subject  = zh
     ? `預約確認 — ${data.serviceLabel}・${formattedDate}`
     : `Appointment Confirmed — ${data.serviceLabel} on ${formattedDate}`;

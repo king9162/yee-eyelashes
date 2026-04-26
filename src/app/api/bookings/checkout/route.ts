@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { getSquareClient } from "@/lib/square";
 
-const DEPOSIT_CENTS = BigInt(3000); // $30.00 non-refundable deposit
+function getDepositCents(price: number): bigint {
+  if (price <= 40)  return BigInt(Math.round(price * 100)); // full amount
+  if (price <= 120) return BigInt(3000);                    // $30
+  return BigInt(4000);                                      // $40
+}
 
 function parseDurationMin(d: string): number {
   let mins = 0;
@@ -61,10 +65,23 @@ export async function POST(req: NextRequest) {
 
     if (dbError) throw dbError;
 
-    // 2. Create Square payment link for $30 deposit
+    // 2. Create Square payment link with tiered deposit
+    const { amount: bodyAmount } = body;
+    const servicePrice = typeof bodyAmount === "number" ? bodyAmount : 0;
+    const depositCents = getDepositCents(servicePrice);
+    const depositDollars = Number(depositCents) / 100;
+    const isFullPayment = servicePrice <= 40;
+
     const square = getSquareClient();
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.yeelashesny.com";
     const successLang = lang ?? "en";
+
+    const lineItemName = isFullPayment
+      ? serviceLabel
+      : `Deposit — ${serviceLabel}`;
+    const lineItemNote = isFullPayment
+      ? undefined
+      : "Non-refundable within 24 hrs. Remaining balance due at appointment.";
 
     const response = await square.checkout.paymentLinks.create({
       idempotencyKey: booking.id,
@@ -72,13 +89,13 @@ export async function POST(req: NextRequest) {
         locationId: process.env.SQUARE_LOCATION_ID!,
         lineItems: [
           {
-            name: `Deposit — ${serviceLabel}`,
+            name: lineItemName,
             quantity: "1",
             basePriceMoney: {
-              amount: DEPOSIT_CENTS,
+              amount: depositCents,
               currency: "USD",
             },
-            note: "Non-refundable deposit. Remaining balance due at appointment.",
+            note: lineItemNote,
           },
         ],
         metadata: { booking_id: booking.id },
@@ -104,7 +121,7 @@ export async function POST(req: NextRequest) {
       })
       .eq("id", booking.id);
 
-    return NextResponse.json({ checkoutUrl });
+    return NextResponse.json({ checkoutUrl, depositDollars, isFullPayment });
   } catch (err) {
     console.error("Checkout error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
