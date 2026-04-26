@@ -233,7 +233,7 @@ export default function BookingForm({ lang }: Props) {
     if (!selectedSvc || !dateVal || !timeVal) return;
     setLoading(true); setError("");
     try {
-      const res = await fetch("/api/bookings/checkout", {
+      const res = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -250,12 +250,7 @@ export default function BookingForm({ lang }: Props) {
         }),
       });
       if (!res.ok) throw new Error();
-      const data = await res.json();
-      if (data.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
-      } else {
-        throw new Error("No checkout URL");
-      }
+      setSubmitted(true);
     } catch {
       setError(zh ? "提交失敗，請稍後再試或直接致電我們。" : "Something went wrong. Please try again or call us directly.");
       setLoading(false);
@@ -322,10 +317,9 @@ export default function BookingForm({ lang }: Props) {
       {/* ── Step progress bar ─────────────────────────────────────────── */}
       <div className="flex items-center justify-center gap-0 mb-14">
         {([
-          { n: 1, en: "Select Service",  zh: "選擇服務" },
-          { n: 2, en: "Date & Time",     zh: "日期時間" },
-          { n: 3, en: "Your Details",    zh: "填寫資料" },
-          { n: 4, en: "Payment",         zh: "付款" },
+          { n: 1, en: "Select Service", zh: "選擇服務" },
+          { n: 2, en: "Date & Time",    zh: "日期時間" },
+          { n: 3, en: "Confirm",        zh: "確認資料" },
         ] as const).map(({ n, en, zh: zhL }, i) => (
           <div key={n} className="flex items-center">
             <div className="flex flex-col items-center gap-2">
@@ -342,7 +336,7 @@ export default function BookingForm({ lang }: Props) {
                 {zh ? zhL : en}
               </span>
             </div>
-            {i < 3 && <div className="w-16 sm:w-24 h-px bg-neutral-200 mb-5 mx-2" />}
+            {i < 2 && <div className="w-16 sm:w-24 h-px bg-neutral-200 mb-5 mx-2" />}
           </div>
         ))}
       </div>
@@ -607,15 +601,10 @@ export default function BookingForm({ lang }: Props) {
                 className="flex-[2] py-4 text-[10px] uppercase tracking-[0.25em] bg-[#1C1C1C] text-white hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all duration-300 disabled:opacity-25 disabled:cursor-not-allowed flex items-center justify-center gap-3"
               >
                 {loading
-                  ? <><span className="w-3.5 h-3.5 border border-current border-t-transparent rounded-full animate-spin" />{zh ? "跳轉中..." : "Redirecting..."}</>
-                  : (zh ? "繳付 $30 訂金 →" : "Pay $30 Deposit →")}
+                  ? <><span className="w-3.5 h-3.5 border border-current border-t-transparent rounded-full animate-spin" />{zh ? "提交中..." : "Submitting..."}</>
+                  : (zh ? "送出預約 →" : "Submit Booking →")}
               </button>
             </div>
-            <p className="text-[11px] text-neutral-400 text-center mt-3">
-              {zh
-                ? "將跳轉至 Square 安全付款頁面。訂金可抵扣服務費用，24 小時前取消可全額退款。"
-                : "You'll be redirected to Square's secure checkout. Deposit applies to your total. Refundable with 24+ hours notice."}
-            </p>
           </form>
 
           {/* Booking summary sidebar */}
@@ -635,41 +624,18 @@ export default function BookingForm({ lang }: Props) {
                     <div className="flex justify-between"><span className="text-neutral-400">{zh ? "時長" : "Duration"}</span><span className="text-neutral-500">{selectedSvc.variant.duration}</span></div>
                     {dateVal && <div className="flex justify-between"><span className="text-neutral-400">{zh ? "日期" : "Date"}</span><span className="text-neutral-500">{dateVal}</span></div>}
                     {timeVal && <div className="flex justify-between"><span className="text-neutral-400">{zh ? "時間" : "Time"}</span><span className="text-neutral-500">{timeVal}</span></div>}
-                    <div className="flex justify-between border-t border-neutral-200/70 pt-2.5">
-                      <span className="text-neutral-400">{zh ? "今日訂金" : "Deposit Due"}</span>
-                      <span className="text-[#C9A84C] font-medium">
-                        {(() => {
-                          const p = selectedSvc.variant.price;
-                          if (p <= 40)  return `$${p}`;
-                          if (p <= 120) return "$30";
-                          return "$40";
-                        })()}
-                      </span>
-                    </div>
                   </div>
                 </>
               )}
             </div>
 
-            <div className="mt-6 space-y-3">
-              <p className="text-[9px] uppercase tracking-[0.45em] text-[#C9A84C]">{zh ? "訂金與取消政策" : "Deposit & Cancellation Policy"}</p>
-              {(zh ? [
-                "訂金將抵扣服務費用。",
-                "提前至少 24 小時取消或改期，可獲全額退款。",
-                "預約前 24 小時內取消或無故缺席，訂金不予退還。",
-                "每次預約限改期一次，超過次數可能導致訂金沒收。",
-                "完成預約即表示您同意本訂金及取消政策。",
-              ] : [
-                "Your deposit is applied toward your service total.",
-                "Cancellations or rescheduling at least 24 hours before the appointment are eligible for a full refund.",
-                "Deposits are non-refundable for cancellations within 24 hours or no-shows.",
-                "Rescheduling is allowed once per booking. Additional changes may result in deposit forfeiture.",
-                "By booking, you agree to our deposit and cancellation policy.",
-              ]).map((line, i) => (
-                <p key={i} className="text-[11.5px] text-neutral-400 leading-[1.75] pl-3 border-l border-neutral-200">
-                  {line}
-                </p>
-              ))}
+            <div className="mt-6">
+              <p className="text-[9px] uppercase tracking-[0.45em] text-[#C9A84C] mb-3">{zh ? "取消政策" : "Cancellation Policy"}</p>
+              <p className="text-[12px] text-neutral-400 leading-[1.85]">
+                {zh
+                  ? "如需取消或更改預約，請提前至少 24 小時通知我們。"
+                  : "Please notify us at least 24 hours in advance if you need to cancel or reschedule."}
+              </p>
             </div>
           </div>
         </div>
