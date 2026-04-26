@@ -606,10 +606,15 @@ export default function BookingForm({ lang }: Props) {
                 className="flex-[2] py-4 text-[10px] uppercase tracking-[0.25em] bg-[#1C1C1C] text-white hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all duration-300 disabled:opacity-25 disabled:cursor-not-allowed flex items-center justify-center gap-3"
               >
                 {loading
-                  ? <><span className="w-3.5 h-3.5 border border-current border-t-transparent rounded-full animate-spin" />{zh ? "提交中..." : "Submitting..."}</>
-                  : (zh ? "送出預約 →" : "Submit Booking →")}
+                  ? <><span className="w-3.5 h-3.5 border border-current border-t-transparent rounded-full animate-spin" />{zh ? "跳轉中..." : "Redirecting..."}</>
+                  : (zh ? "繳付 $30 訂金 →" : "Pay $30 Deposit →")}
               </button>
             </div>
+            <p className="text-[11px] text-neutral-400 text-center mt-3">
+              {zh
+                ? "將跳轉至 Square 安全付款頁面。訂金不可退款，餘款於預約當天現場付清。"
+                : "You'll be redirected to Square's secure checkout. Deposit is non-refundable. Remaining balance due at appointment."}
+            </p>
           </form>
 
           {/* Booking summary sidebar */}
@@ -629,6 +634,10 @@ export default function BookingForm({ lang }: Props) {
                     <div className="flex justify-between"><span className="text-neutral-400">{zh ? "時長" : "Duration"}</span><span className="text-neutral-500">{selectedSvc.variant.duration}</span></div>
                     {dateVal && <div className="flex justify-between"><span className="text-neutral-400">{zh ? "日期" : "Date"}</span><span className="text-neutral-500">{dateVal}</span></div>}
                     {timeVal && <div className="flex justify-between"><span className="text-neutral-400">{zh ? "時間" : "Time"}</span><span className="text-neutral-500">{timeVal}</span></div>}
+                    <div className="flex justify-between border-t border-neutral-200/70 pt-2.5">
+                      <span className="text-neutral-400">{zh ? "今日訂金" : "Deposit Due"}</span>
+                      <span className="text-[#C9A84C] font-medium">$30</span>
+                    </div>
                   </div>
                 </>
               )}
