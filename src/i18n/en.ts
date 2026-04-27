@@ -3,7 +3,7 @@ const en = {
     home: "Home",
     services: "Services",
     gallery: "Gallery",
-    coupon: "Offers",
+    coupon: "Coupon",
     booking: "Book Now",
     contact: "Contact",
   },

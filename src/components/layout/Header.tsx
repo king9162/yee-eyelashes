@@ -47,7 +47,7 @@ export default function Header({ lang }: Props) {
         <div className="hidden md:flex items-center h-[130px]">
 
           {/* Zone 1 — Logo, far left, fixed width to balance Zone 3 */}
-          <div className="flex items-center pl-[48px] lg:pl-[80px]" style={{ width: "320px" }}>
+          <div className="flex items-center" style={{ width: "320px" }}>
             <Link href={`/${lang}`} className="group flex items-center">
               <Image
                 src="/images/yee-logo-v1-cropped.png"
