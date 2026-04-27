@@ -26,6 +26,7 @@ export default function Header({ lang }: Props) {
     { label: t.nav.home,     href: `/${lang}` },
     { label: t.nav.services, href: `/${lang}/services` },
     { label: t.nav.gallery,  href: `/${lang}/gallery` },
+    { label: t.nav.coupon,   href: `/${lang}/coupon` },
     { label: t.nav.contact,  href: `/${lang}/contact` },
   ];
 
