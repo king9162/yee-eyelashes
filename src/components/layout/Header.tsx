@@ -54,7 +54,7 @@ export default function Header({ lang }: Props) {
                 alt="Yee Eyelashes"
                 width={800}
                 height={268}
-                className="h-[105px] w-auto transition-opacity duration-300 group-hover:opacity-75"
+                className="h-[88px] w-auto transition-opacity duration-300 group-hover:opacity-75"
                 sizes="320px"
                 priority
               />
