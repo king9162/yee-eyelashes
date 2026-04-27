@@ -41,7 +41,7 @@ export default function Header({ lang }: Props) {
           : "border-b border-transparent"
       )}
     >
-      <div className="max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16">
+      <div className="max-w-[1400px] mx-auto px-6 sm:px-10 lg:pl-6 lg:pr-16">
 
         {/* ── Desktop: [Logo] [Nav centered] [Controls] ── */}
         <div className="hidden md:flex items-center h-[130px]">
