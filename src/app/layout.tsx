@@ -77,6 +77,9 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://www.yeelashesny.com",
   },
+  verification: {
+    google: "LSwZX0AAhnl4cVXf2RzQizx218bqqynmg9lMFI7lkdM",
+  },
 };
 
 const localBusinessSchema = {
