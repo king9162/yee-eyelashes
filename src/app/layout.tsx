@@ -20,7 +20,7 @@ const montserrat = Montserrat({
 export const metadata: Metadata = {
   title: "YEE EYELASHES | Luxury Lash Extensions in Manhasset, NY",
   description:
-    "Yee Eyelashes, Manhasset's premier lash studio. Classic, hybrid, volume & mega-volume extensions. 278 Plandome Rd, NY. Serving Nassau County & Long Island.",
+    "Manhasset's premier lash studio. Custom classic, hybrid and volume extensions tailored to your eye shape. Serving Nassau County, Great Neck & Port Washington. Book now.",
   keywords: [
     "eyelash extensions Manhasset",
     "lash extensions Manhasset NY",
