@@ -28,6 +28,6 @@ export const promotions: Promotion[] = [
     descriptionZh: "新客戶首次服務享有 30% 折扣。",
     note: "Valid for first-time clients only.",
     noteZh: "僅限首次光臨的新客戶。",
-    active: false,
+    active: true,
   },
 ];

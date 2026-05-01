@@ -31,12 +31,12 @@ export default async function CouponPage({ params }: Props) {
     <div className="min-h-screen bg-[#F8F5EF]">
 
       {/* Header */}
-      <div className="bg-[#1C1C1C] py-24 px-6 text-center">
+      <div className="bg-[#F8F5EF] py-24 px-6 text-center border-b border-neutral-200">
         <p className="text-[9px] uppercase tracking-[0.55em] text-[#C9A84C] mb-4">
           {zh ? "限時優惠" : "Special Offers"}
         </p>
         <h1
-          className="text-[2.8rem] font-light text-white leading-tight"
+          className="text-[2.8rem] font-light text-[#1C1C1C] leading-tight"
           style={{ fontFamily: "var(--font-serif)" }}
         >
           {zh ? "專屬優惠活動" : "Current Promotions"}
