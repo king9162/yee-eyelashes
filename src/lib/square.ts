@@ -79,9 +79,6 @@ const SERVICE_MAP: Record<string, string> = {
   "pc-180-pkg": "W3X2O2RDNCF5NP73AXAHJJYE",
 
   // ── Fills & Care ─────────────────────────────────────────────────────────
-  "refill-1w-only":    "RAF67WIL4WQ2LICHTVJF64T5",
-  "refill-2w-only":    "UENOVZFBHXCLLKWIO4VIRF3P",
-  "refill-3w-only":    "DWT6WVFOMKE37FBR6IFJT7YF",
   "lash-lift-only":    "FI2OMSQGSL6HYZGDD3CFNNZW",
   "lash-tint-only":    "OCMRIAWL44UMAHRHGWJSOHDX",
   "btm-tint-only":     "TZQCIKJ4TESDPJ34QEHAMLDY",
@@ -89,7 +86,7 @@ const SERVICE_MAP: Record<string, string> = {
   "brow-tint-only":    "N7GQ7QCME35GOFME7V5C6NQ3",
   "btm-ext-only":      "YTZOHZG4OS54YHM6WASXNJ2R",
   "color-ext-only":    "M7GAP7PEICZSNHFCOFIKEX6Q",
-  "removal-only":      "RFXSUOS3BORDEAR7NFMXZLHK",
+  "removal-only":      "FGPP5UXNGT5TKF3RMUUOLBNR",
   "brow-lam-all-only": "INPUXACTYQDEYMUROKV6DERD",
   "brow-lam-only":     "LCXKIQ4MHDIRVMB6KUPFXHJE",
   "wax-brow-only":     "TFYBR5Z6P364XKKEQJ7FPTYC",

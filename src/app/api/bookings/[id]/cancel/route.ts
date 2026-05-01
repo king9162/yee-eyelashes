@@ -39,10 +39,20 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   // Delete Google Calendar event and cancel Square booking
   if (booking.calendar_event_id) {
-    try { await deleteCalendarEvent(booking.calendar_event_id); } catch { /* non-fatal */ }
+    try {
+      await deleteCalendarEvent(booking.calendar_event_id);
+      console.log("[cancel] Calendar event deleted:", booking.calendar_event_id);
+    } catch (e) {
+      console.error("[cancel] Calendar delete error:", e);
+    }
+  } else {
+    console.warn("[cancel] No calendar_event_id on booking", id, "— skipping calendar delete");
   }
+
   if (booking.square_booking_id) {
-    try { await cancelSquareBooking(booking.square_booking_id); } catch { /* non-fatal */ }
+    try { await cancelSquareBooking(booking.square_booking_id); } catch (e) {
+      console.error("[cancel] Square cancel error:", e);
+    }
   }
 
   const emailData = {
@@ -60,14 +70,16 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   // Send cancellation emails
   try {
     await sendCancellationEmail(emailData);
+    console.log("[cancel] Client cancellation email sent to", booking.email);
   } catch (e) {
-    console.error("Cancellation email error (non-fatal):", e);
+    console.error("[cancel] Client cancellation email error:", e);
   }
 
   try {
     await sendBettyCancellationNotification(emailData);
+    console.log("[cancel] Betty cancellation notification sent");
   } catch (e) {
-    console.error("Betty cancellation notification error (non-fatal):", e);
+    console.error("[cancel] Betty cancellation notification error:", e);
   }
 
   return NextResponse.json({ success: true });
