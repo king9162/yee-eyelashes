@@ -144,9 +144,9 @@ export async function sendConfirmationEmail(data: BookingEmailData) {
     subject,
     html,
     attachments: [{
-      filename:    "yee-eyelashes-appointment.ics",
-      content:     Buffer.from(ics).toString("base64"),
-      contentType: "text/calendar; method=REQUEST",
+      filename:     "yee-eyelashes-appointment.ics",
+      content:      Buffer.from(ics).toString("base64"),
+      content_type: "text/calendar",
     }],
   });
 }
