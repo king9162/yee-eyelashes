@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 
-const FROM        = process.env.RESEND_FROM_EMAIL ?? "booking@yeelashesny.com";
+const FROM        = process.env.RESEND_FROM_EMAIL ?? "booking@yeeeyelashes.com";
 const BETTY_EMAIL = process.env.BETTY_EMAIL ?? "yeelashesny@gmail.com";
 const getResend   = () => new Resend(process.env.RESEND_API_KEY ?? "placeholder");
 

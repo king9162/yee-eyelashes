@@ -45,13 +45,13 @@ export const metadata: Metadata = {
     title: "YEE EYELASHES | Luxury Lash Extensions in Manhasset, NY",
     description:
       "Bespoke lash extensions designed for the discerning woman. Classic, hybrid, volume & mega-volume sets, handcrafted in Manhasset, NY. Serving Nassau County.",
-    url: "https://www.yeelashesny.com",
+    url: "https://www.yeeeyelashes.com",
     type: "website",
     locale: "en_US",
     siteName: "Yee Eyelashes",
     images: [
       {
-        url: "https://www.yeelashesny.com/api/og",
+        url: "https://www.yeeeyelashes.com/api/og",
         width: 1200,
         height: 630,
         alt: "Yee Eyelashes — Premier Lash Studio in Manhasset, NY",
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "YEE EYELASHES | Luxury Lash Extensions in Manhasset, NY",
     description: "Bespoke lash extensions in Manhasset, NY. Classic, hybrid, volume & mega-volume sets.",
-    images: ["https://www.yeelashesny.com/api/og"],
+    images: ["https://www.yeeeyelashes.com/api/og"],
   },
   robots: {
     index: true,
@@ -75,7 +75,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: "https://www.yeelashesny.com",
+    canonical: "https://www.yeeeyelashes.com",
   },
   verification: {
     google: "LSwZX0AAhnl4cVXf2RzQizx218bqqynmg9lMFI7lkdM",
@@ -86,10 +86,10 @@ const localBusinessSchema = {
   "@context": "https://schema.org",
   "@type": "BeautySalon",
   name: "Yee Eyelashes",
-  image: "https://www.yeelashesny.com/images/yee-logo-v1-cropped.png",
+  image: "https://www.yeeeyelashes.com/images/yee-logo-v1-cropped.png",
   description:
     "Manhasset's premier lash studio specializing in bespoke classic, hybrid, volume, and mega-volume eyelash extensions. Serving Nassau County, Long Island.",
-  url: "https://www.yeelashesny.com",
+  url: "https://www.yeeeyelashes.com",
   telephone: "+1-929-806-2467",
   priceRange: "$$",
   address: {

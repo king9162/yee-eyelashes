@@ -86,7 +86,7 @@ export async function GET() {
         }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="https://www.yeelashesny.com/images/yee-logo-v1-cropped.png"
+            src="https://www.yeeeyelashes.com/images/yee-logo-v1-cropped.png"
             width={260}
             height={87}
             style={{ objectFit: "contain", opacity: 0.9 }}

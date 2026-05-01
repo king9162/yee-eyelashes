@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         openGraph: {
           title: "作品集 | YEE EYELASHES 睫毛嫁接作品",
           description: "Yee Eyelashes 真實作品展示 — 經典、混合、豐盈及超豐盈款式。紐約曼哈薩特頂級睫毛工作室。",
-          url: "https://www.yeelashesny.com/zh/gallery",
+          url: "https://www.yeeeyelashes.com/zh/gallery",
           type: "website",
           locale: "zh_TW",
           siteName: "Yee Eyelashes",
@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         openGraph: {
           title: "Lash Extension Gallery | YEE EYELASHES Manhasset NY",
           description: "Browse our portfolio of classic, hybrid, volume & mega-volume lash extensions. Premium artistry in Manhasset, Nassau County, NY.",
-          url: "https://www.yeelashesny.com/en/gallery",
+          url: "https://www.yeeeyelashes.com/en/gallery",
           type: "website",
           locale: "en_US",
           siteName: "Yee Eyelashes",

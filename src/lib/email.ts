@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 
-const FROM = process.env.RESEND_FROM_EMAIL ?? "booking@yeelashesny.com";
+const FROM = process.env.RESEND_FROM_EMAIL ?? "booking@yeeeyelashes.com";
 const getResend = () => new Resend(process.env.RESEND_API_KEY ?? "placeholder");
 
 export type BookingEmailData = {
@@ -35,7 +35,7 @@ function buildICS(data: BookingEmailData): string {
     "PRODID:-//Yee Eyelashes//Booking//EN",
     "METHOD:REQUEST",
     "BEGIN:VEVENT",
-    `UID:${now}@yeelashesny.com`,
+    `UID:${now}@yeeeyelashes.com`,
     `DTSTAMP:${now}`,
     `DTSTART;TZID=America/New_York:${dt}`,
     `DTEND;TZID=America/New_York:${dtEnd}`,
@@ -185,7 +185,7 @@ export async function sendBettyNotification(data: BookingEmailData) {
           </table>
           <table cellpadding="0" cellspacing="0" style="margin:24px auto 0;">
             <tr><td style="background:#1c1c1c;text-align:center;">
-              <a href="https://www.yeelashesny.com/admin" style="display:inline-block;padding:14px 32px;font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:#ffffff;text-decoration:none;">
+              <a href="https://www.yeeeyelashes.com/admin" style="display:inline-block;padding:14px 32px;font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:#ffffff;text-decoration:none;">
                 View in Admin →
               </a>
             </td></tr>

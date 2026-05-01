@@ -18,11 +18,11 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   const { lang } = await params;
   return {
     alternates: {
-      canonical: `https://www.yeelashesny.com/${lang}`,
+      canonical: `https://www.yeeeyelashes.com/${lang}`,
       languages: {
-        "en": "https://www.yeelashesny.com/en",
-        "zh-TW": "https://www.yeelashesny.com/zh",
-        "x-default": "https://www.yeelashesny.com/en",
+        "en": "https://www.yeeeyelashes.com/en",
+        "zh-TW": "https://www.yeeeyelashes.com/zh",
+        "x-default": "https://www.yeeeyelashes.com/en",
       },
     },
     ...(lang === "zh" && {

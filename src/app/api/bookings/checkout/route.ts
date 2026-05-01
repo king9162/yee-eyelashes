@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
     const isFullPayment = servicePrice <= 40;
 
     const square = getSquareClient();
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.yeelashesny.com";
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.yeeeyelashes.com";
     const successLang = lang ?? "en";
 
     const lineItemName = isFullPayment

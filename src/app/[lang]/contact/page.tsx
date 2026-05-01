@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
         openGraph: {
           title: "聯絡我們 | YEE EYELASHES 曼哈薩特",
           description: "Yee Eyelashes 位於 278 Plandome Rd，曼哈薩特，紐約。週一至日 10 AM–7:30 PM 開放預約。",
-          url: "https://www.yeelashesny.com/zh/contact",
+          url: "https://www.yeeeyelashes.com/zh/contact",
           type: "website",
           locale: "zh_TW",
           siteName: "Yee Eyelashes",
@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
         openGraph: {
           title: "Contact Yee Eyelashes | Manhasset, NY",
           description: "278 Plandome Rd 2FL, Manhasset, NY 11030. Open Mon–Sun 10 AM–7:30 PM. Call 929-806-2467.",
-          url: "https://www.yeelashesny.com/en/contact",
+          url: "https://www.yeeeyelashes.com/en/contact",
           type: "website",
           locale: "en_US",
           siteName: "Yee Eyelashes",
