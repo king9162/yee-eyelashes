@@ -241,7 +241,7 @@ export async function createSquareBooking({
   });
 
   const data = await res.json();
-  if (data.errors) {
+  if (data.errors?.length) {
     console.error("[Square] Create booking error:", JSON.stringify(data.errors));
     return null;
   }
