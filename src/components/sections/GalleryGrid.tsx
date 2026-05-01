@@ -88,25 +88,6 @@ export default function GalleryGrid({ lang }: Props) {
         </div>
       </div>
 
-      {/* Lash work — placeholder */}
-      <div>
-        <div className="flex items-center gap-5 mb-8">
-          <p className="text-[9px] uppercase tracking-[0.5em] text-[#C9A84C] flex-shrink-0">
-            {zh ? "嫁接作品" : "Lash Work"}
-          </p>
-          <div className="flex-1 h-px bg-neutral-200" />
-        </div>
-        <div className="flex flex-col items-center justify-center gap-5 py-20 bg-[#F8F5EF]">
-          <div className="w-px h-10 bg-[#C9A84C]/30" />
-          <p className="text-[9px] uppercase tracking-[0.5em] text-[#C9A84C]">
-            {zh ? "作品即將推出" : "Coming Soon"}
-          </p>
-          <p className="text-[12.5px] text-neutral-400 whitespace-nowrap leading-[1.9]">
-            {zh ? "我們正在整理最新作品，敬請期待。" : "We're curating our latest lash work. Check back soon."}
-          </p>
-          <div className="w-px h-10 bg-[#C9A84C]/30" />
-        </div>
-      </div>
 
       {/* Lightbox */}
       {lightbox && <Lightbox photo={lightbox} onClose={() => setLightbox(null)} />}

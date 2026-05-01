@@ -100,7 +100,7 @@ const categories: Category[] = [
       { name: "2 Week Refill",  nameZh: "兩週補睫", price: 50, duration: "1hr", note: "8–14 days",  noteZh: "8–14 天後" },
       { name: "3 Week Refill",  nameZh: "三週補睫", price: 70, duration: "1hr", note: "15–21 days", noteZh: "15–21 天後" },
 
-      { name: "Other Services",                nameZh: "其他服務", isGroupHeader: true },
+      { name: "Eyelash Lift & Other Services",  nameZh: "睫毛燙翹與其他服務", isGroupHeader: true },
       { name: "Eyelash Lift",                  nameZh: "睫毛燙翹",       price: 79, duration: "45min" },
       { name: "Eyelash Tinting",               nameZh: "睫毛染色",       price: 20, duration: "20min" },
       { name: "Bottom Lash Tinting",           nameZh: "下睫毛染色",     price: 20, duration: "20min" },
