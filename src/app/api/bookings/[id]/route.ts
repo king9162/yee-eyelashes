@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { sendConfirmationEmail } from "@/lib/email";
 import { deleteCalendarEvent } from "@/lib/google-calendar";
-import { cancelSquareBooking } from "@/lib/square";
+import { cancelSquareBooking, updateSquareBooking } from "@/lib/square";
+import { createCalendarEvent } from "@/lib/google-calendar";
 
 function auth(req: NextRequest) {
   return req.headers.get("authorization") === `Bearer ${process.env.ADMIN_SECRET_KEY}`;
@@ -11,13 +12,50 @@ function auth(req: NextRequest) {
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   if (!auth(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { id }     = await params;
-  const { status } = await req.json();
+  const { id }  = await params;
+  const body    = await req.json();
+  const db      = supabaseAdmin();
+
+  // ── Reschedule (date/time change) ────────────────────────────────────────
+  if (body.date || body.time) {
+    const { data: existing } = await db.from("bookings").select("*").eq("id", id).single();
+    if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+    const newDate = body.date ?? existing.date;
+    const newTime = body.time ?? existing.time;
+
+    const { error } = await db.from("bookings").update({ date: newDate, time: newTime }).eq("id", id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    // Update Google Calendar: delete old + create new
+    try {
+      if (existing.calendar_event_id) await deleteCalendarEvent(existing.calendar_event_id);
+      const newEventId = await createCalendarEvent({
+        summary:       `${existing.service_label} — ${existing.name}`,
+        description:   `Client: ${existing.name}\nPhone: ${existing.phone}\nEmail: ${existing.email}${existing.notes ? `\nNotes: ${existing.notes}` : ""}`,
+        date:          newDate,
+        time:          newTime,
+        durationMin:   existing.duration_min ?? 90,
+        attendeeEmail: existing.email,
+        attendeeName:  existing.name,
+      });
+      if (newEventId) await db.from("bookings").update({ calendar_event_id: newEventId }).eq("id", id);
+    } catch (e) { console.error("Calendar update error (non-fatal):", e); }
+
+    // Update Square
+    try {
+      if (existing.square_booking_id) await updateSquareBooking(existing.square_booking_id, newDate, newTime);
+    } catch (e) { console.error("Square update error (non-fatal):", e); }
+
+    return NextResponse.json({ success: true });
+  }
+
+  // ── Status change ────────────────────────────────────────────────────────
+  const { status } = body;
   if (!["pending", "confirmed", "cancelled"].includes(status)) {
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
 
-  const db = supabaseAdmin();
   const { error } = await db.from("bookings").update({ status }).eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 

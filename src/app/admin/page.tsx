@@ -40,6 +40,9 @@ export default function AdminPage() {
   const [dateFilter, setDateFilter] = useState("");
   const [updating,      setUpdating]      = useState<string | null>(null);
   const [deleting,      setDeleting]      = useState<string | null>(null);
+  const [editing,       setEditing]       = useState<string | null>(null);
+  const [editDate,      setEditDate]      = useState("");
+  const [editTime,      setEditTime]      = useState("");
   const [blockedDates,  setBlockedDates]  = useState<{ date: string; reason: string | null }[]>([]);
   const [blockDate,     setBlockDate]     = useState("");
   const [blockReason,   setBlockReason]   = useState("");
@@ -125,6 +128,25 @@ export default function AdminPage() {
     });
     setBookings(prev => prev.filter(b => b.id !== id));
     setDeleting(null);
+  }
+
+  function startEdit(b: Booking) {
+    setEditing(b.id);
+    setEditDate(b.date);
+    setEditTime(b.time);
+  }
+
+  async function saveReschedule(id: string) {
+    setUpdating(id);
+    const savedKey = sessionStorage.getItem("admin_key") ?? "";
+    await fetch(`/api/bookings/${id}`, {
+      method:  "PATCH",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${savedKey}` },
+      body:    JSON.stringify({ date: editDate, time: editTime }),
+    });
+    setBookings(prev => prev.map(b => b.id === id ? { ...b, date: editDate, time: editTime } : b));
+    setEditing(null);
+    setUpdating(null);
   }
 
   async function updateStatus(id: string, status: string) {
@@ -333,8 +355,20 @@ export default function AdminPage() {
               {filtered.map(b => (
                 <tr key={b.id} className="border-b border-neutral-50 hover:bg-[#FAFAF8] transition-colors">
                   <td className="px-5 py-4">
-                    <p className="text-[13px] text-[#1C1C1C] font-medium">{b.date}</p>
-                    <p className="text-[11px] text-neutral-400">{b.time}</p>
+                    {editing === b.id ? (
+                      <div className="flex flex-col gap-1.5">
+                        <input type="date" value={editDate} onChange={e => setEditDate(e.target.value)}
+                          className="bg-neutral-50 border border-neutral-200 px-2 py-1 text-[12px] focus:outline-none focus:border-[#C9A84C]" />
+                        <input type="text" value={editTime} onChange={e => setEditTime(e.target.value)}
+                          placeholder="10:00 AM"
+                          className="bg-neutral-50 border border-neutral-200 px-2 py-1 text-[12px] focus:outline-none focus:border-[#C9A84C]" />
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-[13px] text-[#1C1C1C] font-medium">{b.date}</p>
+                        <p className="text-[11px] text-neutral-400">{b.time}</p>
+                      </>
+                    )}
                   </td>
                   <td className="px-5 py-4">
                     <p className="text-[13px] text-[#1C1C1C]">{b.name}</p>
@@ -359,31 +393,57 @@ export default function AdminPage() {
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex flex-col gap-1.5">
-                      {b.status !== "confirmed" && (
-                        <button
-                          onClick={() => updateStatus(b.id, "confirmed")}
-                          disabled={updating === b.id}
-                          className="text-[9px] uppercase tracking-[0.2em] px-3 py-1.5 bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100 transition-colors disabled:opacity-50"
-                        >
-                          Confirm
-                        </button>
+                      {editing === b.id ? (
+                        <>
+                          <button
+                            onClick={() => saveReschedule(b.id)}
+                            disabled={updating === b.id}
+                            className="text-[9px] uppercase tracking-[0.2em] px-3 py-1.5 bg-[#C9A84C] text-white border border-[#C9A84C] hover:opacity-80 transition-colors disabled:opacity-50"
+                          >
+                            {updating === b.id ? "..." : "Save"}
+                          </button>
+                          <button
+                            onClick={() => setEditing(null)}
+                            className="text-[9px] uppercase tracking-[0.2em] px-3 py-1.5 bg-neutral-100 text-neutral-400 border border-neutral-200 hover:bg-neutral-200 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          {b.status !== "confirmed" && (
+                            <button
+                              onClick={() => updateStatus(b.id, "confirmed")}
+                              disabled={updating === b.id}
+                              className="text-[9px] uppercase tracking-[0.2em] px-3 py-1.5 bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100 transition-colors disabled:opacity-50"
+                            >
+                              Confirm
+                            </button>
+                          )}
+                          {b.status !== "cancelled" && (
+                            <button
+                              onClick={() => updateStatus(b.id, "cancelled")}
+                              disabled={updating === b.id}
+                              className="text-[9px] uppercase tracking-[0.2em] px-3 py-1.5 bg-red-50 text-red-400 border border-red-200 hover:bg-red-100 transition-colors disabled:opacity-50"
+                            >
+                              Cancel
+                            </button>
+                          )}
+                          <button
+                            onClick={() => startEdit(b)}
+                            className="text-[9px] uppercase tracking-[0.2em] px-3 py-1.5 bg-blue-50 text-blue-400 border border-blue-200 hover:bg-blue-100 transition-colors"
+                          >
+                            Reschedule
+                          </button>
+                          <button
+                            onClick={() => deleteBooking(b.id)}
+                            disabled={deleting === b.id}
+                            className="text-[9px] uppercase tracking-[0.2em] px-3 py-1.5 bg-neutral-100 text-neutral-400 border border-neutral-200 hover:bg-neutral-200 transition-colors disabled:opacity-50"
+                          >
+                            {deleting === b.id ? "..." : "Delete"}
+                          </button>
+                        </>
                       )}
-                      {b.status !== "cancelled" && (
-                        <button
-                          onClick={() => updateStatus(b.id, "cancelled")}
-                          disabled={updating === b.id}
-                          className="text-[9px] uppercase tracking-[0.2em] px-3 py-1.5 bg-red-50 text-red-400 border border-red-200 hover:bg-red-100 transition-colors disabled:opacity-50"
-                        >
-                          Cancel
-                        </button>
-                      )}
-                      <button
-                        onClick={() => deleteBooking(b.id)}
-                        disabled={deleting === b.id}
-                        className="text-[9px] uppercase tracking-[0.2em] px-3 py-1.5 bg-neutral-100 text-neutral-400 border border-neutral-200 hover:bg-neutral-200 transition-colors disabled:opacity-50"
-                      >
-                        {deleting === b.id ? "..." : "Delete"}
-                      </button>
                     </div>
                   </td>
                 </tr>
