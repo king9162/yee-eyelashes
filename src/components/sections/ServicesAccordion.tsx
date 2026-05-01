@@ -39,19 +39,53 @@ type Category = {
   items: ServiceRow[];
 };
 
-const ms: (pcs: number, newPrice: number, newDur: string, w1: number, w1d: string, w2: number, w2d: string, w3: number, w3d: string, pkg: number, pkgDur: string) => ServiceRow =
-  (pcs, newPrice, newDur, w1, w1d, w2, w2d, w3, w3d, pkg, pkgDur) => ({
-    name: `${pcs}pcs`,
-    nameZh: `${pcs}根`,
-    price: newPrice,
-    duration: newDur,
-    options: [
-      { label: "1 Week Refill", labelZh: "一週補睫", price: w1, duration: w1d },
-      { label: "2 Week Refill", labelZh: "兩週補睫", price: w2, duration: w2d },
-      { label: "3 Week Refill", labelZh: "三週補睫", price: w3, duration: w3d },
-      { label: "3 Times Package", labelZh: "三次套裝", price: pkg, duration: pkgDur },
-    ],
-  });
+// Build a service-type row (New Set / 1 Week / etc.) whose options list pcs counts
+function svcRow(
+  label: string, labelZh: string,
+  opts: [number, number, string][], // [pcs, price, duration]
+): ServiceRow {
+  return {
+    name:    label,
+    nameZh:  labelZh,
+    options: opts.map(([pcs, price, dur]) => ({
+      label:    `${pcs}pcs`,
+      labelZh:  `${pcs}根`,
+      price,
+      duration: dur,
+    })),
+  };
+}
+
+const PCS = [60, 80, 100, 120, 140, 180] as const;
+
+// Mink / Silk prices: [newSet, w1, w2, w3, pkg] per pcs
+const MS: Record<number, [number,string,number,string,number,string,number,string,number,string]> = {
+  60:  [60,"1hr",       30,"30min", 40,"40min", 50,"50min",    150,"1hr"],
+  80:  [80,"1hr 15min", 40,"35min", 50,"45min", 70,"1hr",      170,"1hr 15min"],
+  100: [100,"1hr 30min",50,"40min", 60,"50min", 80,"1hr 5min", 220,"1hr 30min"],
+  120: [120,"1hr 45min",60,"45min", 70,"55min", 90,"1hr 10min",260,"1hr 45min"],
+  140: [130,"2hr",      70,"50min", 80,"1hr",  100,"1hr 15min",280,"2hr"],
+  180: [160,"2hr 15min",80,"55min", 90,"1hr 5min",110,"1hr 20min",340,"2hr 15min"],
+};
+// Premium / Cashmere prices
+const PC: Record<number, [number,string,number,string,number,string,number,string,number,string]> = {
+  60:  [80,"1hr",        50,"30min", 60,"40min",  70,"50min",    180,"1hr"],
+  80:  [100,"1hr 15min", 60,"35min", 70,"45min",  90,"1hr",      200,"1hr 15min"],
+  100: [120,"1hr 30min", 70,"40min", 80,"50min", 100,"1hr 5min", 250,"1hr 30min"],
+  120: [140,"1hr 45min", 80,"45min", 90,"55min", 110,"1hr 10min",290,"1hr 45min"],
+  140: [150,"2hr",       90,"50min",100,"1hr",   120,"1hr 15min",310,"2hr"],
+  180: [180,"2hr 15min",100,"55min",110,"1hr 5min",130,"1hr 20min",370,"2hr 15min"],
+};
+
+function lashRows(data: typeof MS) {
+  return [
+    svcRow("New Set",        "全新嫁接", PCS.map(p => [p, data[p][0], data[p][1]]  as [number,number,string])),
+    svcRow("1 Week Refill",  "一週補睫", PCS.map(p => [p, data[p][2], data[p][3]]  as [number,number,string])),
+    svcRow("2 Week Refill",  "兩週補睫", PCS.map(p => [p, data[p][4], data[p][5]]  as [number,number,string])),
+    svcRow("3 Week Refill",  "三週補睫", PCS.map(p => [p, data[p][6], data[p][7]]  as [number,number,string])),
+    svcRow("3 Times Package","三次套裝", PCS.map(p => [p, data[p][8], data[p][9]]  as [number,number,string])),
+  ];
+}
 
 const categories: Category[] = [
   {
@@ -73,21 +107,10 @@ const categories: Category[] = [
       },
     ],
     items: [
-      { name: "Mink / Silk — New Set",        nameZh: "Mink / Silk — 全新嫁接",        isGroupHeader: true },
-      ms(60,  60,  "1hr",       30, "30min", 40, "40min", 50,  "50min",    150, "1hr"),
-      ms(80,  80,  "1hr 15min", 40, "35min", 50, "45min", 70,  "1hr",      170, "1hr 15min"),
-      ms(100, 100, "1hr 30min", 50, "40min", 60, "50min", 80,  "1hr 5min", 220, "1hr 30min"),
-      ms(120, 120, "1hr 45min", 60, "45min", 70, "55min", 90,  "1hr 10min",260, "1hr 45min"),
-      ms(140, 130, "2hr",       70, "50min", 80, "1hr",   100, "1hr 15min",280, "2hr"),
-      ms(180, 160, "2hr 15min", 80, "55min", 90, "1hr 5min", 110, "1hr 20min", 340, "2hr 15min"),
-
-      { name: "Premium / Cashmere — New Set",  nameZh: "Premium / Cashmere — 全新嫁接",  isGroupHeader: true },
-      ms(60,  80,  "1hr",       50, "30min", 60, "40min", 70,  "50min",    180, "1hr"),
-      ms(80,  100, "1hr 15min", 60, "35min", 70, "45min", 90,  "1hr",      200, "1hr 15min"),
-      ms(100, 120, "1hr 30min", 70, "40min", 80, "50min", 100, "1hr 5min", 250, "1hr 30min"),
-      ms(120, 140, "1hr 45min", 80, "45min", 90, "55min", 110, "1hr 10min",290, "1hr 45min"),
-      ms(140, 150, "2hr",       90, "50min", 100,"1hr",   120, "1hr 15min",310, "2hr"),
-      ms(180, 180, "2hr 15min", 100,"55min", 110,"1hr 5min",130,"1hr 20min",370, "2hr 15min"),
+      { name: "Mink / Silk",       nameZh: "Mink / Silk",       isGroupHeader: true },
+      ...lashRows(MS),
+      { name: "Premium / Cashmere", nameZh: "Premium / Cashmere", isGroupHeader: true },
+      ...lashRows(PC),
     ],
   },
   {
@@ -257,15 +280,17 @@ export default function ServicesAccordion({ lang }: Props) {
 
                       {/* Options dropdown */}
                       {item.options && (
-                        <div className={`overflow-hidden transition-all duration-300 ${optsOpen ? "max-h-[400px] opacity-100 pb-4" : "max-h-0 opacity-0"}`}>
-                          <div className="grid grid-cols-2 gap-2">
+                        <div className={`overflow-hidden transition-all duration-300 ${optsOpen ? "max-h-[600px] opacity-100 pb-4" : "max-h-0 opacity-0"}`}>
+                          <div className="flex flex-col divide-y divide-neutral-100">
                             {item.options.map((opt, k) => (
-                              <div key={k} className="border border-neutral-100 px-4 py-3">
-                                <p className="text-[11px] text-[#1C1C1C] tracking-[0.01em] mb-1">
+                              <div key={k} className="flex items-center justify-between py-3 px-1">
+                                <p className="text-[12px] text-[#1C1C1C] tracking-[0.01em]">
                                   {lang === "zh" ? opt.labelZh : opt.label}
                                 </p>
-                                <p className="text-[12px] text-[#C9A84C]">${opt.price}</p>
-                                <p className="text-[10px] text-neutral-300 mt-0.5">{opt.duration}</p>
+                                <div className="flex items-center gap-4">
+                                  <span className="text-[11px] text-neutral-300">{opt.duration}</span>
+                                  <span className="text-[13px] text-[#C9A84C] min-w-[48px] text-right">${opt.price}</span>
+                                </div>
                               </div>
                             ))}
                           </div>
