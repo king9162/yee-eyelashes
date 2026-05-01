@@ -121,12 +121,13 @@ export async function sendConfirmationEmail(data: BookingEmailData) {
 </body>
 </html>`;
 
-  await getResend().emails.send({
+  const { error } = await getResend().emails.send({
     from:    `Yee Eyelashes <${FROM}>`,
     to:      data.email,
     subject,
     html,
   });
+  if (error) throw new Error(`Resend confirmation error: ${JSON.stringify(error)}`);
 }
 
 // ── 2. Betty notification (sent to owner when new booking arrives) ───────────
@@ -180,12 +181,13 @@ export async function sendBettyNotification(data: BookingEmailData) {
 </body>
 </html>`;
 
-  await getResend().emails.send({
+  const { error } = await getResend().emails.send({
     from:    `Yee Eyelashes <${FROM}>`,
     to:      bettyEmail,
     subject: `New Booking — ${data.name} · ${data.serviceLabel} on ${formattedDate}`,
     html,
   });
+  if (error) throw new Error(`Resend betty error: ${JSON.stringify(error)}`);
 }
 
 function row(label: string, value: string) {
