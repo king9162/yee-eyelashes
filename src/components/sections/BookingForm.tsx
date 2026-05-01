@@ -241,6 +241,7 @@ export default function BookingForm({ lang }: Props) {
           name: info.name, phone: info.phone, email: info.email, notes: info.notes,
           date: dateVal, time: timeVal,
           service: selectedSvc.card.id,
+          serviceKey: `${selectedSvc.card.id}-${selectedSvc.variant.id}`,
           serviceLabel: zh
             ? `${selectedSvc.card.labelZh} — ${selectedSvc.variant.labelZh}`
             : `${selectedSvc.card.label} — ${selectedSvc.variant.label}`,

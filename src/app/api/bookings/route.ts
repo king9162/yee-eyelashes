@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin }       from "@/lib/supabase";
 import { sendConfirmationEmail, sendBettyNotification } from "@/lib/email";
 import { createCalendarEvent }   from "@/lib/google-calendar";
+import { createSquareBooking }   from "@/lib/square";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, phone, email, service, serviceLabel, date, time, notes, duration, lang } = body;
+    const { name, phone, email, service, serviceKey, serviceLabel, date, time, notes, duration, lang } = body;
 
     function parseDurationMin(d: string): number {
       let mins = 0;
@@ -78,14 +79,30 @@ export async function POST(req: NextRequest) {
       console.error("Google Calendar error (non-fatal):", calErr);
     }
 
-    // ── 3. Send confirmation email to client ─────────────────
+    // ── 3. Sync to Square Appointments ───────────────────────
+    try {
+      await createSquareBooking({
+        serviceKey: serviceKey ?? `${service}-only`,
+        durationMin,
+        date,
+        time,
+        customerName: safeName,
+        customerEmail: email,
+        customerPhone: safePhone,
+        notes: safeNotes,
+      });
+    } catch (sqErr) {
+      console.error("Square booking error (non-fatal):", sqErr);
+    }
+
+    // ── 4. Send confirmation email to client ─────────────────
     try {
       await sendConfirmationEmail({ name, phone, email, service, serviceLabel, date, time, notes, lang });
     } catch (emailErr) {
       console.error("Email error (non-fatal):", emailErr);
     }
 
-    // ── 4. Notify Betty ───────────────────────────────────────
+    // ── 5. Notify Betty ───────────────────────────────────────
     try {
       await sendBettyNotification({ name, phone, email, service, serviceLabel, date, time, notes });
     } catch (notifyErr) {
