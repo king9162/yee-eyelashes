@@ -27,7 +27,8 @@ export default function DisableCopy() {
 
     // ── 4. Disable text selection on non-interactive elements
     const noSelect = (e: Event) => {
-      const target = e.target as HTMLElement;
+      const target = e.target as HTMLElement | null;
+      if (!target?.tagName) return;
       const tag = target.tagName.toLowerCase();
       if (!["input", "textarea", "select", "a", "button"].includes(tag)) {
         e.preventDefault();
