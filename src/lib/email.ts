@@ -15,48 +15,31 @@ export type BookingEmailData = {
   lang?:         string;
 };
 
-// Generate .ics calendar file content
-function buildICS(data: BookingEmailData): string {
+// Generate Google Calendar URL
+function buildGoogleCalendarUrl(data: BookingEmailData): string {
   const [year, month, day] = data.date.split("-").map(Number);
   const [hhmm, period]     = data.time.split(" ");
   let [hour, minute]       = hhmm.split(":").map(Number);
   if (period === "PM" && hour !== 12) hour += 12;
   if (period === "AM" && hour === 12) hour  = 0;
 
-  const pad = (n: number) => String(n).padStart(2, "0");
-  const dt  = `${year}${pad(month)}${pad(day)}T${pad(hour)}${pad(minute)}00`;
-  const endHour = (hour + 2) % 24;
-  const dtEnd   = `${year}${pad(month)}${pad(day)}T${pad(endHour)}${pad(minute)}00`;
-  const now     = new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+  // NY UTC offset
+  const probe = new Date(`${data.date}T12:00:00Z`);
+  const nyHour = parseInt(probe.toLocaleString("en-US", { timeZone: "America/New_York", hour: "2-digit", hour12: false }));
+  const offset = 12 - nyHour;
 
-  return [
-    "BEGIN:VCALENDAR",
-    "VERSION:2.0",
-    "PRODID:-//Yee Eyelashes//Booking//EN",
-    "METHOD:REQUEST",
-    "BEGIN:VEVENT",
-    `UID:${now}@yeeeyelashes.com`,
-    `DTSTAMP:${now}`,
-    `DTSTART;TZID=America/New_York:${dt}`,
-    `DTEND;TZID=America/New_York:${dtEnd}`,
-    `SUMMARY:Yee Eyelashes — ${data.serviceLabel}`,
-    `DESCRIPTION:Your appointment at Yee Eyelashes.\\n278 Plandome Rd 2FL\\, Manhasset\\, NY 11030\\n📞 929-806-2467`,
-    "LOCATION:278 Plandome Rd 2FL\\, Manhasset\\, NY 11030",
-    `ORGANIZER;CN=Yee Eyelashes:mailto:${FROM}`,
-    `ATTENDEE;CN=${data.name}:mailto:${data.email}`,
-    "BEGIN:VALARM",
-    "TRIGGER:-PT60M",
-    "ACTION:DISPLAY",
-    "DESCRIPTION:Reminder: Yee Eyelashes appointment in 1 hour",
-    "END:VALARM",
-    "BEGIN:VALARM",
-    "TRIGGER:-PT1440M",
-    "ACTION:DISPLAY",
-    "DESCRIPTION:Reminder: Yee Eyelashes appointment tomorrow",
-    "END:VALARM",
-    "END:VEVENT",
-    "END:VCALENDAR",
-  ].join("\r\n");
+  const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+  const start = new Date(Date.UTC(year, month - 1, day, hour + offset, minute, 0));
+  const end   = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+
+  const params = new URLSearchParams({
+    action:   "TEMPLATE",
+    text:     `Yee Eyelashes — ${data.serviceLabel}`,
+    dates:    `${fmt(start)}/${fmt(end)}`,
+    details:  "Your appointment at Yee Eyelashes. 278 Plandome Rd 2FL, Manhasset, NY 11030 | 📞 929-806-2467",
+    location: "278 Plandome Rd 2FL, Manhasset, NY 11030",
+  });
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
 
 function formatDate(dateStr: string) {
@@ -68,7 +51,7 @@ function formatDate(dateStr: string) {
 
 // ── 1. Booking received email (sent to client on submit) ─────────────────────
 export async function sendConfirmationEmail(data: BookingEmailData) {
-  const ics           = buildICS(data);
+  const calUrl        = buildGoogleCalendarUrl(data);
   const formattedDate = formatDate(data.date);
   const zh            = data.lang === "zh";
 
@@ -115,7 +98,7 @@ export async function sendConfirmationEmail(data: BookingEmailData) {
           </table>
           <table cellpadding="0" cellspacing="0" style="margin:0 auto 32px;">
             <tr><td style="background:#1c1c1c;text-align:center;">
-              <a href="cid:calendar.ics" style="display:inline-block;padding:14px 32px;font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:#ffffff;text-decoration:none;">
+              <a href="${calUrl}" style="display:inline-block;padding:14px 32px;font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:#ffffff;text-decoration:none;">
                 ${calBtn}
               </a>
             </td></tr>
@@ -143,11 +126,6 @@ export async function sendConfirmationEmail(data: BookingEmailData) {
     to:      data.email,
     subject,
     html,
-    attachments: [{
-      filename:     "yee-eyelashes-appointment.ics",
-      content:      Buffer.from(ics).toString("base64"),
-      content_type: "text/calendar",
-    }],
   });
 }
 
