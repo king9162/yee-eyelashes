@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 
-const FROM = process.env.RESEND_FROM_EMAIL ?? "booking@yeeeyelashes.com";
+const FROM = "booking@yeeeyelashes.com";
 const getResend = () => new Resend(process.env.RESEND_API_KEY ?? "placeholder");
 
 export type BookingEmailData = {
