@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
 
     // ── 3. Sync to Square Appointments ───────────────────────
     try {
-      await createSquareBooking({
+      const squareBookingId = await createSquareBooking({
         serviceKey: serviceKey ?? `${service}-only`,
         durationMin,
         date,
@@ -91,6 +91,9 @@ export async function POST(req: NextRequest) {
         customerPhone: safePhone,
         notes: safeNotes,
       });
+      if (squareBookingId) {
+        await db.from("bookings").update({ square_booking_id: squareBookingId }).eq("id", booking.id);
+      }
     } catch (sqErr) {
       console.error("Square booking error (non-fatal):", sqErr);
     }

@@ -171,6 +171,29 @@ async function findOrCreateCustomer(
   return createData.customer.id;
 }
 
+export async function cancelSquareBooking(bookingId: string): Promise<void> {
+  const token = process.env.SQUARE_ACCESS_TOKEN;
+  if (!token) return;
+
+  // Fetch current version first
+  const getRes = await fetch(`${SQUARE_BASE}/v2/bookings/${bookingId}`, {
+    headers: { Authorization: `Bearer ${token}`, "Square-Version": "2024-11-20" },
+  });
+  const getData = await getRes.json();
+  const version = getData.booking?.version;
+  if (!version) return;
+
+  await fetch(`${SQUARE_BASE}/v2/bookings/${bookingId}/cancel`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+      "Square-Version": "2024-11-20",
+    },
+    body: JSON.stringify({ idempotency_key: `cancel-${bookingId}-${Date.now()}`, booking_version: version }),
+  });
+}
+
 export async function createSquareBooking({
   serviceKey,
   durationMin,

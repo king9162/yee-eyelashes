@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { sendConfirmationEmail } from "@/lib/email";
 import { deleteCalendarEvent } from "@/lib/google-calendar";
+import { cancelSquareBooking } from "@/lib/square";
 
 function auth(req: NextRequest) {
   return req.headers.get("authorization") === `Bearer ${process.env.ADMIN_SECRET_KEY}`;
@@ -20,11 +21,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const { error } = await db.from("bookings").update({ status }).eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  // Delete calendar event when cancelled
+  // Delete calendar + Square when cancelled
   if (status === "cancelled") {
     try {
-      const { data: booking } = await db.from("bookings").select("calendar_event_id").eq("id", id).single();
+      const { data: booking } = await db.from("bookings").select("calendar_event_id, square_booking_id").eq("id", id).single();
       if (booking?.calendar_event_id) await deleteCalendarEvent(booking.calendar_event_id);
+      if (booking?.square_booking_id) await cancelSquareBooking(booking.square_booking_id);
     } catch { /* non-fatal */ }
   }
 
@@ -57,8 +59,16 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
   const { id } = await params;
   const db = supabaseAdmin();
+
+  // Fetch IDs before deleting
+  const { data: booking } = await db.from("bookings").select("calendar_event_id, square_booking_id").eq("id", id).single();
+
   const { error } = await db.from("bookings").delete().eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Clean up Google Calendar and Square
+  try { if (booking?.calendar_event_id) await deleteCalendarEvent(booking.calendar_event_id); } catch { /* non-fatal */ }
+  try { if (booking?.square_booking_id) await cancelSquareBooking(booking.square_booking_id); } catch { /* non-fatal */ }
 
   return NextResponse.json({ success: true });
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { generateCancelToken, sendCancellationEmail, sendBettyCancellationNotification } from "@/lib/email";
 import { deleteCalendarEvent } from "@/lib/google-calendar";
+import { cancelSquareBooking } from "@/lib/square";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -36,11 +37,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "Failed to cancel" }, { status: 500 });
   }
 
-  // Delete Google Calendar event
+  // Delete Google Calendar event and cancel Square booking
   if (booking.calendar_event_id) {
-    try {
-      await deleteCalendarEvent(booking.calendar_event_id);
-    } catch { /* non-fatal */ }
+    try { await deleteCalendarEvent(booking.calendar_event_id); } catch { /* non-fatal */ }
+  }
+  if (booking.square_booking_id) {
+    try { await cancelSquareBooking(booking.square_booking_id); } catch { /* non-fatal */ }
   }
 
   const emailData = {
