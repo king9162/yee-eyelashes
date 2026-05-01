@@ -48,7 +48,7 @@ export default function PromoPopup({ lang }: Props) {
 
         <div className="px-10 pt-10 pb-12 text-center">
           {/* Eyebrow */}
-          <p className="text-[9px] uppercase tracking-[0.55em] text-[#C9A84C] mb-5">
+          <p className="text-[11px] uppercase tracking-[0.55em] text-[#C9A84C] mb-5">
             {lang === "zh" ? "母親節限時優惠" : "Mother's Day Special"}
           </p>
 
@@ -68,8 +68,8 @@ export default function PromoPopup({ lang }: Props) {
           {/* Body */}
           <p className="text-[13px] text-neutral-500 leading-[1.85] mb-8 max-w-[340px] mx-auto">
             {lang === "zh"
-              ? "新客戶專屬優惠，到訪更享精美禮品袋。請預約後，折扣於到店時直接套用，無需折扣碼。"
-              : "New clients only. Receive a complimentary gift bag with your visit. Discount applied on-site — no code required."}
+              ? <>新客戶專屬優惠。<br />到訪更享精美禮品袋。<br />折扣於到店時直接套用，無需折扣碼。</>
+              : <>New clients only.<br />Receive a complimentary gift bag with your visit.<br />Discount applied on-site, no code required.</>}
           </p>
 
           {/* CTA */}
