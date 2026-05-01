@@ -133,6 +133,44 @@ function toSquareStartAt(date: string, time: string): string {
   )).toISOString();
 }
 
+async function findOrCreateCustomer(
+  token: string,
+  name: string,
+  email: string,
+  phone: string,
+): Promise<string> {
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+    "Square-Version": "2024-11-20",
+  };
+
+  // Search by email first
+  const searchRes = await fetch(`${SQUARE_BASE}/v2/customers/search`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ query: { filter: { email_address: { exact: email } } } }),
+  });
+  const searchData = await searchRes.json();
+  if (searchData.customers?.length) return searchData.customers[0].id;
+
+  // Create new customer
+  const [givenName, ...rest] = name.trim().split(" ");
+  const createRes = await fetch(`${SQUARE_BASE}/v2/customers`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      idempotency_key: `customer-${email}-${Date.now()}`,
+      given_name:  givenName,
+      family_name: rest.join(" ") || "",
+      email_address: email,
+      phone_number: phone,
+    }),
+  });
+  const createData = await createRes.json();
+  return createData.customer.id;
+}
+
 export async function createSquareBooking({
   serviceKey,
   durationMin,
@@ -172,12 +210,11 @@ export async function createSquareBooking({
     return null;
   }
 
+  // Find or create Square customer
+  const customerId = await findOrCreateCustomer(token, customerName, customerEmail, customerPhone);
+
   const startAt = toSquareStartAt(date, time);
-  const customerNote = [
-    `Phone: ${customerPhone}`,
-    `Email: ${customerEmail}`,
-    notes ? `Notes: ${notes}` : "",
-  ].filter(Boolean).join(" | ");
+  const customerNote = notes ?? "";
 
   const res = await fetch(`${SQUARE_BASE}/v2/bookings`, {
     method: "POST",
@@ -191,6 +228,7 @@ export async function createSquareBooking({
       booking: {
         start_at: startAt,
         location_id: LOCATION_ID,
+        customer_id: customerId,
         customer_note: customerNote,
         appointment_segments: [{
           duration_minutes: durationMin,
