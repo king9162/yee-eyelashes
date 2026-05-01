@@ -9,7 +9,7 @@ export default function PromoBanner({ lang }: Props) {
         <p className="text-[18px] md:text-[24px] font-bold text-[#1C1C1C] tracking-[0.03em] text-center">
           {lang === "zh"
             ? <>母親節限時優惠 · 新客戶首次到訪<br />全線眼睫毛服務享 50% 折扣，即日起至 5/10</>
-            : <>Mother&apos;s Day Special · New Clients Only<br />50% Off All Eyelash Extensions — Until May 10</>}
+            : <>Mother&apos;s Day Special · New Clients Only<br />50% Off Eyelash Extensions · Until May 10</>}
         </p>
       </div>
     </div>
