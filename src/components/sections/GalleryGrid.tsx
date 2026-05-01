@@ -9,11 +9,7 @@ type Props = { lang: Lang };
 type Photo = { src: string; alt: string; altZh: string };
 
 const STUDIO_PHOTOS: Photo[] = [
-  { src: "/images/19211.JPG", alt: "Yee Eyelashes treatment room",      altZh: "療程室" },
-  { src: "/images/19212.JPG", alt: "Yee Eyelashes studio & branding",   altZh: "店內實拍" },
-  { src: "/images/19214.JPG", alt: "Yee Eyelashes gift bags",           altZh: "品牌禮袋" },
-  { src: "/images/19215.JPG", alt: "Yee Eyelashes branding & tools",    altZh: "品牌與工具" },
-  { src: "/images/19209.JPG", alt: "Yee Eyelashes branded cups",        altZh: "品牌杯具" },
+  { src: "/images/studio-sofa.jpg", alt: "Yee Eyelashes studio lounge", altZh: "店內實拍" },
 ];
 
 function Lightbox({ photo, onClose }: { photo: Photo; onClose: () => void }) {
@@ -46,8 +42,8 @@ export default function GalleryGrid({ lang }: Props) {
   const zh = lang === "zh";
   const [lightbox, setLightbox] = useState<Photo | null>(null);
 
-  // Duplicate for seamless loop
-  const looped = [...STUDIO_PHOTOS, ...STUDIO_PHOTOS];
+  // Duplicate for seamless loop (need enough copies to fill the strip)
+  const looped = [...STUDIO_PHOTOS, ...STUDIO_PHOTOS, ...STUDIO_PHOTOS, ...STUDIO_PHOTOS];
 
   return (
     <div className="max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16 pt-14 pb-32">
@@ -68,14 +64,14 @@ export default function GalleryGrid({ lang }: Props) {
               <button
                 key={i}
                 onClick={() => setLightbox(photo)}
-                className="group relative flex-shrink-0 overflow-hidden bg-neutral-50 w-[80vw] h-[52vw] sm:w-[420px] sm:h-[260px]"
+                className="group relative flex-shrink-0 overflow-hidden bg-neutral-50 w-[80vw] h-[52vw] sm:w-[560px] sm:h-[360px]"
               >
                 <Image
                   src={photo.src}
                   alt={zh ? photo.altZh : photo.alt}
                   fill
-                  className="object-contain transition-transform duration-500 group-hover:scale-[1.03]"
-                  sizes="420px"
+                  className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                  sizes="560px"
                 />
                 <div className="absolute inset-0 bg-[#1C1C1C]/0 group-hover:bg-[#1C1C1C]/20 transition-all duration-300 flex items-center justify-center">
                   <span className="text-white/0 group-hover:text-white/80 text-[10px] uppercase tracking-[0.3em] transition-all duration-300">
@@ -87,7 +83,6 @@ export default function GalleryGrid({ lang }: Props) {
           </div>
         </div>
       </div>
-
 
       {/* Lightbox */}
       {lightbox && <Lightbox photo={lightbox} onClose={() => setLightbox(null)} />}

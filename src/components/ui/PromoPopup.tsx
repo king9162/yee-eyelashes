@@ -10,7 +10,7 @@ export default function PromoPopup({ lang }: Props) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const dismissed = sessionStorage.getItem("promo-dismissed");
+    const dismissed = sessionStorage.getItem("promo-dismissed-mothers-day");
     if (!dismissed) {
       const t = setTimeout(() => setVisible(true), 800);
       return () => clearTimeout(t);
@@ -18,7 +18,7 @@ export default function PromoPopup({ lang }: Props) {
   }, []);
 
   const dismiss = () => {
-    sessionStorage.setItem("promo-dismissed", "1");
+    sessionStorage.setItem("promo-dismissed-mothers-day", "1");
     setVisible(false);
   };
 
@@ -49,22 +49,27 @@ export default function PromoPopup({ lang }: Props) {
         <div className="px-10 pt-10 pb-12 text-center">
           {/* Eyebrow */}
           <p className="text-[9px] uppercase tracking-[0.55em] text-[#C9A84C] mb-5">
-            {lang === "zh" ? "限時優惠" : "Limited Offer"}
+            {lang === "zh" ? "母親節限時優惠" : "Mother's Day Special"}
           </p>
 
           {/* Headline */}
           <h2
-            className="text-[2.2rem] font-light text-[#1C1C1C] leading-tight mb-6"
+            className="text-[2.2rem] font-light text-[#1C1C1C] leading-tight mb-3"
             style={{ fontFamily: "var(--font-serif)" }}
           >
-            {lang === "zh" ? "首次到訪 享 30% 折扣" : "30% Off Your First Visit"}
+            {lang === "zh" ? "新客戶首次到訪 享 50% 折扣" : "50% Off Your First Visit"}
           </h2>
+
+          {/* Sub-headline */}
+          <p className="text-[11px] uppercase tracking-[0.25em] text-[#C9A84C] mb-6">
+            {lang === "zh" ? "全線眼睫毛服務 · 即日起至 5/10" : "All Eyelash Extensions · Until May 10"}
+          </p>
 
           {/* Body */}
           <p className="text-[13px] text-neutral-500 leading-[1.85] mb-8 max-w-[340px] mx-auto">
             {lang === "zh"
-              ? "請於下方預約您的服務，折扣將於到店時直接套用，無需折扣碼。"
-              : "Please make an appointment below, and the discount will be applied on-site. No code required."}
+              ? "新客戶專屬優惠，到訪更享精美禮品袋。請預約後，折扣於到店時直接套用，無需折扣碼。"
+              : "New clients only. Receive a complimentary gift bag with your visit. Discount applied on-site — no code required."}
           </p>
 
           {/* CTA */}
