@@ -1,6 +1,8 @@
 import { Resend } from "resend";
+import { createHmac } from "crypto";
 
 const FROM = "booking@yeeeyelashes.com";
+const BASE = "https://www.yeeeyelashes.com";
 const getResend = () => new Resend(process.env.RESEND_API_KEY ?? "placeholder");
 
 export type BookingEmailData = {
@@ -13,7 +15,13 @@ export type BookingEmailData = {
   phone:         string;
   notes?:        string;
   lang?:         string;
+  bookingId?:    string;
 };
+
+export function generateCancelToken(bookingId: string): string {
+  const secret = process.env.ADMIN_SECRET_KEY ?? "fallback-secret";
+  return createHmac("sha256", secret).update(bookingId).digest("hex").slice(0, 40);
+}
 
 // Generate Google Calendar URL
 function buildGoogleCalendarUrl(data: BookingEmailData): string {
@@ -54,6 +62,7 @@ export async function sendConfirmationEmail(data: BookingEmailData) {
   const calUrl        = buildGoogleCalendarUrl(data);
   const formattedDate = formatDate(data.date);
   const zh            = data.lang === "zh";
+  const lang          = data.lang ?? "en";
 
   const title    = zh ? "預約確認" : "Booking Confirmed";
   const greeting = zh
@@ -66,6 +75,26 @@ export async function sendConfirmationEmail(data: BookingEmailData) {
   const subject  = zh
     ? `預約確認 — ${data.serviceLabel}・${formattedDate}`
     : `Appointment Confirmed — ${data.serviceLabel} on ${formattedDate}`;
+
+  // Cancel / reschedule links
+  const cancelBlock = data.bookingId ? (() => {
+    const token       = generateCancelToken(data.bookingId!);
+    const cancelUrl   = `${BASE}/${lang}/cancel?id=${data.bookingId}&token=${token}`;
+    const reschedUrl  = `${BASE}/${lang}/booking`;
+    const cancelLabel = zh ? "取消預約" : "Cancel Appointment";
+    const resLabel    = zh ? "更改時間" : "Reschedule";
+    return `
+      <table cellpadding="0" cellspacing="0" style="margin:16px auto 0;width:100%;max-width:400px;">
+        <tr>
+          <td style="padding-right:8px;">
+            <a href="${reschedUrl}" style="display:block;padding:12px 0;background:#f0ece4;text-align:center;font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:#1c1c1c;text-decoration:none;">${resLabel}</a>
+          </td>
+          <td style="padding-left:8px;">
+            <a href="${cancelUrl}" style="display:block;padding:12px 0;background:#f8f5ef;border:1px solid #ddd;text-align:center;font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:#999;text-decoration:none;">${cancelLabel}</a>
+          </td>
+        </tr>
+      </table>`;
+  })() : "";
 
   const html = `
 <!DOCTYPE html>
@@ -96,14 +125,15 @@ export async function sendConfirmationEmail(data: BookingEmailData) {
               </table>
             </td></tr>
           </table>
-          <table cellpadding="0" cellspacing="0" style="margin:0 auto 32px;">
+          <table cellpadding="0" cellspacing="0" style="margin:0 auto 24px;">
             <tr><td style="background:#1c1c1c;text-align:center;">
               <a href="${calUrl}" style="display:inline-block;padding:14px 32px;font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:#ffffff;text-decoration:none;">
                 ${calBtn}
               </a>
             </td></tr>
           </table>
-          <p style="margin:0 0 6px;font-size:13px;color:#999;line-height:1.8;">
+          ${cancelBlock}
+          <p style="margin:28px 0 6px;font-size:13px;color:#999;line-height:1.8;">
             📍 278 Plandome Rd 2FL, Manhasset, NY 11030<br/>
             📞 <a href="tel:9298062467" style="color:#C9A84C;text-decoration:none;">929-806-2467</a><br/>
             📷 <a href="https://www.instagram.com/yee_lashesny" style="color:#C9A84C;text-decoration:none;">@yee_lashesny</a>
@@ -164,7 +194,7 @@ export async function sendBettyNotification(data: BookingEmailData) {
           </table>
           <table cellpadding="0" cellspacing="0" style="margin:24px auto 0;">
             <tr><td style="background:#1c1c1c;text-align:center;">
-              <a href="https://www.yeeeyelashes.com/admin" style="display:inline-block;padding:14px 32px;font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:#ffffff;text-decoration:none;">
+              <a href="${BASE}/admin" style="display:inline-block;padding:14px 32px;font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:#ffffff;text-decoration:none;">
                 View in Admin →
               </a>
             </td></tr>
@@ -188,6 +218,124 @@ export async function sendBettyNotification(data: BookingEmailData) {
     html,
   });
   if (error) throw new Error(`Resend betty error: ${JSON.stringify(error)}`);
+}
+
+// ── 3. Cancellation emails ───────────────────────────────────────────────────
+export async function sendCancellationEmail(data: BookingEmailData) {
+  const formattedDate = formatDate(data.date);
+  const zh            = data.lang === "zh";
+  const lang          = data.lang ?? "en";
+  const rebookUrl     = `${BASE}/${lang}/booking`;
+
+  const subject = zh
+    ? `預約已取消 — ${data.serviceLabel}・${formattedDate}`
+    : `Appointment Cancelled — ${data.serviceLabel} on ${formattedDate}`;
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
+<body style="margin:0;padding:0;background:#f8f5ef;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f5ef;padding:40px 20px;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;max-width:560px;width:100%;">
+        <tr><td style="background:#C9A84C;height:4px;"></td></tr>
+        <tr><td style="padding:48px 48px 32px;text-align:center;border-bottom:1px solid #f0ece4;">
+          <p style="margin:0 0 8px;font-size:10px;letter-spacing:0.5em;text-transform:uppercase;color:#C9A84C;">Yee Eyelashes</p>
+          <h1 style="margin:0;font-size:26px;font-weight:300;color:#1c1c1c;">${zh ? "預約已取消" : "Appointment Cancelled"}</h1>
+        </td></tr>
+        <tr><td style="padding:40px 48px;">
+          <p style="margin:0 0 24px;font-size:14px;color:#777;line-height:1.8;">
+            ${zh ? `您好 ${data.name}，您的預約已成功取消。` : `Hi ${data.name}, your appointment has been successfully cancelled.`}
+          </p>
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#fafaf8;border-left:2px solid #C9A84C;margin-bottom:28px;">
+            <tr><td style="padding:24px 28px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                ${row(zh ? "服務" : "Service", data.serviceLabel)}
+                ${row(zh ? "日期" : "Date",    formattedDate)}
+                ${row(zh ? "時間" : "Time",    data.time)}
+              </table>
+            </td></tr>
+          </table>
+          <table cellpadding="0" cellspacing="0" style="margin:0 auto 28px;">
+            <tr><td style="background:#1c1c1c;text-align:center;">
+              <a href="${rebookUrl}" style="display:inline-block;padding:14px 32px;font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:#fff;text-decoration:none;">
+                ${zh ? "重新預約" : "Book Again"}
+              </a>
+            </td></tr>
+          </table>
+          <p style="font-size:13px;color:#999;line-height:1.8;">
+            📍 278 Plandome Rd 2FL, Manhasset, NY 11030<br/>
+            📞 <a href="tel:9298062467" style="color:#C9A84C;text-decoration:none;">929-806-2467</a>
+          </p>
+        </td></tr>
+        <tr><td style="padding:20px 48px;background:#1c1c1c;text-align:center;">
+          <p style="margin:0;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:#555;">
+            © ${new Date().getFullYear()} Yee Eyelashes · Manhasset, NY
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  const { error } = await getResend().emails.send({
+    from: `Yee Eyelashes <${FROM}>`,
+    to:   data.email,
+    subject,
+    html,
+  });
+  if (error) throw new Error(`Resend cancellation error: ${JSON.stringify(error)}`);
+}
+
+export async function sendBettyCancellationNotification(data: BookingEmailData) {
+  const bettyEmail    = process.env.BETTY_EMAIL ?? "yeelashesny@gmail.com";
+  const formattedDate = formatDate(data.date);
+
+  const { error } = await getResend().emails.send({
+    from:    `Yee Eyelashes <${FROM}>`,
+    to:      bettyEmail,
+    subject: `Booking Cancelled — ${data.name} · ${data.serviceLabel} on ${formattedDate}`,
+    html: `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"/></head>
+<body style="margin:0;padding:0;background:#f8f5ef;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f5ef;padding:40px 20px;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;max-width:560px;width:100%;">
+        <tr><td style="background:#c0392b;height:4px;"></td></tr>
+        <tr><td style="padding:40px 48px 32px;text-align:center;border-bottom:1px solid #f0ece4;">
+          <p style="margin:0 0 8px;font-size:10px;letter-spacing:0.5em;text-transform:uppercase;color:#c0392b;">Yee Eyelashes</p>
+          <h1 style="margin:0;font-size:24px;font-weight:300;color:#1c1c1c;">Booking Cancelled</h1>
+        </td></tr>
+        <tr><td style="padding:36px 48px;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#fafaf8;border-left:2px solid #c0392b;">
+            <tr><td style="padding:24px 28px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                ${row("Client",  data.name)}
+                ${row("Phone",   data.phone)}
+                ${row("Email",   data.email)}
+                ${row("Service", data.serviceLabel)}
+                ${row("Date",    formattedDate)}
+                ${row("Time",    data.time)}
+              </table>
+            </td></tr>
+          </table>
+        </td></tr>
+        <tr><td style="padding:20px 48px;background:#1c1c1c;text-align:center;">
+          <p style="margin:0;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:#555;">
+            © ${new Date().getFullYear()} Yee Eyelashes · Manhasset, NY
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`,
+  });
+  if (error) throw new Error(`Resend betty cancel error: ${JSON.stringify(error)}`);
 }
 
 function row(label: string, value: string) {
