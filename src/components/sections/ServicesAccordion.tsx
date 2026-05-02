@@ -40,18 +40,30 @@ const PC: Record<number, [number,string,number,string,number,string,number,strin
 
 // Descriptions for each pcs count (shown under New Set only)
 const NEW_SET_DESC: Record<number, { en: string; zh: string }> = {
-  60:  { en: "Super Natural look — 60pcs on each eye for a barely-there, everyday enhancement.",
-         zh: "超自然裸妝感，每眼 60 根，輕盈提升，彷彿天生美麗。" },
-  80:  { en: "Natural, barely-there enhancement. Perfect for a soft, subtle look like naturally fuller lashes.",
-         zh: "最自然的裸妝提升，適合追求低調、柔和感，彷彿天生豐盈的客人。" },
-  100: { en: "A soft, balanced look between natural and defined — like perfectly applied mascara.",
-         zh: "介於自然與精緻之間的平衡美感，宛如完美刷上睫毛膏的效果。" },
-  120: { en: "Effortless beauty without daily mascara. A naturally enhanced, refined finish.",
-         zh: "免去睫毛膏煩惱，打造自然捲翹、精緻完美的妝感。" },
-  140: { en: "Hybrid style — a fluffier, more voluminous look with enhanced depth and layering.",
-         zh: "混合嫁接款，層次更豐富、蓬鬆感更強，立體感全面提升。" },
-  180: { en: "Bold, glamorous lashes with dramatic density. Customized by your lash artist for a stunning finish.",
-         zh: "濃郁魅力睫毛，密度十足，由技師量身設計，打造驚豔妝效。" },
+  60:  {
+    en: "60 lash extensions on each eye, creating a super natural, barely-there look. Ideal for first-time clients or anyone who prefers a clean, effortless everyday enhancement.",
+    zh: "每眼精心嫁接 60 根睫毛，打造極致自然的裸妝感。適合初次嫁接或偏好低調日常妝感的客人。",
+  },
+  80:  {
+    en: "The most natural, barely-there lash enhancement. Perfect for clients who want a soft, subtle look like naturally fuller lashes. Light length and definition with 80 lashes applied to each eye.",
+    zh: "最自然的裸妝提升，適合追求柔和低調感的客人。每眼 80 根，輕盈增添長度與輪廓，彷彿天生豐盈。",
+  },
+  100: {
+    en: "A soft, balanced lash enhancement between natural and defined. Adds gentle volume and length for a clean, polished look like perfectly applied mascara.",
+    zh: "介於自然與精緻之間的平衡美感，輕柔增添量感與長度，宛如完美刷上睫毛膏的效果。",
+  },
+  120: {
+    en: "Perfect for clients who want effortless beauty without daily mascara. 120 lash extensions per eye create a naturally enhanced look with soft length and volume, like the perfect combination of mascara and a lash curler.",
+    zh: "適合想要免去日常睫毛膏煩惱的客人。每眼 120 根，打造宛如睫毛膏搭配夾睫毛器的自然捲翹效果。",
+  },
+  140: {
+    en: "A combination of Classic and 3D Volume lash extensions. Hybrid lashes give you more volume and a fluffier, more textured look while maintaining a natural feel.",
+    zh: "結合經典單根與 3D 豐盈的混合嫁接，層次更豐富，蓬鬆感更強，同時保有自然感。",
+  },
+  180: {
+    en: "A fuller, fluffier look with enhanced density and depth. Multiple lightweight lash extensions are applied to each natural lash, creating a soft yet dramatic finish. Perfect for clients who love bold, glamorous lashes.",
+    zh: "極致豐盈蓬鬆，密度與層次全面提升。多根輕盈睫毛嫁接於每根天然睫毛，打造柔軟而戲劇性的效果。",
+  },
 };
 
 type LashServiceType = {
@@ -146,7 +158,7 @@ function LashCard({ lang, tier, tierZh, badge, desc, descZh, photo, types, bookH
                 </span>
                 <span className={`text-[#C9A84C] text-[1rem] leading-none transition-transform duration-300 ${isOpen ? "rotate-45" : ""}`}>+</span>
               </button>
-              <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-[400px]" : "max-h-0"}`}>
+              <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-[900px]" : "max-h-0"}`}>
                 <div className="px-8 pb-4 divide-y divide-neutral-50">
                   {svc.rows.map(({ pcs, price, dur }) => (
                     <div key={pcs} className="py-3">
