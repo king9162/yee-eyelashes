@@ -85,10 +85,6 @@ function buildLashTypes(data: typeof MS): LashServiceType[] {
 type FlatItem = { name: string; nameZh: string; price?: number; duration?: string; note?: string; noteZh?: string; isHeader?: boolean };
 
 const FILLS_PMU: FlatItem[] = [
-  { name: "Refills",              nameZh: "補睫",               isHeader: true },
-  { name: "1 Week Refill",        nameZh: "一週補睫",   price: 40,  duration: "1hr",       note: "4–7 days",   noteZh: "4–7 天後" },
-  { name: "2 Week Refill",        nameZh: "兩週補睫",   price: 50,  duration: "1hr",       note: "8–14 days",  noteZh: "8–14 天後" },
-  { name: "3 Week Refill",        nameZh: "三週補睫",   price: 70,  duration: "1hr",       note: "15–21 days", noteZh: "15–21 天後" },
   { name: "Eyelash Lift & Other", nameZh: "睫毛燙翹與其他",       isHeader: true },
   { name: "Eyelash Lift",         nameZh: "睫毛燙翹",   price: 79,  duration: "45min" },
   { name: "Eyelash Tinting",      nameZh: "睫毛染色",   price: 20,  duration: "20min" },
@@ -226,10 +222,10 @@ function FillsPmuCard({ lang, bookHref }: { lang: Lang; bookHref: string }) {
       {/* Header */}
       <div className="px-8 pt-8 pb-5 border-b border-neutral-100">
         <h2 className="text-[1.75rem] font-light text-[#1C1C1C] leading-tight mb-2" style={{ fontFamily: "var(--font-serif)" }}>
-          {zh ? "補睫、護理與半永久" : "Fills, Care & PMU"}
+          {zh ? "護理與半永久" : "Care & PMU"}
         </h2>
         <p className="text-[12px] text-neutral-400 leading-[1.7]">
-          {zh ? "睫毛補睫、燙翹、眉型護理、蜜蠟除毛及半永久彩妝服務。" : "Refills, lash lifts, brow care, waxing, and permanent makeup services."}
+          {zh ? "睫毛燙翹、眉型護理、蜜蠟除毛及半永久彩妝服務。" : "Lash lifts, brow care, waxing, and permanent makeup services."}
         </p>
       </div>
 
