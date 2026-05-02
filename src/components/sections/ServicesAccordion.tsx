@@ -260,22 +260,7 @@ export default function ServicesAccordion({ lang }: Props) {
 
   return (
     <>
-      {/* ── Photo Mosaic ── */}
-      <section className="bg-[#111]">
-        <div className="grid grid-cols-3 gap-px">
-          {MOSAIC.map((photo, i) => (
-            <div key={i} className="relative overflow-hidden" style={{ aspectRatio: "4/3" }}>
-              <Image
-                src={photo.src}
-                alt={photo.alt}
-                fill
-                className="object-cover opacity-80 hover:opacity-100 transition-opacity duration-500"
-                sizes="(max-width:768px) 33vw, 33vw"
-              />
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* ── Photo Mosaic placeholder — add lash work photos here when ready ── */}
 
       {/* ── Service Cards ── */}
       <section className="bg-[#F8F5EF] py-20">
