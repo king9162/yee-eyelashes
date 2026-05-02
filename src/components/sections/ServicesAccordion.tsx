@@ -23,19 +23,19 @@ const PCS = [60, 80, 100, 120, 140, 180] as const;
 
 const MS: Record<number, [number,string,number,string,number,string,number,string,number,string]> = {
   60:  [60,"1hr",        30,"1hr",       40,"1hr",       50,"1hr",       150,"1hr"],
-  80:  [80,"1hr",        40,"1hr",       50,"1hr",       70,"1hr",       170,"1hr 15min"],
-  100: [100,"1hr 30min", 50,"1hr",       60,"1hr",       80,"1hr",       220,"1hr 30min"],
-  120: [120,"1hr 30min", 60,"1hr 30min", 70,"1hr 30min", 90,"1hr 30min", 260,"1hr 45min"],
-  140: [130,"1hr 30min", 70,"1hr 30min", 80,"1hr 30min",100,"1hr 30min", 280,"2hr"],
-  180: [160,"2hr",       80,"1hr 30min", 90,"1hr 30min",110,"1hr 30min", 340,"2hr 15min"],
+  80:  [80,"1hr",        40,"1hr",       50,"1hr",       70,"1hr",       170,"1hr"],
+  100: [100,"1hr 30min", 50,"1hr",       60,"1hr",       80,"1hr",       220,"1hr"],
+  120: [120,"1hr 30min", 60,"1hr 30min", 70,"1hr 30min", 90,"1hr 30min", 260,"1hr 30min"],
+  140: [130,"1hr 30min", 70,"1hr 30min", 80,"1hr 30min",100,"1hr 30min", 280,"1hr 30min"],
+  180: [160,"2hr",       80,"1hr 30min", 90,"1hr 30min",110,"1hr 30min", 340,"1hr 30min"],
 };
 const PC: Record<number, [number,string,number,string,number,string,number,string,number,string]> = {
   60:  [80,"1hr",        50,"1hr",       60,"1hr",       70,"1hr",       180,"1hr"],
-  80:  [100,"1hr",       60,"1hr",       70,"1hr",       90,"1hr",       200,"1hr 15min"],
-  100: [120,"1hr 30min", 70,"1hr",       80,"1hr",      100,"1hr",       250,"1hr 30min"],
-  120: [140,"1hr 30min", 80,"1hr 30min", 90,"1hr 30min",110,"1hr 30min", 290,"1hr 45min"],
-  140: [150,"1hr 30min", 90,"1hr 30min",100,"1hr 30min",120,"1hr 30min", 310,"2hr"],
-  180: [180,"2hr",      100,"1hr 30min",110,"1hr 30min",130,"1hr 30min", 370,"2hr 15min"],
+  80:  [100,"1hr",       60,"1hr",       70,"1hr",       90,"1hr",       200,"1hr"],
+  100: [120,"1hr 30min", 70,"1hr",       80,"1hr",      100,"1hr",       250,"1hr"],
+  120: [140,"1hr 30min", 80,"1hr 30min", 90,"1hr 30min",110,"1hr 30min", 290,"1hr 30min"],
+  140: [150,"1hr 30min", 90,"1hr 30min",100,"1hr 30min",120,"1hr 30min", 310,"1hr 30min"],
+  180: [180,"2hr",      100,"1hr 30min",110,"1hr 30min",130,"1hr 30min", 370,"1hr 30min"],
 };
 
 // Descriptions for each pcs count (shown under New Set only)
