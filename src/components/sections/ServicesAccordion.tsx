@@ -1,64 +1,26 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import { type Lang } from "@/i18n";
 
-type SubOption = {
-  label: string;
-  labelZh: string;
-  price: number;
-  duration: string;
-};
+type Props = { lang: Lang };
 
-type ServiceRow = {
-  name: string;
-  nameZh: string;
-  price?: number;
-  priceLabel?: string;
-  duration?: string;
-  note?: string;
-  noteZh?: string;
-  desc?: string;
-  descZh?: string;
-  isGroupHeader?: boolean;
-  options?: SubOption[];
-};
+// ─── Photo mosaic ────────────────────────────────────────────────
+// Replace these with actual lash-work photos when available
+const MOSAIC: { src: string; alt: string }[] = [
+  { src: "/images/gallery-1.jpg",        alt: "Lash extensions" },
+  { src: "/images/studio-treatment.jpg", alt: "Lash treatment in progress" },
+  { src: "/images/gallery-2.jpg",        alt: "Lash close-up" },
+  { src: "/images/studio-beds.jpg",      alt: "Yee Eyelashes treatment room" },
+  { src: "/images/gallery-3.jpg",        alt: "Lash extensions close-up" },
+  { src: "/images/studio-decor.jpg",     alt: "Yee Eyelashes studio" },
+];
 
-type Material = {
-  name: string;
-  desc: string;
-  descZh: string;
-  avail: string;
-};
-
-type Category = {
-  id: string;
-  label: string;
-  labelZh: string;
-  materials?: Material[];
-  items: ServiceRow[];
-};
-
-// Build a service-type row (New Set / 1 Week / etc.) whose options list pcs counts
-function svcRow(
-  label: string, labelZh: string,
-  opts: [number, number, string][], // [pcs, price, duration]
-): ServiceRow {
-  return {
-    name:    label,
-    nameZh:  labelZh,
-    options: opts.map(([pcs, price, dur]) => ({
-      label:    `${pcs}pcs`,
-      labelZh:  `${pcs}根`,
-      price,
-      duration: dur,
-    })),
-  };
-}
-
+// ─── Price data ──────────────────────────────────────────────────
 const PCS = [60, 80, 100, 120, 140, 180] as const;
 
-// Mink / Silk prices: [newSet, w1, w2, w3, pkg] per pcs
 const MS: Record<number, [number,string,number,string,number,string,number,string,number,string]> = {
   60:  [60,"1hr",       30,"30min", 40,"40min", 50,"50min",    150,"1hr"],
   80:  [80,"1hr 15min", 40,"35min", 50,"45min", 70,"1hr",      170,"1hr 15min"],
@@ -67,7 +29,6 @@ const MS: Record<number, [number,string,number,string,number,string,number,strin
   140: [130,"2hr",      70,"50min", 80,"1hr",  100,"1hr 15min",280,"2hr"],
   180: [160,"2hr 15min",80,"55min", 90,"1hr 5min",110,"1hr 20min",340,"2hr 15min"],
 };
-// Premium / Cashmere prices
 const PC: Record<number, [number,string,number,string,number,string,number,string,number,string]> = {
   60:  [80,"1hr",        50,"30min", 60,"40min",  70,"50min",    180,"1hr"],
   80:  [100,"1hr 15min", 60,"35min", 70,"45min",  90,"1hr",      200,"1hr 15min"],
@@ -77,235 +38,291 @@ const PC: Record<number, [number,string,number,string,number,string,number,strin
   180: [180,"2hr 15min",100,"55min",110,"1hr 5min",130,"1hr 20min",370,"2hr 15min"],
 };
 
-function lashRows(data: typeof MS) {
+type LashServiceType = {
+  name: string; nameZh: string;
+  rows: { pcs: number; price: number; dur: string }[];
+};
+
+function buildLashTypes(data: typeof MS): LashServiceType[] {
   return [
-    svcRow("New Set",        "全新嫁接", PCS.map(p => [p, data[p][0], data[p][1]]  as [number,number,string])),
-    svcRow("1 Week Refill",  "一週補睫", PCS.map(p => [p, data[p][2], data[p][3]]  as [number,number,string])),
-    svcRow("2 Week Refill",  "兩週補睫", PCS.map(p => [p, data[p][4], data[p][5]]  as [number,number,string])),
-    svcRow("3 Week Refill",  "三週補睫", PCS.map(p => [p, data[p][6], data[p][7]]  as [number,number,string])),
-    svcRow("3 Times Package","三次套裝", PCS.map(p => [p, data[p][8], data[p][9]]  as [number,number,string])),
+    { name: "New Set",         nameZh: "全新嫁接", rows: PCS.map(p => ({ pcs: p, price: data[p][0], dur: data[p][1] })) },
+    { name: "1 Week Refill",   nameZh: "一週補睫", rows: PCS.map(p => ({ pcs: p, price: data[p][2], dur: data[p][3] })) },
+    { name: "2 Week Refill",   nameZh: "兩週補睫", rows: PCS.map(p => ({ pcs: p, price: data[p][4], dur: data[p][5] })) },
+    { name: "3 Week Refill",   nameZh: "三週補睫", rows: PCS.map(p => ({ pcs: p, price: data[p][6], dur: data[p][7] })) },
+    { name: "3 Times Package", nameZh: "三次套裝", rows: PCS.map(p => ({ pcs: p, price: data[p][8], dur: data[p][9] })) },
   ];
 }
 
-const categories: Category[] = [
-  {
-    id: "eyelash-extensions",
-    label: "Eyelash Extensions",
-    labelZh: "睫毛嫁接",
-    materials: [
-      {
-        name: "Faux Mink",
-        desc: "A semi-matte finish and a steep taper, the body of this eyelash extension is finer and looks all natural.",
-        descZh: "半霧面光澤、尖端漸細，毛體纖細自然，呈現清新素顏感。",
-        avail: "Available in B, C, D curl",
-      },
-      {
-        name: "Royal Cashmere",
-        desc: "These lashes have a concave base, matte finish and split tip, giving you the look of fuller lashes with a more natural and softer finish.",
-        descZh: "凹弧底部設計、霧面光澤、分叉尖端，讓睫毛顯得更豐盈，同時保有柔軟自然的感覺。",
-        avail: "Available in B, C, D curl",
-      },
-    ],
-    items: [
-      { name: "Mink / Silk",       nameZh: "Mink / Silk",       isGroupHeader: true },
-      ...lashRows(MS),
-      { name: "Premium / Cashmere", nameZh: "Premium / Cashmere", isGroupHeader: true },
-      ...lashRows(PC),
-    ],
-  },
-  {
-    id: "fills-care",
-    label: "Fills & Care",
-    labelZh: "補睫與護理",
-    items: [
-      { name: "Refills",        nameZh: "補睫",     isGroupHeader: true },
-      { name: "1 Week Refill",  nameZh: "一週補睫", price: 40, duration: "1hr", note: "4–7 days",   noteZh: "4–7 天後" },
-      { name: "2 Week Refill",  nameZh: "兩週補睫", price: 50, duration: "1hr", note: "8–14 days",  noteZh: "8–14 天後" },
-      { name: "3 Week Refill",  nameZh: "三週補睫", price: 70, duration: "1hr", note: "15–21 days", noteZh: "15–21 天後" },
+type FlatItem = { name: string; nameZh: string; price?: number; duration?: string; note?: string; noteZh?: string; isHeader?: boolean };
 
-      { name: "Eyelash Lift & Other Services",  nameZh: "睫毛燙翹與其他服務", isGroupHeader: true },
-      { name: "Eyelash Lift",                  nameZh: "睫毛燙翹",       price: 79, duration: "45min" },
-      { name: "Eyelash Tinting",               nameZh: "睫毛染色",       price: 20, duration: "20min" },
-      { name: "Bottom Lash Tinting",           nameZh: "下睫毛染色",     price: 20, duration: "20min" },
-      { name: "Top & Bottom Lash Tinting",     nameZh: "上下睫毛染色",   price: 30, duration: "30min" },
-      { name: "Eyebrow Tinting",               nameZh: "眉毛染色",       price: 30, duration: "20min" },
-      { name: "Bottom Lash Extension",         nameZh: "下睫毛嫁接",     price: 30, duration: "30min" },
-      { name: "Color Lash Extension",          nameZh: "彩色睫毛嫁接",   price: 25, duration: "20min" },
-      { name: "Eyelash Removal",               nameZh: "睫毛卸除",       price: 20, duration: "20min" },
-
-      { name: "Brow Care",  nameZh: "眉毛護理", isGroupHeader: true },
-      { name: "Brows Lamination & Tinting & Shaping", nameZh: "眉毛定型 + 染色 + 修型", price: 75, duration: "45min" },
-      { name: "Brows Lamination & Shaping",           nameZh: "眉毛定型 + 修型",       price: 60, duration: "35min" },
-
-      { name: "Waxing",    nameZh: "蜜蠟除毛", isGroupHeader: true },
-      { name: "Eyebrow",   nameZh: "眉型蜜蠟", price: 10, duration: "15min" },
-      { name: "Cheeks",    nameZh: "臉頰蜜蠟", price: 15, duration: "15min" },
-      { name: "Chin",      nameZh: "下巴蜜蠟", price: 20, duration: "15min" },
-      { name: "Upper Lip", nameZh: "上唇蜜蠟", price: 10, duration: "10min" },
-      { name: "Lower Lip", nameZh: "下唇蜜蠟", price: 10, duration: "10min" },
-    ],
-  },
-  {
-    id: "pmu",
-    label: "PMU",
-    labelZh: "半永久彩妝",
-    items: [
-      { name: "Brows (PMU)", nameZh: "眉毛（半永久）", isGroupHeader: true },
-      { name: "Microblading",           nameZh: "飄眉",         price: 599, duration: "2hr" },
-      { name: "Combination Brows",      nameZh: "組合眉",       price: 650, duration: "2hr 30min" },
-      { name: "Ombre Powder Brows",     nameZh: "霧眉",         price: 599, duration: "2hr" },
-      { name: "Nano Hairstroke Brows",  nameZh: "納米髮絲眉",   price: 599, duration: "2hr 30min" },
-      { name: "6–8 Week Touch Up",      nameZh: "6–8 週補色",   price: 150, duration: "1hr 30min", note: "Existing clients only", noteZh: "現有客戶限定" },
-
-      { name: "Lip", nameZh: "唇部", isGroupHeader: true },
-      { name: "6–8 Week Touch Up", nameZh: "6–8 週補色", price: 150, duration: "1hr 30min" },
-
-      { name: "Eyes", nameZh: "眼部", isGroupHeader: true },
-      { name: "Classic Eyeliner (Top Liner)",      nameZh: "經典眼線（上眼線）",     price: 380, duration: "1hr 30min" },
-      { name: "Lash Line Enhancement (Top Liner)", nameZh: "睫毛根部填充（上眼線）", price: 350, duration: "1hr 15min" },
-      { name: "Add-On Bottom Liner",               nameZh: "加購下眼線",             price: 100, duration: "30min", note: "Add-on only", noteZh: "加購項目" },
-    ],
-  },
+const FILLS_PMU: FlatItem[] = [
+  { name: "Refills",              nameZh: "補睫",               isHeader: true },
+  { name: "1 Week Refill",        nameZh: "一週補睫",   price: 40,  duration: "1hr",       note: "4–7 days",   noteZh: "4–7 天後" },
+  { name: "2 Week Refill",        nameZh: "兩週補睫",   price: 50,  duration: "1hr",       note: "8–14 days",  noteZh: "8–14 天後" },
+  { name: "3 Week Refill",        nameZh: "三週補睫",   price: 70,  duration: "1hr",       note: "15–21 days", noteZh: "15–21 天後" },
+  { name: "Eyelash Lift & Other", nameZh: "睫毛燙翹與其他",       isHeader: true },
+  { name: "Eyelash Lift",         nameZh: "睫毛燙翹",   price: 79,  duration: "45min" },
+  { name: "Eyelash Tinting",      nameZh: "睫毛染色",   price: 20,  duration: "20min" },
+  { name: "Bottom Lash Tinting",  nameZh: "下睫毛染色", price: 20,  duration: "20min" },
+  { name: "Top & Bottom Tinting", nameZh: "上下睫毛染色",price: 30, duration: "30min" },
+  { name: "Eyebrow Tinting",      nameZh: "眉毛染色",   price: 30,  duration: "20min" },
+  { name: "Bottom Lash Ext.",     nameZh: "下睫毛嫁接", price: 30,  duration: "30min" },
+  { name: "Color Lash Ext.",      nameZh: "彩色睫毛嫁接",price: 25, duration: "20min" },
+  { name: "Eyelash Removal",      nameZh: "睫毛卸除",   price: 20,  duration: "20min" },
+  { name: "Brow Care",            nameZh: "眉毛護理",             isHeader: true },
+  { name: "Lamination + Tint + Shape", nameZh: "定型+染色+修型", price: 75, duration: "45min" },
+  { name: "Lamination + Shape",   nameZh: "定型+修型",  price: 60,  duration: "35min" },
+  { name: "Waxing",               nameZh: "蜜蠟除毛",             isHeader: true },
+  { name: "Eyebrow",              nameZh: "眉型蜜蠟",   price: 10,  duration: "15min" },
+  { name: "Chin",                 nameZh: "下巴蜜蠟",   price: 20,  duration: "15min" },
+  { name: "Upper Lip",            nameZh: "上唇蜜蠟",   price: 10,  duration: "10min" },
+  { name: "PMU",                  nameZh: "半永久彩妝",            isHeader: true },
+  { name: "Microblading",         nameZh: "飄眉",       price: 599, duration: "2hr" },
+  { name: "Combination Brows",    nameZh: "組合眉",     price: 650, duration: "2hr 30min" },
+  { name: "Ombre Powder Brows",   nameZh: "霧眉",       price: 599, duration: "2hr" },
+  { name: "Nano Hairstroke Brows",nameZh: "納米髮絲眉", price: 599, duration: "2hr 30min" },
+  { name: "6–8 Wk Touch Up",      nameZh: "6–8 週補色", price: 150, duration: "1hr 30min", note: "Existing clients", noteZh: "現有客戶" },
+  { name: "Classic Eyeliner",     nameZh: "經典眼線",   price: 380, duration: "1hr 30min" },
+  { name: "Lash Line Enhancement",nameZh: "睫毛根部填充",price: 350, duration: "1hr 15min" },
+  { name: "Add-On Bottom Liner",  nameZh: "加購下眼線", price: 100, duration: "30min",     note: "Add-on only", noteZh: "加購項目" },
 ];
 
-type Props = { lang: Lang };
+// ─── Sub-components ───────────────────────────────────────────────
 
-export default function ServicesAccordion({ lang }: Props) {
+function LashCard({ lang, tier, tierZh, badge, desc, descZh, photo, types, bookHref }: {
+  lang: Lang; tier: string; tierZh: string; badge: string;
+  desc: string; descZh: string; photo: string;
+  types: LashServiceType[]; bookHref: string;
+}) {
+  const zh = lang === "zh";
   const [open, setOpen] = useState<string | null>(null);
-  const [expanded, setExpanded] = useState<Set<string>>(new Set());
-
-  const toggle = (id: string) => setOpen((prev) => (prev === id ? null : id));
-  const toggleOpts = (key: string) =>
-    setExpanded((prev) => {
-      const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
-      return next;
-    });
 
   return (
-    <div className="max-w-[680px] mx-auto px-6 sm:px-10 pt-16 pb-32">
-      {categories.map((cat) => {
-        const isOpen = open === cat.id;
-        return (
-          <div key={cat.id}>
-            <button
-              onClick={() => toggle(cat.id)}
-              className="w-full flex items-center justify-between py-7 group"
-            >
-              <span
-                className="text-[clamp(1.6rem,3.5vw,2.4rem)] font-light text-[#1C1C1C] tracking-[-0.01em] group-hover:text-[#C9A84C] transition-colors duration-300"
-                style={{ fontFamily: "var(--font-serif)" }}
+    <div className="flex flex-col bg-white">
+      {/* Photo */}
+      <div className="relative w-full overflow-hidden" style={{ aspectRatio: "4/3" }}>
+        <Image src={photo} alt={tier} fill className="object-cover transition-transform duration-700 hover:scale-[1.03]" sizes="(max-width:1024px) 100vw, 33vw" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+        <span className="absolute bottom-5 left-6 text-[9px] uppercase tracking-[0.5em] text-[#C9A84C]">{badge}</span>
+      </div>
+
+      {/* Header */}
+      <div className="px-8 pt-8 pb-5 border-b border-neutral-100">
+        <h2 className="text-[1.75rem] font-light text-[#1C1C1C] leading-tight mb-2" style={{ fontFamily: "var(--font-serif)" }}>
+          {zh ? tierZh : tier}
+        </h2>
+        <p className="text-[12px] text-neutral-400 leading-[1.7]">{zh ? descZh : desc}</p>
+      </div>
+
+      {/* Service type accordion */}
+      <div className="flex-1 divide-y divide-neutral-100">
+        {types.map((svc) => {
+          const isOpen = open === svc.name;
+          return (
+            <div key={svc.name}>
+              <button
+                onClick={() => setOpen(isOpen ? null : svc.name)}
+                className="w-full flex items-center justify-between px-8 py-4 group hover:bg-neutral-50 transition-colors duration-200"
               >
-                {lang === "zh" ? cat.labelZh : cat.label}
-              </span>
-              <span className={`text-[#C9A84C] text-[1.4rem] font-light transition-transform duration-300 leading-none ${isOpen ? "rotate-45" : ""}`}>
-                +
-              </span>
-            </button>
-
-            <div className={`overflow-hidden transition-all duration-400 ease-in-out ${isOpen ? "max-h-[9000px] opacity-100" : "max-h-0 opacity-0"}`}>
-              <div className="pb-8">
-
-                {/* Lash materials guide */}
-                {cat.materials && (
-                  <div className="mb-8">
-                    <p className="text-[9px] uppercase tracking-[0.45em] text-[#C9A84C] mb-5">
-                      {lang === "zh" ? "睫毛材質指南" : "Lash Materials Guide"}
-                    </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {cat.materials.map((m) => (
-                        <div key={m.name} className="border border-neutral-100 p-5">
-                          <p className="text-[12px] font-medium text-[#1C1C1C] tracking-[0.04em] mb-2">{m.name}</p>
-                          <p className="text-[11.5px] text-neutral-400 leading-[1.75] mb-2">
-                            {lang === "zh" ? m.descZh : m.desc}
-                          </p>
-                          <p className="text-[10px] text-[#C9A84C] tracking-[0.04em]">{m.avail}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Service rows */}
-                {cat.items.map((item, j) => {
-                  if (item.isGroupHeader) {
-                    return (
-                      <div key={j} className="pt-6 pb-2 first:pt-0">
-                        <p className="text-[9px] uppercase tracking-[0.45em] text-[#C9A84C]">
-                          {lang === "zh" ? item.nameZh : item.name}
-                        </p>
+                <span className="text-[13px] text-[#1C1C1C] tracking-[0.01em] group-hover:text-[#C9A84C] transition-colors duration-200">
+                  {zh ? svc.nameZh : svc.name}
+                </span>
+                <span className={`text-[#C9A84C] text-[1rem] leading-none transition-transform duration-300 ${isOpen ? "rotate-45" : ""}`}>+</span>
+              </button>
+              <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-[400px]" : "max-h-0"}`}>
+                <div className="px-8 pb-4 divide-y divide-neutral-50">
+                  {svc.rows.map(({ pcs, price, dur }) => (
+                    <div key={pcs} className="flex items-center justify-between py-2.5">
+                      <span className="text-[12px] text-neutral-500">{zh ? `${pcs}根` : `${pcs}pcs`}</span>
+                      <div className="flex items-center gap-5">
+                        <span className="text-[11px] text-neutral-300">{dur}</span>
+                        <span className="text-[13px] text-[#C9A84C] min-w-[52px] text-right">${price}</span>
                       </div>
-                    );
-                  }
-
-                  const optKey = `${cat.id}-${j}`;
-                  const optsOpen = expanded.has(optKey);
-                  const displayPrice = item.priceLabel ?? (item.price != null ? `$${item.price}` : null);
-
-                  return (
-                    <div key={j} className="border-b border-neutral-100 last:border-0">
-                      {/* Main row */}
-                      <div className="py-5 flex items-start justify-between gap-6">
-                        <div className="flex-1">
-                          <p className="text-[13px] text-[#1C1C1C] tracking-[0.01em] leading-snug">
-                            {lang === "zh" ? item.nameZh : item.name}
-                          </p>
-                          {(item.note || item.noteZh) && (
-                            <p className="text-[11px] text-neutral-300 mt-0.5">
-                              {lang === "zh" ? item.noteZh : item.note}
-                            </p>
-                          )}
-                          {/* Options toggle */}
-                          {item.options && (
-                            <button
-                              onClick={() => toggleOpts(optKey)}
-                              className="mt-2 flex items-center gap-1 text-[10px] uppercase tracking-[0.25em] text-neutral-400 hover:text-[#C9A84C] transition-colors duration-200"
-                            >
-                              {lang === "zh" ? "更多選項" : "More options"}
-                              <span className={`transition-transform duration-200 ${optsOpen ? "rotate-180" : ""}`}>
-                                ↓
-                              </span>
-                            </button>
-                          )}
-                        </div>
-                        <div className="flex flex-col items-end gap-1 flex-shrink-0 pt-0.5">
-                          {displayPrice && (
-                            <span className="text-[13px] text-[#C9A84C]">{displayPrice}</span>
-                          )}
-                          {item.duration && (
-                            <span className="text-[11px] text-neutral-300 whitespace-nowrap">{item.duration}</span>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Options dropdown */}
-                      {item.options && (
-                        <div className={`overflow-hidden transition-all duration-300 ${optsOpen ? "max-h-[600px] opacity-100 pb-4" : "max-h-0 opacity-0"}`}>
-                          <div className="flex flex-col divide-y divide-neutral-100">
-                            {item.options.map((opt, k) => (
-                              <div key={k} className="flex items-center justify-between py-3 px-1">
-                                <p className="text-[12px] text-[#1C1C1C] tracking-[0.01em]">
-                                  {lang === "zh" ? opt.labelZh : opt.label}
-                                </p>
-                                <div className="flex items-center gap-4">
-                                  <span className="text-[11px] text-neutral-300">{opt.duration}</span>
-                                  <span className="text-[13px] text-[#C9A84C] min-w-[48px] text-right">${opt.price}</span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
                     </div>
-                  );
-                })}
+                  ))}
+                </div>
               </div>
             </div>
+          );
+        })}
+      </div>
 
-            <div className="h-px bg-neutral-100" />
-          </div>
-        );
-      })}
+      {/* CTA */}
+      <div className="p-8 pt-6">
+        <Link
+          href={bookHref}
+          className="block w-full text-center text-[10px] uppercase tracking-[0.35em] bg-[#1C1C1C] text-white py-4 hover:bg-[#C9A84C] transition-colors duration-300"
+        >
+          {zh ? "立即預約" : "Book Now"}
+        </Link>
+      </div>
     </div>
+  );
+}
+
+function FillsPmuCard({ lang, bookHref }: { lang: Lang; bookHref: string }) {
+  const zh = lang === "zh";
+  const [open, setOpen] = useState<string | null>(null);
+
+  // Group items by header
+  const groups: { header: FlatItem; items: FlatItem[] }[] = [];
+  let current: { header: FlatItem; items: FlatItem[] } | null = null;
+  for (const item of FILLS_PMU) {
+    if (item.isHeader) {
+      current = { header: item, items: [] };
+      groups.push(current);
+    } else if (current) {
+      current.items.push(item);
+    }
+  }
+
+  return (
+    <div className="flex flex-col bg-white">
+      {/* Photo */}
+      <div className="relative w-full overflow-hidden" style={{ aspectRatio: "4/3" }}>
+        <Image src="/images/studio-room.jpg" alt="Fills, Care & PMU" fill className="object-cover transition-transform duration-700 hover:scale-[1.03]" sizes="(max-width:1024px) 100vw, 33vw" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+        <span className="absolute bottom-5 left-6 text-[9px] uppercase tracking-[0.5em] text-[#C9A84C]">
+          {zh ? "護理與半永久" : "Care & PMU"}
+        </span>
+      </div>
+
+      {/* Header */}
+      <div className="px-8 pt-8 pb-5 border-b border-neutral-100">
+        <h2 className="text-[1.75rem] font-light text-[#1C1C1C] leading-tight mb-2" style={{ fontFamily: "var(--font-serif)" }}>
+          {zh ? "補睫、護理與半永久" : "Fills, Care & PMU"}
+        </h2>
+        <p className="text-[12px] text-neutral-400 leading-[1.7]">
+          {zh ? "睫毛補睫、燙翹、眉型護理、蜜蠟除毛及半永久彩妝服務。" : "Refills, lash lifts, brow care, waxing, and permanent makeup services."}
+        </p>
+      </div>
+
+      {/* Groups accordion */}
+      <div className="flex-1 divide-y divide-neutral-100">
+        {groups.map((g) => {
+          const key = g.header.name;
+          const isOpen = open === key;
+          return (
+            <div key={key}>
+              <button
+                onClick={() => setOpen(isOpen ? null : key)}
+                className="w-full flex items-center justify-between px-8 py-4 group hover:bg-neutral-50 transition-colors duration-200"
+              >
+                <span className="text-[13px] text-[#1C1C1C] tracking-[0.01em] group-hover:text-[#C9A84C] transition-colors duration-200">
+                  {zh ? g.header.nameZh : g.header.name}
+                </span>
+                <span className={`text-[#C9A84C] text-[1rem] leading-none transition-transform duration-300 ${isOpen ? "rotate-45" : ""}`}>+</span>
+              </button>
+              <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-[600px]" : "max-h-0"}`}>
+                <div className="px-8 pb-4 divide-y divide-neutral-50">
+                  {g.items.map((item) => (
+                    <div key={item.name} className="flex items-start justify-between py-2.5 gap-4">
+                      <div>
+                        <p className="text-[12px] text-neutral-600">{zh ? item.nameZh : item.name}</p>
+                        {(item.note || item.noteZh) && (
+                          <p className="text-[10px] text-neutral-300 mt-0.5">{zh ? item.noteZh : item.note}</p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-4 flex-shrink-0">
+                        {item.duration && <span className="text-[11px] text-neutral-300">{item.duration}</span>}
+                        {item.price != null && <span className="text-[13px] text-[#C9A84C] min-w-[48px] text-right">${item.price}</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* CTA */}
+      <div className="p-8 pt-6">
+        <Link
+          href={bookHref}
+          className="block w-full text-center text-[10px] uppercase tracking-[0.35em] bg-[#1C1C1C] text-white py-4 hover:bg-[#C9A84C] transition-colors duration-300"
+        >
+          {zh ? "立即預約" : "Book Now"}
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main export ─────────────────────────────────────────────────
+
+export default function ServicesAccordion({ lang }: Props) {
+  const zh = lang === "zh";
+  const bookHref = `/${lang}/booking`;
+
+  const msTypes = buildLashTypes(MS);
+  const pcTypes = buildLashTypes(PC);
+
+  return (
+    <>
+      {/* ── Photo Mosaic ── */}
+      <section className="bg-[#111]">
+        <div className="grid grid-cols-3 gap-px">
+          {MOSAIC.map((photo, i) => (
+            <div key={i} className="relative overflow-hidden" style={{ aspectRatio: "4/3" }}>
+              <Image
+                src={photo.src}
+                alt={photo.alt}
+                fill
+                className="object-cover opacity-80 hover:opacity-100 transition-opacity duration-500"
+                sizes="(max-width:768px) 33vw, 33vw"
+              />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Service Cards ── */}
+      <section className="bg-[#F8F5EF] py-20">
+        <div className="max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16">
+
+          {/* Section heading */}
+          <div className="text-center mb-14">
+            <p className="text-[9px] uppercase tracking-[0.55em] text-[#C9A84C] mb-4">
+              {zh ? "服務菜單" : "Service Menu"}
+            </p>
+            <h2
+              className="text-[2.4rem] font-light text-[#1C1C1C] leading-tight"
+              style={{ fontFamily: "var(--font-serif)" }}
+            >
+              {zh ? "選擇您的服務" : "Select Your Service"}
+            </h2>
+          </div>
+
+          {/* 3-column grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <LashCard
+              lang={lang}
+              tier="Mink / Silk"
+              tierZh="Mink / Silk"
+              badge={zh ? "經典系列" : "Classic"}
+              desc="Faux Mink lashes with a semi-matte finish. Natural, fine, and lightweight."
+              descZh="半霧面光澤，毛體纖細自然，呈現清新素顏感。"
+              photo="/images/studio-treatment.jpg"
+              types={msTypes}
+              bookHref={bookHref}
+            />
+            <LashCard
+              lang={lang}
+              tier="Premium / Cashmere"
+              tierZh="Premium / Cashmere"
+              badge={zh ? "頂級系列" : "Premium"}
+              desc="Royal Cashmere lashes with a concave base and split tip. Softer, fuller, more luxurious."
+              descZh="凹弧底部、分叉尖端，更豐盈、更柔軟的奢華體驗。"
+              photo="/images/studio-beds.jpg"
+              types={pcTypes}
+              bookHref={bookHref}
+            />
+            <FillsPmuCard lang={lang} bookHref={bookHref} />
+          </div>
+
+        </div>
+      </section>
+    </>
   );
 }

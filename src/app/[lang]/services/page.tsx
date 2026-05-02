@@ -43,23 +43,6 @@ export default async function ServicesPage({ params }: Props) {
   return (
     <div className="bg-[#F8F5EF] min-h-screen pt-[76px] md:pt-[130px]">
       <PromoBanner lang={lang} />
-
-      {/* Page heading */}
-      <div className="max-w-[680px] mx-auto px-6 sm:px-10 pt-16 pb-2">
-        <div className="flex items-center gap-4 mb-6">
-          <div className="w-6 h-px bg-[#C9A84C]" />
-          <span className="text-[9px] uppercase tracking-[0.5em] text-[#C9A84C]">
-            {lang === "zh" ? "服務菜單" : "Services Menu"}
-          </span>
-        </div>
-        <h1
-          className="font-light text-[#1C1C1C] leading-none tracking-[-0.02em]"
-          style={{ fontFamily: "var(--font-serif)", fontSize: "clamp(2.2rem,4vw,3.5rem)" }}
-        >
-          {lang === "zh" ? "所有服務" : "All Services"}
-        </h1>
-      </div>
-
       <ServicesAccordion lang={lang} />
     </div>
   );
