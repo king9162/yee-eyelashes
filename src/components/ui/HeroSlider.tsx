@@ -58,8 +58,6 @@ export default function HeroSlider() {
         );
       })}
 
-      {/* Dark overlay */}
-      <div className="absolute inset-0 bg-[#1C1C1C]/30" />
 
       {/* Left arrow */}
       <button
