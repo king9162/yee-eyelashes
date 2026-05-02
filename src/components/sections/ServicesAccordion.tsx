@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useState } from "react";
 import { type Lang } from "@/i18n";
 
@@ -181,12 +180,14 @@ function LashCard({ lang, tier, tierZh, badge, desc, descZh, photo, types, bookH
 
       {/* CTA */}
       <div className="p-8 pt-6">
-        <Link
+        <a
           href={bookHref}
+          target="_blank"
+          rel="noopener noreferrer"
           className="block w-full text-center text-[10px] uppercase tracking-[0.35em] bg-[#1C1C1C] text-white py-4 hover:bg-[#C9A84C] transition-colors duration-300"
         >
           {zh ? "立即預約" : "Book Now"}
-        </Link>
+        </a>
       </div>
     </div>
   );
@@ -270,12 +271,14 @@ function FillsPmuCard({ lang, bookHref }: { lang: Lang; bookHref: string }) {
 
       {/* CTA */}
       <div className="p-8 pt-6">
-        <Link
+        <a
           href={bookHref}
+          target="_blank"
+          rel="noopener noreferrer"
           className="block w-full text-center text-[10px] uppercase tracking-[0.35em] bg-[#1C1C1C] text-white py-4 hover:bg-[#C9A84C] transition-colors duration-300"
         >
           {zh ? "立即預約" : "Book Now"}
-        </Link>
+        </a>
       </div>
     </div>
   );
@@ -285,7 +288,7 @@ function FillsPmuCard({ lang, bookHref }: { lang: Lang; bookHref: string }) {
 
 export default function ServicesAccordion({ lang }: Props) {
   const zh = lang === "zh";
-  const bookHref = `/${lang}/booking`;
+  const bookHref = "https://square.site/appointments/buyer/widget/qe4tfv3078b5gx/LYH1D5CHJ3Q63";
 
   const msTypes = buildLashTypes(MS);
   const pcTypes = buildLashTypes(PC);

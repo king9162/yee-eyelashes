@@ -74,7 +74,9 @@ export default function PromoPopup({ lang }: Props) {
 
           {/* CTA */}
           <Link
-            href={`/${lang}/booking`}
+            href="https://square.site/appointments/buyer/widget/qe4tfv3078b5gx/LYH1D5CHJ3Q63"
+            target="_blank"
+            rel="noopener noreferrer"
             onClick={dismiss}
             className="inline-block text-[10px] uppercase tracking-[0.3em] bg-[#1C1C1C] text-white px-10 py-4 hover:bg-[#C9A84C] transition-colors duration-300"
           >

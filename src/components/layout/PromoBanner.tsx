@@ -18,7 +18,9 @@ export default function PromoBanner({ lang }: Props) {
     <div className="bg-neutral-900 text-white text-center py-2 px-4 text-[10px] tracking-[0.15em] relative">
       <span className="text-neutral-300">{t.promo.text}</span>{" "}
       <Link
-        href={`/${lang}/booking`}
+        href="https://square.site/appointments/buyer/widget/qe4tfv3078b5gx/LYH1D5CHJ3Q63"
+        target="_blank"
+        rel="noopener noreferrer"
         className="text-[#C9A84C] hover:text-[#DFC078] transition-colors ml-2 underline underline-offset-2"
       >
         {t.promo.cta}

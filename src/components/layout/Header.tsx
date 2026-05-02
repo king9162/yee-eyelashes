@@ -85,7 +85,7 @@ export default function Header({ lang }: Props) {
           <div className="flex items-center justify-end gap-8" style={{ width: "320px" }}>
             <LanguageSwitcher currentLang={lang} />
             <Link
-              href={`/${lang}/booking`}
+              href="https://square.site/appointments/buyer/widget/qe4tfv3078b5gx/LYH1D5CHJ3Q63"
               className="text-[10px] uppercase tracking-[0.3em] text-neutral-500 px-7 py-3 border border-neutral-300 hover:border-[#C9A84C] hover:text-[#C9A84C] transition-all duration-500 whitespace-nowrap"
             >
               {t.nav.booking}
@@ -143,7 +143,7 @@ export default function Header({ lang }: Props) {
             </Link>
           ))}
           <Link
-            href={`/${lang}/booking`}
+            href="https://square.site/appointments/buyer/widget/qe4tfv3078b5gx/LYH1D5CHJ3Q63"
             onClick={() => setMenuOpen(false)}
             className="mt-5 text-center text-[10.5px] uppercase tracking-[0.22em] text-neutral-800 border border-neutral-800 py-3.5 hover:border-[#C9A84C] hover:text-[#C9A84C] transition-all duration-300"
           >
