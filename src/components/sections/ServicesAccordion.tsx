@@ -213,7 +213,7 @@ function FillsPmuCard({ lang, bookHref }: { lang: Lang; bookHref: string }) {
     <div className="flex flex-col bg-white">
       {/* Photo */}
       <div className="relative w-full overflow-hidden" style={{ aspectRatio: "4/3" }}>
-        <Image src="/images/studio-room.jpg" alt="Fills, Care & PMU" fill className="object-cover transition-transform duration-700 hover:scale-[1.03]" sizes="(max-width:1024px) 100vw, 33vw" />
+        <Image src="/images/care-pmu.jpg" alt="Care & PMU" fill className="object-cover transition-transform duration-700 hover:scale-[1.03]" sizes="(max-width:1024px) 100vw, 33vw" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
         <span className="absolute bottom-5 left-6 text-[9px] uppercase tracking-[0.5em] text-[#C9A84C]">
           {zh ? "護理與半永久" : "Care & PMU"}
@@ -334,7 +334,7 @@ export default function ServicesAccordion({ lang }: Props) {
               badge={zh ? "頂級系列" : "Premium"}
               desc="Royal Cashmere lashes with a concave base and split tip. Softer, fuller, more luxurious."
               descZh="凹弧底部、分叉尖端，更豐盈、更柔軟的奢華體驗。"
-              photo="/images/studio-beds.jpg"
+              photo="/images/lash-premium.jpg"
               types={pcTypes}
               bookHref={bookHref}
             />
