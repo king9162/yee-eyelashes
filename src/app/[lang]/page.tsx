@@ -58,7 +58,6 @@ export default async function HomePage({ params }: Props) {
       <Hero lang={lang} />
       <ServicesPreview lang={lang} />
       <AftercareTips lang={lang} />
-      <FAQSection lang={lang} />
       <ContactSection lang={lang} />
     </>
   );
