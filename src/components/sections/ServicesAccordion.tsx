@@ -315,8 +315,8 @@ export default function ServicesAccordion({ lang }: Props) {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <LashCard
               lang={lang}
-              tier="Mink / Silk"
-              tierZh="Mink / Silk"
+              tier="Real Mink"
+              tierZh="Real Mink"
               badge={zh ? "經典系列" : "Classic"}
               desc="Faux Mink lashes with a semi-matte finish. Natural, fine, and lightweight."
               descZh="半霧面光澤，毛體纖細自然，呈現清新素顏感。"
