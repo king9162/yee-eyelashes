@@ -74,7 +74,7 @@ type LashServiceType = {
 
 function buildLashTypes(data: typeof MS): LashServiceType[] {
   return [
-    { name: "New Set",         nameZh: "全新嫁接", showDesc: true, rows: PCS.map(p => ({ pcs: p, price: data[p][0], dur: data[p][1] })) },
+    { name: "New Set",         nameZh: "全新嫁接", rows: PCS.map(p => ({ pcs: p, price: data[p][0], dur: data[p][1] })) },
     { name: "1 Week Refill",   nameZh: "一週補睫", rows: PCS.map(p => ({ pcs: p, price: data[p][2], dur: data[p][3] })) },
     { name: "2 Week Refill",   nameZh: "兩週補睫", rows: PCS.map(p => ({ pcs: p, price: data[p][4], dur: data[p][5] })) },
     { name: "3 Week Refill",   nameZh: "三週補睫", rows: PCS.map(p => ({ pcs: p, price: data[p][6], dur: data[p][7] })) },
