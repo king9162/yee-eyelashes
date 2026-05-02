@@ -23,19 +23,19 @@ const PCS = [60, 80, 100, 120, 140, 180] as const;
 
 const MS: Record<number, [number,string,number,string,number,string,number,string,number,string]> = {
   60:  [60,"1hr",       30,"30min", 40,"40min", 50,"50min",    150,"1hr"],
-  80:  [80,"1hr 15min", 40,"35min", 50,"45min", 70,"1hr",      170,"1hr 15min"],
+  80:  [80,"1hr",       40,"35min", 50,"45min", 70,"1hr",      170,"1hr 15min"],
   100: [100,"1hr 30min",50,"40min", 60,"50min", 80,"1hr 5min", 220,"1hr 30min"],
-  120: [120,"1hr 45min",60,"45min", 70,"55min", 90,"1hr 10min",260,"1hr 45min"],
-  140: [130,"2hr",      70,"50min", 80,"1hr",  100,"1hr 15min",280,"2hr"],
-  180: [160,"2hr 15min",80,"55min", 90,"1hr 5min",110,"1hr 20min",340,"2hr 15min"],
+  120: [120,"1hr 30min",60,"45min", 70,"55min", 90,"1hr 10min",260,"1hr 45min"],
+  140: [130,"1hr 30min",70,"50min", 80,"1hr",  100,"1hr 15min",280,"2hr"],
+  180: [160,"2hr",      80,"55min", 90,"1hr 5min",110,"1hr 20min",340,"2hr 15min"],
 };
 const PC: Record<number, [number,string,number,string,number,string,number,string,number,string]> = {
   60:  [80,"1hr",        50,"30min", 60,"40min",  70,"50min",    180,"1hr"],
-  80:  [100,"1hr 15min", 60,"35min", 70,"45min",  90,"1hr",      200,"1hr 15min"],
+  80:  [100,"1hr",       60,"35min", 70,"45min",  90,"1hr",      200,"1hr 15min"],
   100: [120,"1hr 30min", 70,"40min", 80,"50min", 100,"1hr 5min", 250,"1hr 30min"],
-  120: [140,"1hr 45min", 80,"45min", 90,"55min", 110,"1hr 10min",290,"1hr 45min"],
-  140: [150,"2hr",       90,"50min",100,"1hr",   120,"1hr 15min",310,"2hr"],
-  180: [180,"2hr 15min",100,"55min",110,"1hr 5min",130,"1hr 20min",370,"2hr 15min"],
+  120: [140,"1hr 30min", 80,"45min", 90,"55min", 110,"1hr 10min",290,"1hr 45min"],
+  140: [150,"1hr 30min", 90,"50min",100,"1hr",   120,"1hr 15min",310,"2hr"],
+  180: [180,"2hr",      100,"55min",110,"1hr 5min",130,"1hr 20min",370,"2hr 15min"],
 };
 
 // Descriptions for each pcs count (shown under New Set only)
