@@ -62,15 +62,6 @@ export default function Hero({ lang }: Props) {
             </Link>
           </div>
 
-          {/* Right: tagline — desktop only */}
-          <p
-            className="hidden lg:block text-white/20 text-[13px] tracking-[0.08em] leading-[1.9] text-right max-w-[200px] flex-shrink-0 pb-1"
-            style={{ fontFamily: "var(--font-serif)" }}
-          >
-            {zh
-              ? "每一副睫毛都是\n量身打造的藝術"
-              : "Every set is a\nbespoke work of art"}
-          </p>
 
         </div>
       </div>
