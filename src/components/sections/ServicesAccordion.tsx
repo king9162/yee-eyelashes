@@ -323,7 +323,7 @@ export default function ServicesAccordion({ lang }: Props) {
               badge={zh ? "經典系列" : "Classic"}
               desc="Faux Mink lashes with a semi-matte finish. Natural, fine, and lightweight."
               descZh="半霧面光澤，毛體纖細自然，呈現清新素顏感。"
-              photo="/images/studio-treatment.jpg"
+              photo="/images/lash-mink.jpg"
               types={msTypes}
               bookHref={bookHref}
             />
