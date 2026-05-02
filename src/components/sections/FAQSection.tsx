@@ -13,7 +13,7 @@ export default function FAQSection({ lang }: Props) {
   const [openId, setOpenId] = useState<string | null>(null);
 
   return (
-    <section className="py-32 bg-white">
+    <section className="pt-16 pb-32 bg-white">
       <div className="max-w-[780px] mx-auto px-6 sm:px-10 lg:px-16">
 
         <SectionTitle
