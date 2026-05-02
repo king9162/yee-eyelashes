@@ -4,8 +4,6 @@ import { isValidLang, type Lang } from "@/i18n";
 import dynamic from "next/dynamic";
 import Hero from "@/components/sections/Hero";
 import ServicesPreview from "@/components/sections/ServicesPreview";
-import GalleryPreview from "@/components/sections/GalleryPreview";
-import Testimonials from "@/components/sections/Testimonials";
 import AftercareTips from "@/components/sections/AftercareTips";
 
 const FAQSection = dynamic(() => import("@/components/sections/FAQSection"));
@@ -59,8 +57,6 @@ export default async function HomePage({ params }: Props) {
       <PromoPopup lang={lang} />
       <Hero lang={lang} />
       <ServicesPreview lang={lang} />
-      <GalleryPreview lang={lang} />
-      <Testimonials lang={lang} />
       <FAQSection lang={lang} />
       <AftercareTips lang={lang} />
       <ContactSection lang={lang} />
