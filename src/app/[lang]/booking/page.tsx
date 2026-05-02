@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { isValidLang, type Lang } from "@/i18n";
-import PageHeader from "@/components/ui/PageHeader";
-import BookingForm from "@/components/sections/BookingForm";
+import Script from "next/script";
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang } = await params;
@@ -37,13 +36,22 @@ export default async function BookingPage({ params }: Props) {
   const lang = rawLang as Lang;
 
   return (
-    <div className="pb-28">
-      <PageHeader
-        eyebrow={lang === "zh" ? "預約" : "Booking"}
-        title={lang === "zh" ? "預約您的服務" : "Book Your Appointment"}
-        subtitle={lang === "zh" ? "請填寫以下資料，我們將在 24 小時內確認您的預約" : "Fill in your details and we'll confirm your appointment within 24 hours"}
+    <div className="min-h-screen bg-[#F8F5EF] pt-[76px] md:pt-[130px] pb-20">
+      <div className="text-center py-10">
+        <p className="text-[9px] uppercase tracking-[0.55em] text-[#C9A84C] mb-3">
+          {lang === "zh" ? "預約" : "Booking"}
+        </p>
+        <h1
+          className="text-[2.2rem] font-light text-[#1C1C1C]"
+          style={{ fontFamily: "var(--font-serif)" }}
+        >
+          {lang === "zh" ? "預約您的服務" : "Book Your Appointment"}
+        </h1>
+      </div>
+      <Script
+        src="https://square.site/appointments/buyer/widget/qe4tfv3078b5gx/LYH1D5CHJ3Q63.js"
+        strategy="afterInteractive"
       />
-      <BookingForm lang={lang} />
     </div>
   );
 }
