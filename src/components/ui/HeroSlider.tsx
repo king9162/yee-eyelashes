@@ -51,7 +51,7 @@ export default function HeroSlider() {
               loading={i === 0 ? "eager" : "lazy"}
               placeholder="blur"
               blurDataURL={BLUR_DATA}
-              className="object-contain md:object-cover md:object-center bg-[#1c1c1c]"
+              className="object-cover object-center"
               sizes="(max-width: 640px) 640px, (max-width: 1200px) 1200px, 1920px"
             />
           </div>
