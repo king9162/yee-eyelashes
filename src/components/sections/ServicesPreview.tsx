@@ -9,7 +9,7 @@ const categories = [
     n: "01",
     nameEn: "Eyelash Extensions",
     nameZh: "睫毛嫁接",
-    descEn: "Precision-crafted classic, hybrid, volume, and mega-volume sets, each designed around your eye shape and lifestyle. From understated elegance to bold drama, every set is uniquely yours.",
+    descEn: "Precision-crafted classic, hybrid, and volume sets, each designed around your eye shape and lifestyle. From understated elegance to bold drama, every set is uniquely yours.",
     descZh: "精準打造的經典、混合、豐盈及超豐盈款式——每一套都根據您的眼形與生活方式量身設計。從低調優雅到大膽奪目，每一副都獨一無二。",
     fromEn: "From $60",
     fromZh: "從 $60 起",
@@ -44,8 +44,8 @@ export default function ServicesPreview({ lang }: Props) {
   const t = getTranslations(lang);
 
   return (
-    <section className="py-32 bg-white">
-      <div className="max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16">
+    <section className="py-16 md:py-32 bg-white">
+      <div className="max-w-[1400px] mx-auto px-5 sm:px-10 lg:px-16">
 
         <SectionTitle
           heading={t.services_preview.heading}
@@ -53,39 +53,39 @@ export default function ServicesPreview({ lang }: Props) {
           eyebrow={lang === "zh" ? "服務" : "What We Offer"}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 md:mb-16">
           {categories.map((cat) => (
             <div
               key={cat.n}
               className="group relative bg-[#FAFAF8] hover:bg-[#F5F0E6] transition-colors duration-500 p-6 sm:p-8 lg:p-10 xl:p-12 flex flex-col"
             >
               {/* Index */}
-              <p className="text-[9px] uppercase tracking-[0.4em] text-neutral-300 mb-6 mt-2">
+              <p className="text-[9px] uppercase tracking-[0.4em] text-neutral-300 mb-4 mt-1">
                 {cat.n}
               </p>
 
               {/* Name */}
               <h3
-                className="text-[1.35rem] sm:text-[1.65rem] font-light leading-tight text-[#1C1C1C] mb-4"
+                className="text-[1.25rem] sm:text-[1.65rem] font-light leading-tight text-[#1C1C1C] mb-3"
                 style={{ fontFamily: "var(--font-serif)" }}
               >
                 {lang === "zh" ? cat.nameZh : cat.nameEn}
               </h3>
 
               {/* Description */}
-              <p className="text-[13px] leading-[1.85] text-neutral-400 tracking-[0.01em] flex-1">
+              <p className="text-[13px] leading-[1.8] text-neutral-400 tracking-[0.01em] flex-1">
                 {lang === "zh" ? cat.descZh : cat.descEn}
               </p>
 
               {/* Price / Duration row */}
-              <div className="flex items-end justify-between pt-5 mt-10 border-t border-neutral-200/60">
+              <div className="flex items-end justify-between pt-4 mt-6 border-t border-neutral-200/60">
                 <span
-                  className="text-[1.6rem] font-light text-[#C9A84C] leading-none"
+                  className="text-[1.4rem] sm:text-[1.6rem] font-light text-[#C9A84C] leading-none"
                   style={{ fontFamily: "var(--font-serif)" }}
                 >
                   {lang === "zh" ? cat.fromZh : cat.fromEn}
                 </span>
-                <span className="text-[9.5px] uppercase tracking-[0.25em] text-neutral-300 pb-1">
+                <span className="text-[9px] uppercase tracking-[0.2em] text-neutral-300 pb-1">
                   {lang === "zh" ? cat.durationZh : cat.durationEn}
                 </span>
               </div>
