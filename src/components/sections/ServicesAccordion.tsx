@@ -278,14 +278,6 @@ function FillsPmuCard({ lang, bookHref }: { lang: Lang; bookHref: string }) {
   );
 }
 
-const DS_ROWS = [
-  { pcs: 60,  price: 80,  dur: "1hr" },
-  { pcs: 80,  price: 100, dur: "1hr" },
-  { pcs: 100, price: 130, dur: "1hr 30min" },
-  { pcs: 120, price: 160, dur: "1hr 30min" },
-  { pcs: 140, price: 180, dur: "1hr 30min" },
-  { pcs: 180, price: 220, dur: "2hr" },
-];
 
 function DesignStyleCard({ lang, bookHref }: { lang: Lang; bookHref: string }) {
   const zh = lang === "zh";
@@ -304,7 +296,7 @@ function DesignStyleCard({ lang, bookHref }: { lang: Lang; bookHref: string }) {
           {zh ? "設計款睫毛" : "Design Style Lashes"}
         </h2>
         <p className="text-[12px] text-neutral-400 leading-[1.7]">
-          {zh ? "專為您量身打造的睫毛造型，由技師依您的眼型與風格設計專屬效果。" : "Customized for your own lashes style. Your artist crafts a bespoke look — from wispy and natural to bold and dramatic."}
+          {zh ? "專為您量身打造的睫毛造型，由技師依您的眼型與風格設計專屬效果。" : "Customized for your own lashes style. Your artist crafts a bespoke look from wispy and natural to bold and dramatic."}
         </p>
       </div>
 
@@ -323,17 +315,12 @@ function DesignStyleCard({ lang, bookHref }: { lang: Lang; bookHref: string }) {
                 </span>
                 <span className={`text-[#C9A84C] text-[1rem] leading-none transition-transform duration-300 ${isOpen ? "rotate-45" : ""}`}>+</span>
               </button>
-              <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-[900px]" : "max-h-0"}`}>
-                <div className="px-8 pb-4 divide-y divide-neutral-50">
-                  {DS_ROWS.map(({ pcs, price, dur }) => (
-                    <div key={pcs} className="flex items-center justify-between py-3">
-                      <span className="text-[12px] text-neutral-600 font-medium">{zh ? `${pcs}根` : `${pcs}pcs`}</span>
-                      <div className="flex items-center gap-5">
-                        <span className="text-[11px] text-neutral-300">{dur}</span>
-                        <span className="text-[13px] text-[#C9A84C] min-w-[52px] text-right">${price}</span>
-                      </div>
-                    </div>
-                  ))}
+              <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-[200px]" : "max-h-0"}`}>
+                <div className="px-8 pb-4">
+                  <div className="flex items-center justify-between py-3">
+                    <span className="text-[11px] text-neutral-300">1hr 30min</span>
+                    <span className="text-[13px] text-[#C9A84C]">$140</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -410,8 +397,8 @@ export default function ServicesAccordion({ lang }: Props) {
               types={pcTypes}
               bookHref={bookHref}
             />
-            <FillsPmuCard lang={lang} bookHref={bookHref} />
             <DesignStyleCard lang={lang} bookHref={bookHref} />
+            <FillsPmuCard lang={lang} bookHref={bookHref} />
           </div>
 
         </div>
