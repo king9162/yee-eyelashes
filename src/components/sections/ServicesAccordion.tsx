@@ -317,8 +317,7 @@ function DesignStyleCard({ lang, bookHref }: { lang: Lang; bookHref: string }) {
               </button>
               <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-[200px]" : "max-h-0"}`}>
                 <div className="px-8 pb-4">
-                  <div className="flex items-center justify-between py-3">
-                    <span className="text-[11px] text-neutral-300">1hr 30min</span>
+                  <div className="flex items-center justify-end py-3">
                     <span className="text-[13px] text-[#C9A84C]">$140</span>
                   </div>
                 </div>
