@@ -12,7 +12,7 @@ const zh = {
     cta: "立即預約",
   },
   hero: {
-    tagline: "曼哈薩特頂級睫毛工作室",
+    tagline: "Manhasset頂級睫毛工作室",
     subtitle: "頂級睫毛嫁接，專為品味女性而生。每一套作品皆根據您的眼型、生活方式與個人風格量身打造，從容之美，由此而生。",
     cta_primary: "立即預約",
     cta_secondary: "探索服務",
@@ -28,7 +28,7 @@ const zh = {
     cta: "查看完整作品集",
   },
   testimonials: {
-    heading: "深受拿騷縣頂尖客戶信賴",
+    heading: "深受Nassau County頂尖客戶信賴",
     subheading: "真實效果。真實客戶。真實自信。",
   },
   instagram: {
@@ -38,11 +38,11 @@ const zh = {
   },
   faq: {
     heading: "您最想知道的一切",
-    subheading: "為曼哈薩特客戶解答最常見的問題",
+    subheading: "為Manhasset客戶解答最常見的問題",
   },
   contact: {
     heading: "歡迎蒞臨我們的工作室",
-    subheading: "位於曼哈薩特 Plandome Road，服務拿騷縣最挑剔的客戶",
+    subheading: "位於Manhasset Plandome Road，服務Nassau County最挑剔的客戶",
     address_label: "地址",
     address: "278 Plandome Rd 2FL, Manhasset, NY",
     phone_label: "電話",
@@ -65,7 +65,7 @@ const zh = {
     cta: "立即預約",
   },
   footer: {
-    tagline: "頂級睫毛工作室 · 紐約曼哈薩特",
+    tagline: "頂級睫毛工作室 · 紐約Manhasset",
     links_heading: "快速連結",
     social_heading: "追蹤我們",
     copyright: "© 2026 YEE EYELASHES 版權所有。",
