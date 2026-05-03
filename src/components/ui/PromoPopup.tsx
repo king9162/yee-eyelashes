@@ -46,27 +46,27 @@ export default function PromoPopup({ lang }: Props) {
           ×
         </button>
 
-        <div className="px-10 pt-10 pb-12 text-center">
+        <div className="px-6 sm:px-10 pt-9 pb-10 text-center">
           {/* Eyebrow */}
-          <p className="text-[11px] uppercase tracking-[0.55em] text-[#C9A84C] mb-5">
+          <p className="text-[10px] uppercase tracking-[0.5em] text-[#C9A84C] mb-4">
             {lang === "zh" ? "母親節限時優惠" : "Mother's Day Special"}
           </p>
 
           {/* Headline */}
           <h2
-            className="text-[2.2rem] font-light text-[#1C1C1C] leading-tight mb-3"
+            className="text-[1.9rem] sm:text-[2.2rem] font-light text-[#1C1C1C] leading-tight mb-3"
             style={{ fontFamily: "var(--font-serif)" }}
           >
             {lang === "zh" ? "新客戶首次到訪 享 50% 折扣" : "50% Off Your First Visit"}
           </h2>
 
           {/* Sub-headline */}
-          <p className="text-[11px] uppercase tracking-[0.25em] text-[#C9A84C] mb-6">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-[#C9A84C] mb-5 whitespace-nowrap">
             {lang === "zh" ? "全線眼睫毛服務 · 即日起至 5/10" : "All Eyelash Extensions · Until May 10"}
           </p>
 
           {/* Body */}
-          <p className="text-[13px] text-neutral-500 leading-[1.85] mb-8 max-w-[340px] mx-auto">
+          <p className="text-[12px] text-neutral-500 leading-[2] mb-7 mx-auto">
             {lang === "zh"
               ? <>新客戶專屬優惠。<br />到訪更享精美禮品袋。<br />折扣於到店時直接套用，無需折扣碼。</>
               : <>New clients only.<br />Receive a complimentary gift bag with your visit.<br />Discount applied on-site, no code required.</>}
