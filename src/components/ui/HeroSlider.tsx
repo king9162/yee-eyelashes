@@ -10,6 +10,7 @@ const BLUR_DATA =
 const slides = [
   { src: "/images/hero-1.jpg", alt: "Yee Eyelashes treatment room" },
   { src: "/images/hero-2.jpg", alt: "Yee Eyelashes lounge area" },
+  { src: "/images/hero-5.jpg", alt: "Yee Eyelashes gift bags" },
   { src: "/images/hero-3.jpg", alt: "Yee Eyelashes studio detail" },
   { src: "/images/hero-4.jpg", alt: "Yee Eyelashes studio decor" },
 ];
