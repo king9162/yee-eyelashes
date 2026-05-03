@@ -20,10 +20,10 @@ export default function Footer({ lang }: Props) {
 
       {/* ── Pre-footer CTA band ── */}
       <div className="bg-[#F8F5EF] border-t border-neutral-200/60">
-        <div className="max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16 py-20 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+        <div className="max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16 py-16 md:py-20 flex flex-col items-center text-center md:flex-row md:items-center md:text-left md:justify-between gap-8">
           <div>
             <p
-              className="text-[1.5rem] sm:text-[2rem] md:text-[2.5rem] font-light text-[#1C1C1C] leading-tight mb-2"
+              className="text-[1.75rem] sm:text-[2rem] md:text-[2.5rem] font-light text-[#1C1C1C] leading-tight mb-2"
               style={{ fontFamily: "var(--font-serif)" }}
             >
               {lang === "zh" ? "準備好提升您的眼妝了嗎？" : "Ready to elevate your look?"}
@@ -34,7 +34,7 @@ export default function Footer({ lang }: Props) {
           </div>
           <Link
             href="https://square.site/appointments/buyer/widget/qe4tfv3078b5gx/LYH1D5CHJ3Q63"
-            className="flex-shrink-0 text-[10px] uppercase tracking-[0.25em] text-[#1C1C1C] border border-[#1C1C1C] px-10 py-4 hover:bg-[#1C1C1C] hover:text-white transition-all duration-300"
+            className="w-full md:w-auto flex-shrink-0 text-center text-[10px] uppercase tracking-[0.25em] text-[#1C1C1C] border border-[#1C1C1C] px-10 py-4 hover:bg-[#1C1C1C] hover:text-white transition-all duration-300"
           >
             {t.nav.booking}
           </Link>
