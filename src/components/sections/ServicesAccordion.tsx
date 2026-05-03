@@ -278,6 +278,84 @@ function FillsPmuCard({ lang, bookHref }: { lang: Lang; bookHref: string }) {
   );
 }
 
+const DS_ROWS = [
+  { pcs: 60,  price: 80,  dur: "1hr" },
+  { pcs: 80,  price: 100, dur: "1hr" },
+  { pcs: 100, price: 130, dur: "1hr 30min" },
+  { pcs: 120, price: 160, dur: "1hr 30min" },
+  { pcs: 140, price: 180, dur: "1hr 30min" },
+  { pcs: 180, price: 220, dur: "2hr" },
+];
+
+function DesignStyleCard({ lang, bookHref }: { lang: Lang; bookHref: string }) {
+  const zh = lang === "zh";
+  const [open, setOpen] = useState<string | null>(null);
+
+  return (
+    <div className="flex flex-col bg-white">
+      {/* Photo */}
+      <div className="relative w-full overflow-hidden" style={{ aspectRatio: "4/3" }}>
+        <Image src="/images/lash-premium.jpg" alt="Design Style Lashes" fill className="object-cover transition-transform duration-700 hover:scale-[1.03]" sizes="(max-width:1024px) 100vw, 25vw" />
+      </div>
+
+      {/* Header */}
+      <div className="px-8 pt-8 pb-5 border-b border-neutral-100">
+        <h2 className="text-[1.75rem] font-light text-[#1C1C1C] leading-tight mb-2" style={{ fontFamily: "var(--font-serif)" }}>
+          {zh ? "設計款睫毛" : "Design Style Lashes"}
+        </h2>
+        <p className="text-[12px] text-neutral-400 leading-[1.7]">
+          {zh ? "專為您量身打造的睫毛造型，由技師依您的眼型與風格設計專屬效果。" : "Customized for your own lashes style. Your artist crafts a bespoke look — from wispy and natural to bold and dramatic."}
+        </p>
+      </div>
+
+      {/* Accordion */}
+      <div className="flex-1 divide-y divide-neutral-100">
+        {["Design Style"].map((key) => {
+          const isOpen = open === key;
+          return (
+            <div key={key}>
+              <button
+                onClick={() => setOpen(isOpen ? null : key)}
+                className="w-full flex items-center justify-between px-8 py-4 group hover:bg-neutral-50 transition-colors duration-200"
+              >
+                <span className="text-[13px] text-[#1C1C1C] tracking-[0.01em] group-hover:text-[#C9A84C] transition-colors duration-200">
+                  {zh ? "設計款造型" : key}
+                </span>
+                <span className={`text-[#C9A84C] text-[1rem] leading-none transition-transform duration-300 ${isOpen ? "rotate-45" : ""}`}>+</span>
+              </button>
+              <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-[900px]" : "max-h-0"}`}>
+                <div className="px-8 pb-4 divide-y divide-neutral-50">
+                  {DS_ROWS.map(({ pcs, price, dur }) => (
+                    <div key={pcs} className="flex items-center justify-between py-3">
+                      <span className="text-[12px] text-neutral-600 font-medium">{zh ? `${pcs}根` : `${pcs}pcs`}</span>
+                      <div className="flex items-center gap-5">
+                        <span className="text-[11px] text-neutral-300">{dur}</span>
+                        <span className="text-[13px] text-[#C9A84C] min-w-[52px] text-right">${price}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* CTA */}
+      <div className="p-8 pt-6">
+        <a
+          href={bookHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block w-full text-center text-[10px] uppercase tracking-[0.35em] bg-[#1C1C1C] text-white py-4 hover:bg-[#C9A84C] transition-colors duration-300"
+        >
+          {zh ? "立即預約" : "Book Now"}
+        </a>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main export ─────────────────────────────────────────────────
 
 export default function ServicesAccordion({ lang }: Props) {
@@ -308,8 +386,8 @@ export default function ServicesAccordion({ lang }: Props) {
             </h2>
           </div>
 
-          {/* 3-column grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* 4-column grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
             <LashCard
               lang={lang}
               tier="Real Mink"
@@ -333,6 +411,7 @@ export default function ServicesAccordion({ lang }: Props) {
               bookHref={bookHref}
             />
             <FillsPmuCard lang={lang} bookHref={bookHref} />
+            <DesignStyleCard lang={lang} bookHref={bookHref} />
           </div>
 
         </div>
