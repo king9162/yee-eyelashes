@@ -20,7 +20,7 @@ const montserrat = Montserrat({
 export const metadata: Metadata = {
   title: "YEE EYELASHES | Luxury Lash Extensions in Manhasset, NY",
   description:
-    "Manhasset's premier lash studio. Eyelash extensions, lash lift & tint, and refill care tailored to your eye shape. Serving Nassau County, Great Neck & Port Washington. Book now.",
+    "Yee Eyelashes is Manhasset's premier lash studio, specializing in bespoke classic, hybrid, volume, and mega-volume eyelash extensions. We also offer lash lift & tint, brow lamination, waxing, and permanent makeup services. Located at 278 Plandome Rd, 2FL, Manhasset, NY — serving Nassau County and Long Island.",
   keywords: [
     "eyelash extensions Manhasset",
     "lash extensions Manhasset NY",
@@ -88,7 +88,7 @@ const localBusinessSchema = {
   name: "Yee Eyelashes",
   image: "https://www.yeeeyelashes.com/images/yee-logo-v1-cropped.png",
   description:
-    "Manhasset's premier lash studio specializing in bespoke classic, hybrid, volume, and mega-volume eyelash extensions. Serving Nassau County, Long Island.",
+    "Yee Eyelashes is Manhasset's premier lash studio, specializing in bespoke classic, hybrid, volume, and mega-volume eyelash extensions. We also offer lash lift & tint, brow lamination, waxing, and permanent makeup services. Located at 278 Plandome Rd, 2FL, Manhasset, NY — serving Nassau County and Long Island.",
   url: "https://www.yeeeyelashes.com",
   telephone: "+1-929-806-2467",
   priceRange: "$$",
@@ -158,12 +158,12 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen bg-white text-black antialiased" suppressHydrationWarning>
-        <Script src="https://www.googletagmanager.com/gtag/js?id=G-837BM3QGNX" strategy="afterInteractive" />
+        <Script src="https://www.googletagmanager.com/gtag/js?id=G-V65FBEY2NK" strategy="afterInteractive" />
         <Script id="google-analytics" strategy="afterInteractive">{`
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
-          gtag('config', 'G-837BM3QGNX');
+          gtag('config', 'G-V65FBEY2NK');
         `}</Script>
         {children}
       </body>
