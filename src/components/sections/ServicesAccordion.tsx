@@ -125,9 +125,7 @@ function LashCard({ lang, tier, tierZh, badge, desc, descZh, photo, types, bookH
     <div className="flex flex-col bg-white">
       {/* Photo */}
       <div className="relative w-full overflow-hidden" style={{ aspectRatio: "4/3" }}>
-        <Image src={photo} alt={tier} fill className="object-cover transition-transform duration-700 hover:scale-[1.03]" sizes="(max-width:1024px) 100vw, 33vw" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-        <span className="absolute bottom-5 left-6 text-[9px] uppercase tracking-[0.5em] text-[#C9A84C]">{badge}</span>
+        <Image src="/images/lash-premium.jpg" alt={tier} fill className="object-cover transition-transform duration-700 hover:scale-[1.03]" sizes="(max-width:1024px) 100vw, 33vw" />
       </div>
 
       {/* Header */}
@@ -213,11 +211,7 @@ function FillsPmuCard({ lang, bookHref }: { lang: Lang; bookHref: string }) {
     <div className="flex flex-col bg-white">
       {/* Photo */}
       <div className="relative w-full overflow-hidden" style={{ aspectRatio: "4/3" }}>
-        <Image src="/images/care-pmu.jpg" alt="Care & PMU" fill className="object-cover transition-transform duration-700 hover:scale-[1.03]" sizes="(max-width:1024px) 100vw, 33vw" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-        <span className="absolute bottom-5 left-6 text-[9px] uppercase tracking-[0.5em] text-[#C9A84C]">
-          {zh ? "護理與半永久" : "Care & PMU"}
-        </span>
+        <Image src="/images/lash-premium.jpg" alt="Care & PMU" fill className="object-cover transition-transform duration-700 hover:scale-[1.03]" sizes="(max-width:1024px) 100vw, 33vw" />
       </div>
 
       {/* Header */}
