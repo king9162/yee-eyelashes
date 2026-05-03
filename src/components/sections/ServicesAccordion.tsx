@@ -129,7 +129,7 @@ function LashCard({ lang, tier, tierZh, badge, desc, descZh, photo, types, bookH
       </div>
 
       {/* Header */}
-      <div className="px-8 pt-8 pb-5 border-b border-neutral-100">
+      <div className="px-8 pt-8 pb-5 border-b border-neutral-100 min-h-[130px]">
         <h2 className="text-[1.75rem] font-light text-[#1C1C1C] leading-tight mb-2" style={{ fontFamily: "var(--font-serif)" }}>
           {zh ? tierZh : tier}
         </h2>
@@ -215,7 +215,7 @@ function FillsPmuCard({ lang, bookHref }: { lang: Lang; bookHref: string }) {
       </div>
 
       {/* Header */}
-      <div className="px-8 pt-8 pb-5 border-b border-neutral-100">
+      <div className="px-8 pt-8 pb-5 border-b border-neutral-100 min-h-[130px]">
         <h2 className="text-[1.75rem] font-light text-[#1C1C1C] leading-tight mb-2" style={{ fontFamily: "var(--font-serif)" }}>
           {zh ? "護理與半永久" : "Care & PMU"}
         </h2>
@@ -291,12 +291,12 @@ function DesignStyleCard({ lang, bookHref }: { lang: Lang; bookHref: string }) {
       </div>
 
       {/* Header */}
-      <div className="px-8 pt-8 pb-5 border-b border-neutral-100">
+      <div className="px-8 pt-8 pb-5 border-b border-neutral-100 min-h-[130px]">
         <h2 className="text-[1.75rem] font-light text-[#1C1C1C] leading-tight mb-2" style={{ fontFamily: "var(--font-serif)" }}>
           {zh ? "設計款睫毛" : "Design Style Lashes"}
         </h2>
         <p className="text-[12px] text-neutral-400 leading-[1.7]">
-          {zh ? "專為您量身打造的睫毛造型，由技師依您的眼型與風格設計專屬效果。" : "Customized for your own lashes style. Your artist crafts a bespoke look from wispy and natural to bold and dramatic."}
+          {zh ? "專為您量身打造的睫毛造型。" : "Customized for your own lashes style."}
         </p>
       </div>
 
