@@ -373,7 +373,7 @@ export default function ServicesAccordion({ lang }: Props) {
           </div>
 
           {/* 4-column grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
             <LashCard
               lang={lang}
               tier="Real Mink"
@@ -396,7 +396,6 @@ export default function ServicesAccordion({ lang }: Props) {
               types={pcTypes}
               bookHref={bookHref}
             />
-            <DesignStyleCard lang={lang} bookHref={bookHref} />
             <FillsPmuCard lang={lang} bookHref={bookHref} />
           </div>
 
