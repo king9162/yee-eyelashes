@@ -22,10 +22,9 @@ const PCS = [60, 80, 100, 120] as const;
 
 const MS: Record<number, [number,string,number,string,number,string,number,string,number,string]> = {
   60:  [60,"1hr",        30,"1hr",       40,"1hr",       50,"1hr",       150,"1hr"],
-  80:  [80,"1hr",        40,"1hr",       50,"1hr",       70,"1hr",       170,"1hr"],
-  100: [100,"1hr 30min", 50,"1hr",       60,"1hr",       80,"1hr",       220,"1hr"],
-  120: [120,"1hr 30min", 60,"1hr 30min", 70,"1hr 30min", 90,"1hr 30min", 260,"1hr 30min"],
-  140: [130,"1hr 30min", 70,"1hr 30min", 80,"1hr 30min",100,"1hr 30min", 280,"1hr 30min"],
+  80:  [90,"1hr",        40,"1hr",       50,"1hr",       70,"1hr",       170,"1hr"],
+  100: [110,"1hr 30min", 50,"1hr",       60,"1hr",       80,"1hr",       220,"1hr"],
+  120: [130,"1hr 30min", 60,"1hr 30min", 70,"1hr 30min", 90,"1hr 30min", 260,"1hr 30min"],
   180: [160,"2hr",       80,"2hr",       90,"2hr",      110,"2hr",       340,"2hr"],
 };
 const PC: Record<number, [number,string,number,string,number,string,number,string,number,string]> = {
@@ -33,8 +32,8 @@ const PC: Record<number, [number,string,number,string,number,string,number,strin
   80:  [90,"1hr",        50,"1hr",       60,"1hr",       90,"1hr",       200,"1hr"],
   100: [110,"1hr 30min", 60,"1hr",       70,"1hr",      100,"1hr",       250,"1hr"],
   120: [130,"1hr 30min", 70,"1hr 30min", 80,"1hr 30min",110,"1hr 30min", 290,"1hr 30min"],
-  140: [150,"1hr 30min", 90,"1hr 30min",100,"1hr 30min",120,"1hr 30min", 310,"1hr 30min"],
-  180: [170,"2hr",      100,"2hr",      110,"2hr",      130,"2hr",       370,"2hr"],
+  160: [160,"1hr 30min", 90,"1hr 30min",100,"1hr 30min",120,"1hr 30min", 310,"1hr 30min"],
+  180: [180,"2hr",      100,"2hr",      110,"2hr",      130,"2hr",       370,"2hr"],
 };
 
 // Descriptions for each pcs count (shown under New Set only)
@@ -323,34 +322,17 @@ function ThreeDCard({ lang, bookHref }: { lang: Lang; bookHref: string }) {
                 </span>
                 <span className={`text-[#C9A84C] text-[1rem] leading-none transition-transform duration-300 ${isOpen ? "rotate-45" : ""}`}>+</span>
               </button>
-              <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-[600px]" : "max-h-0"}`}>
+              <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-[300px]" : "max-h-0"}`}>
                 <div className="px-8 pb-4 divide-y divide-neutral-50">
-                  {/* Real Mink section */}
-                  <div className="pt-3 pb-1">
-                    <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-300 mb-2">Real Mink</p>
-                    {([140, 180] as const).map((pcs) => (
-                      <div key={`ms-${pcs}`} className="flex items-center justify-between py-2">
-                        <span className="text-[12px] text-neutral-600 font-medium">{zh ? `${pcs}根` : `${pcs}pcs`}</span>
-                        <div className="flex items-center gap-5">
-                          <span className="text-[11px] text-neutral-300">{MS[pcs][svc.di]}</span>
-                          <span className="text-[13px] text-[#C9A84C] min-w-[52px] text-right">${MS[pcs][svc.pi]}</span>
-                        </div>
+                  {([160, 180] as const).map((pcs) => (
+                    <div key={pcs} className="flex items-center justify-between py-3">
+                      <span className="text-[12px] text-neutral-600 font-medium">{zh ? `${pcs}根` : `${pcs}pcs`}</span>
+                      <div className="flex items-center gap-5">
+                        <span className="text-[11px] text-neutral-300">{PC[pcs][svc.di]}</span>
+                        <span className="text-[13px] text-[#C9A84C] min-w-[52px] text-right">${PC[pcs][svc.pi]}</span>
                       </div>
-                    ))}
-                  </div>
-                  {/* Premium section */}
-                  <div className="pt-3 pb-1">
-                    <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-300 mb-2">Premium</p>
-                    {([140, 180] as const).map((pcs) => (
-                      <div key={`pc-${pcs}`} className="flex items-center justify-between py-2">
-                        <span className="text-[12px] text-neutral-600 font-medium">{zh ? `${pcs}根` : `${pcs}pcs`}</span>
-                        <div className="flex items-center gap-5">
-                          <span className="text-[11px] text-neutral-300">{PC[pcs][svc.di]}</span>
-                          <span className="text-[13px] text-[#C9A84C] min-w-[52px] text-right">${PC[pcs][svc.pi]}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
