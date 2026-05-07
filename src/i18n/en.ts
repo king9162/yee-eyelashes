@@ -4,6 +4,7 @@ const en = {
     services: "Services",
     gallery: "Gallery",
     coupon: "Coupon",
+    faq: "FAQ",
     booking: "Book Now",
     contact: "Contact",
   },

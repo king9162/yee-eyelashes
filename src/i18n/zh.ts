@@ -4,6 +4,7 @@ const zh = {
     services: "服務項目",
     gallery: "作品集",
     coupon: "優惠活動",
+    faq: "常見問題",
     booking: "立即預約",
     contact: "聯絡我們",
   },
