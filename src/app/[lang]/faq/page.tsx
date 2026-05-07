@@ -29,23 +29,8 @@ export default async function FAQPage({ params }: Props) {
   return (
     <div className="min-h-screen bg-white">
       <Header lang={lang} />
-
-      {/* Header */}
-      <div className="bg-[#F8F5EF] pt-[130px] pb-20 px-6 text-center border-b border-neutral-200">
-        <p className="text-[9px] uppercase tracking-[0.55em] text-[#C9A84C] mb-4">
-          {zh ? "常見問題" : "Questions"}
-        </p>
-        <h1
-          className="text-[2.8rem] font-light text-[#1C1C1C] leading-tight"
-          style={{ fontFamily: "var(--font-serif)" }}
-        >
-          {zh ? "您最想知道的一切" : "Everything You Need to Know"}
-        </h1>
-        <div className="w-8 h-px bg-[#C9A84C] mx-auto mt-6" />
-      </div>
-
+      <div className="pt-[130px]" />
       <FAQSection lang={lang} />
-
       <Footer lang={lang} />
     </div>
   );
