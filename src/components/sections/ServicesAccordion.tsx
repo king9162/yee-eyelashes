@@ -18,7 +18,7 @@ const MOSAIC: { src: string; alt: string }[] = [
 ];
 
 // ─── Price data ──────────────────────────────────────────────────
-const PCS = [60, 80, 100, 120, 140, 180] as const;
+const PCS = [60, 80, 100, 120] as const;
 
 const MS: Record<number, [number,string,number,string,number,string,number,string,number,string]> = {
   60:  [60,"1hr",        30,"1hr",       40,"1hr",       50,"1hr",       150,"1hr"],
@@ -279,6 +279,96 @@ function FillsPmuCard({ lang, bookHref }: { lang: Lang; bookHref: string }) {
 }
 
 
+const D3_SERVICE_TYPES = [
+  { name: "New Set",         nameZh: "全新嫁接",  pi: 0, di: 1 },
+  { name: "1 Week Refill",   nameZh: "一週補睫",  pi: 2, di: 3 },
+  { name: "2 Week Refill",   nameZh: "兩週補睫",  pi: 4, di: 5 },
+  { name: "3 Week Refill",   nameZh: "三週補睫",  pi: 6, di: 7 },
+  { name: "3 Times Package", nameZh: "三次套裝",  pi: 8, di: 9 },
+];
+
+function ThreeDCard({ lang, bookHref }: { lang: Lang; bookHref: string }) {
+  const zh = lang === "zh";
+  const [open, setOpen] = useState<string | null>(null);
+
+  return (
+    <div className="flex flex-col bg-white">
+      {/* Photo */}
+      <div className="relative w-full overflow-hidden" style={{ aspectRatio: "4/3" }}>
+        <Image src="/images/lash-premium.jpg" alt="3D Lashes" fill className="object-cover transition-transform duration-700 hover:scale-[1.03]" sizes="(max-width:1024px) 100vw, 25vw" />
+      </div>
+
+      {/* Header */}
+      <div className="px-8 pt-8 pb-5 border-b border-neutral-100 min-h-[130px]">
+        <h2 className="text-[1.75rem] font-light text-[#1C1C1C] leading-tight mb-2" style={{ fontFamily: "var(--font-serif)" }}>
+          {zh ? "3D 豐盈睫毛" : "3D Lashes"}
+        </h2>
+        <p className="text-[12px] text-neutral-400 leading-[1.7]">
+          {zh ? "多重豐盈嫁接，打造蓬鬆戲劇效果。提供 Real Mink 與 Premium 兩種材質選擇。" : "Multi-layered volume lashes for a full, dramatic look. Available in Real Mink and Premium."}
+        </p>
+      </div>
+
+      {/* Accordion */}
+      <div className="flex-1 divide-y divide-neutral-100">
+        {D3_SERVICE_TYPES.map((svc) => {
+          const isOpen = open === svc.name;
+          return (
+            <div key={svc.name}>
+              <button
+                onClick={() => setOpen(isOpen ? null : svc.name)}
+                className="w-full flex items-center justify-between px-8 py-4 group hover:bg-neutral-50 transition-colors duration-200"
+              >
+                <span className="text-[13px] text-[#1C1C1C] tracking-[0.01em] group-hover:text-[#C9A84C] transition-colors duration-200">
+                  {zh ? svc.nameZh : svc.name}
+                </span>
+                <span className={`text-[#C9A84C] text-[1rem] leading-none transition-transform duration-300 ${isOpen ? "rotate-45" : ""}`}>+</span>
+              </button>
+              <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-[600px]" : "max-h-0"}`}>
+                <div className="px-8 pb-4 divide-y divide-neutral-50">
+                  {/* Real Mink section */}
+                  <div className="pt-3 pb-1">
+                    <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-300 mb-2">Real Mink</p>
+                    {([140, 180] as const).map((pcs) => (
+                      <div key={`ms-${pcs}`} className="flex items-center justify-between py-2">
+                        <span className="text-[12px] text-neutral-600 font-medium">{zh ? `${pcs}根` : `${pcs}pcs`}</span>
+                        <div className="flex items-center gap-5">
+                          <span className="text-[11px] text-neutral-300">{MS[pcs][svc.di]}</span>
+                          <span className="text-[13px] text-[#C9A84C] min-w-[52px] text-right">${MS[pcs][svc.pi]}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Premium section */}
+                  <div className="pt-3 pb-1">
+                    <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-300 mb-2">Premium</p>
+                    {([140, 180] as const).map((pcs) => (
+                      <div key={`pc-${pcs}`} className="flex items-center justify-between py-2">
+                        <span className="text-[12px] text-neutral-600 font-medium">{zh ? `${pcs}根` : `${pcs}pcs`}</span>
+                        <div className="flex items-center gap-5">
+                          <span className="text-[11px] text-neutral-300">{PC[pcs][svc.di]}</span>
+                          <span className="text-[13px] text-[#C9A84C] min-w-[52px] text-right">${PC[pcs][svc.pi]}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* CTA */}
+      <div className="p-8 pt-6">
+        <a href={bookHref} target="_blank" rel="noopener noreferrer"
+          className="block w-full text-center text-[10px] uppercase tracking-[0.35em] bg-[#1C1C1C] text-white py-4 hover:bg-[#C9A84C] transition-colors duration-300">
+          {zh ? "立即預約" : "Book Now"}
+        </a>
+      </div>
+    </div>
+  );
+}
+
 function DesignStyleCard({ lang, bookHref }: { lang: Lang; bookHref: string }) {
   const zh = lang === "zh";
   const [open, setOpen] = useState<string | null>(null);
@@ -373,7 +463,7 @@ export default function ServicesAccordion({ lang }: Props) {
           </div>
 
           {/* 4-column grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
             <LashCard
               lang={lang}
               tier="Real Mink"
@@ -396,6 +486,7 @@ export default function ServicesAccordion({ lang }: Props) {
               types={pcTypes}
               bookHref={bookHref}
             />
+            <ThreeDCard lang={lang} bookHref={bookHref} />
             <FillsPmuCard lang={lang} bookHref={bookHref} />
           </div>
 
