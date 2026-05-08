@@ -17,17 +17,6 @@ const categories = [
     durationZh: "50 分鐘 – 1.5 小時",
   },
   {
-    n: "02",
-    nameEn: "Lash Lift & Tint",
-    nameZh: "睫毛燙翹染色",
-    descEn: "No extensions needed. A precision curl that opens the eye and lifts the gaze, combined with professional tinting for deeper definition. Zero maintenance for 6–8 weeks.",
-    descZh: "無需嫁接。精準卷翹讓眼睛更大、眼神更有神——結合專業染色帶來深邃輪廓。6–8 週零維護。",
-    fromEn: "From $60",
-    fromZh: "從 $60 起",
-    durationEn: "~1 hr",
-    durationZh: "約 1 小時",
-  },
-  {
     n: "03",
     nameEn: "Refills & Care",
     nameZh: "補睫與護理",
