@@ -32,7 +32,7 @@ const PC: Record<number, [number,string,number,string,number,string,number,strin
   80:  [100,"1hr",       50,"1hr",       60,"1hr",       90,"1hr",       200,"1hr"],
   100: [120,"1hr 30min", 60,"1hr",       70,"1hr",      100,"1hr",       250,"1hr"],
   120: [140,"1hr 30min", 70,"1hr 30min", 80,"1hr 30min",110,"1hr 30min", 290,"1hr 30min"],
-  160: [160,"1hr 30min", 90,"1hr 30min",100,"1hr 30min",120,"1hr 30min", 310,"1hr 30min"],
+  140: [160,"1hr 30min", 90,"1hr 30min",100,"1hr 30min",120,"1hr 30min", 310,"1hr 30min"],
   180: [180,"2hr",      100,"2hr",      110,"2hr",      130,"2hr",       370,"2hr"],
 };
 
@@ -324,7 +324,7 @@ function ThreeDCard({ lang, bookHref }: { lang: Lang; bookHref: string }) {
               </button>
               <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-[300px]" : "max-h-0"}`}>
                 <div className="px-8 pb-4 divide-y divide-neutral-50">
-                  {([160, 180] as const).map((pcs) => (
+                  {([140, 180] as const).map((pcs) => (
                     <div key={pcs} className="flex items-center justify-between py-3">
                       <span className="text-[12px] text-neutral-600 font-medium">{zh ? `${pcs}根` : `${pcs}pcs`}</span>
                       <div className="flex items-center gap-5">
