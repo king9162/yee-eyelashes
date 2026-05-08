@@ -7,7 +7,6 @@ import Footer from "@/components/layout/Footer";
 
 const BackToTop       = dynamic(() => import("@/components/ui/BackToTop"));
 const DisableCopy     = dynamic(() => import("@/components/ui/DisableCopy"));
-const MobileBookingBar = dynamic(() => import("@/components/ui/MobileBookingBar"));
 
 type Props = {
   children: React.ReactNode;
@@ -44,11 +43,10 @@ export default async function LangLayout({ children, params }: Props) {
   return (
     <div className="flex flex-col min-h-screen" lang={lang}>
       <Header lang={lang} />
-      <main className="flex-1 pb-[52px] md:pb-0">{children}</main>
+      <main className="flex-1">{children}</main>
       <Footer lang={lang} />
       <BackToTop />
       <DisableCopy />
-      <MobileBookingBar lang={lang} />
     </div>
   );
 }
