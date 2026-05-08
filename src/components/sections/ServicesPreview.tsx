@@ -55,8 +55,9 @@ export default function ServicesPreview({ lang }: Props) {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 md:mb-16">
           {categories.map((cat) => (
-            <div
+            <Link
               key={cat.n}
+              href={`/${lang}/services`}
               className="group relative bg-[#FAFAF8] hover:bg-[#F5F0E6] transition-colors duration-500 p-6 sm:p-8 lg:p-10 xl:p-12 flex flex-col"
             >
               {/* Index */}
@@ -89,7 +90,7 @@ export default function ServicesPreview({ lang }: Props) {
                   {lang === "zh" ? cat.durationZh : cat.durationEn}
                 </span>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 
