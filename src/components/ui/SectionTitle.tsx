@@ -42,7 +42,7 @@ export default function SectionTitle({
       <h2
         className={cn(
           "font-light leading-[1.05] tracking-[-0.01em] mb-5",
-          "text-4xl sm:text-5xl md:text-[3.4rem]",
+          "text-[1.7rem] sm:text-4xl md:text-5xl lg:text-[3.4rem]",
           light ? "text-white" : "text-[#1C1C1C]"
         )}
         style={{ fontFamily: "var(--font-serif)" }}
