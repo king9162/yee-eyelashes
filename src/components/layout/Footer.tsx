@@ -29,7 +29,7 @@ export default function Footer({ lang }: Props) {
               {lang === "zh" ? "準備好提升您的眼妝了嗎？" : "Ready to elevate your look?"}
             </p>
             <p className="text-[13px] text-neutral-400 tracking-[0.02em]">
-              {lang === "zh" ? "立即預約，讓美麗的蛻變從今日開始。" : "Book your appointment today and let the transformation begin."}
+              {lang === "zh" ? "立即預約，讓美麗的蛻變從今日開始。" : "Book your appointment and let the transformation begin."}
             </p>
           </div>
           <Link
