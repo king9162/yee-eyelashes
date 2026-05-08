@@ -87,10 +87,6 @@ const FILLS_PMU: FlatItem[] = [
   { name: "Bottom Lash Ext.",     nameZh: "下睫毛嫁接", price: 30,  duration: "30min" },
   { name: "Color Lash Ext.",      nameZh: "彩色睫毛嫁接",price: 25, duration: "20min" },
   { name: "Eyelash Removal",      nameZh: "睫毛卸除",   price: 20,  duration: "20min" },
-  { name: "Waxing",               nameZh: "蜜蠟除毛",             isHeader: true },
-  { name: "Eyebrow",              nameZh: "眉型蜜蠟",   price: 10,  duration: "15min" },
-  { name: "Chin",                 nameZh: "下巴蜜蠟",   price: 20,  duration: "15min" },
-  { name: "Upper Lip",            nameZh: "上唇蜜蠟",   price: 10,  duration: "10min" },
   { name: "PMU",                  nameZh: "半永久彩妝",            isHeader: true },
   { name: "Microblading",         nameZh: "飄眉",       price: 599, duration: "2hr" },
   { name: "Combination Brows",    nameZh: "組合眉",     price: 650, duration: "2hr 30min" },
@@ -211,7 +207,7 @@ function FillsPmuCard({ lang, bookHref }: { lang: Lang; bookHref: string }) {
           {zh ? "護理與半永久" : "Care & PMU"}
         </h2>
         <p className="text-[12px] text-neutral-400 leading-[1.7]">
-          {zh ? "睫毛燙翹、眉型護理、蜜蠟除毛及半永久彩妝服務。" : "Lash lifts, brow care, waxing, and permanent makeup services."}
+          {zh ? "睫毛附加項目、眉毛護理及半永久彩妝服務。" : "Lash add-ons, brow care, and permanent makeup services."}
         </p>
       </div>
 
