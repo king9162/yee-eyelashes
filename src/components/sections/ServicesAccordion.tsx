@@ -83,18 +83,10 @@ function buildLashTypes(data: typeof MS): LashServiceType[] {
 type FlatItem = { name: string; nameZh: string; price?: number; duration?: string; note?: string; noteZh?: string; isHeader?: boolean };
 
 const FILLS_PMU: FlatItem[] = [
-  { name: "Eyelash Lift & Other", nameZh: "睫毛燙翹與其他",       isHeader: true },
-  { name: "Eyelash Lift",         nameZh: "睫毛燙翹",   price: 79,  duration: "45min" },
-  { name: "Eyelash Tinting",      nameZh: "睫毛染色",   price: 20,  duration: "20min" },
-  { name: "Bottom Lash Tinting",  nameZh: "下睫毛染色", price: 20,  duration: "20min" },
-  { name: "Top & Bottom Tinting", nameZh: "上下睫毛染色",price: 30, duration: "30min" },
-  { name: "Eyebrow Tinting",      nameZh: "眉毛染色",   price: 30,  duration: "20min" },
+  { name: "Lash Add-Ons",          nameZh: "睫毛附加服務",          isHeader: true },
   { name: "Bottom Lash Ext.",     nameZh: "下睫毛嫁接", price: 30,  duration: "30min" },
   { name: "Color Lash Ext.",      nameZh: "彩色睫毛嫁接",price: 25, duration: "20min" },
   { name: "Eyelash Removal",      nameZh: "睫毛卸除",   price: 20,  duration: "20min" },
-  { name: "Brow Care",            nameZh: "眉毛護理",             isHeader: true },
-  { name: "Lamination + Tint + Shape", nameZh: "定型+染色+修型", price: 75, duration: "45min" },
-  { name: "Lamination + Shape",   nameZh: "定型+修型",  price: 60,  duration: "35min" },
   { name: "Waxing",               nameZh: "蜜蠟除毛",             isHeader: true },
   { name: "Eyebrow",              nameZh: "眉型蜜蠟",   price: 10,  duration: "15min" },
   { name: "Chin",                 nameZh: "下巴蜜蠟",   price: 20,  duration: "15min" },
