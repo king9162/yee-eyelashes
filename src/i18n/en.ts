@@ -39,7 +39,7 @@ const en = {
   },
   faq: {
     heading: "Everything You Need to Know",
-    subheading: "Common questions from our Manhasset clients",
+    subheading: "Questions from our clients",
   },
   contact: {
     heading: "Visit Our Studio",
