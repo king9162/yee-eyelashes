@@ -23,10 +23,10 @@ export const faqs: FAQItem[] = [
   },
   {
     id: "faq3",
-    questionEn: "What's the difference between Classic, Hybrid, Volume, and Mega-Volume?",
-    questionZh: "經典、混合、豐盈和超豐盈有什麼區別？",
-    answerEn: "Classic: one premium extension per natural lash, clean mascara-free elegance. Hybrid: a blend of classic and volume fans, textured depth with natural feel. Volume: multiple ultra-fine fans per lash, full, dramatic, and multi-dimensional. Mega-Volume: our most intense technique, maximum impact for clients who want to command every room. We guide you through the choice during your consultation.",
-    answerZh: "經典款：每根天然睫毛接一根優質延伸——乾淨、無需睫毛膏的優雅。混合款：經典與豐盈扇形的結合——層次感深度與自然感並存。豐盈款：每根睫毛接多個超細扇形——飽滿、戲劇感且多層次。超豐盈款：我們最強烈的技術——為想要在任何場合成為焦點的客戶打造最大衝擊力。我們會在諮詢時協助您做出選擇。",
+    questionEn: "What's the difference between Classic, Premium, and 3D?",
+    questionZh: "Classic、Premium 和 3D 有什麼區別？",
+    answerEn: "Classic (Mink/Silk): one premium extension per natural lash, clean and natural elegance — perfect for everyday wear. Premium (Cashmere): ultra-soft, lightweight cashmere lashes for a fuller, more refined look with a luxurious feel. 3D: our most voluminous technique using multiple ultra-fine fans per lash for maximum fullness and dramatic impact. We guide you through the choice during your consultation.",
+    answerZh: "Classic（Mink/Silk）：每根天然睫毛接一根優質延伸——乾淨自然的優雅，適合日常妝感。Premium（Cashmere）：超柔軟輕盈的羊絨睫毛，打造更飽滿細膩的效果，觸感奢華。3D：我們最豐盈的技術，每根睫毛接多個超細扇形，呈現最大豐盈度與戲劇感。我們會在諮詢時協助您做出選擇。",
   },
   {
     id: "faq4",
