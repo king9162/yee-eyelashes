@@ -83,7 +83,7 @@ function buildLashTypes(data: typeof MS): LashServiceType[] {
 type FlatItem = { name: string; nameZh: string; price?: number; duration?: string; note?: string; noteZh?: string; isHeader?: boolean };
 
 const FILLS_PMU: FlatItem[] = [
-  { name: "Lash Add-Ons",          nameZh: "睫毛附加服務",          isHeader: true },
+  { name: "Eyelash Extension & Removal", nameZh: "睫毛嫁接與卸除",   isHeader: true },
   { name: "Bottom Lash Ext.",     nameZh: "下睫毛嫁接", price: 30,  duration: "30min" },
   { name: "Color Lash Ext.",      nameZh: "彩色睫毛嫁接",price: 25, duration: "20min" },
   { name: "Eyelash Removal",      nameZh: "睫毛卸除",   price: 20,  duration: "20min" },
