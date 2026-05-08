@@ -68,7 +68,7 @@ export default function ContactSection({ lang }: Props) {
   ];
 
   return (
-    <section className="py-28 bg-white">
+    <section className="py-14 md:py-28 bg-white">
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
         <SectionTitle
           heading={t.contact.heading}

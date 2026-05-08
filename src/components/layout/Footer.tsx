@@ -20,7 +20,7 @@ export default function Footer({ lang }: Props) {
 
       {/* ── Pre-footer CTA band ── */}
       <div className="bg-[#F8F5EF] border-t border-neutral-200/60">
-        <div className="max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16 py-16 md:py-20 flex flex-col items-center text-center md:flex-row md:items-center md:text-left md:justify-between gap-8">
+        <div className="max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16 py-10 md:py-20 flex flex-col items-center text-center md:flex-row md:items-center md:text-left md:justify-between gap-8">
           <div>
             <p
               className="text-[1.75rem] sm:text-[2rem] md:text-[2.5rem] font-light text-[#1C1C1C] leading-tight mb-2"

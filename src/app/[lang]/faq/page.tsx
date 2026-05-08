@@ -4,6 +4,7 @@ import { isValidLang, type Lang } from "@/i18n";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import FAQSection from "@/components/sections/FAQSection";
+import { faqs } from "@/data/faq";
 
 type Props = { params: Promise<{ lang: string }> };
 
@@ -20,14 +21,30 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       };
 }
 
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqs.map((faq) => ({
+    "@type": "Question",
+    name: faq.questionEn,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: faq.answerEn,
+    },
+  })),
+};
+
 export default async function FAQPage({ params }: Props) {
   const { lang: rawLang } = await params;
   if (!isValidLang(rawLang)) notFound();
   const lang = rawLang as Lang;
-  const zh = lang === "zh";
 
   return (
     <div className="min-h-screen bg-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       <Header lang={lang} />
       <div className="pt-[130px]" />
       <FAQSection lang={lang} />
