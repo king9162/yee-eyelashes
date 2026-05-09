@@ -38,6 +38,7 @@ export default function ContactSection({ lang }: Props) {
     {
       label: t.contact.address_label,
       value: `${contact.addressLine1}, ${contact.addressLine2}`,
+      note: lang === "zh" ? "路邊停車位可用" : "Street parking available",
       icon: (
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
@@ -97,6 +98,9 @@ export default function ContactSection({ lang }: Props) {
                       </a>
                     ) : (
                       <p className="text-neutral-700 text-sm">{item.value}</p>
+                    )}
+                    {"note" in item && item.note && (
+                      <p className="text-[11px] text-neutral-400 mt-1">{item.note}</p>
                     )}
                   </div>
                 </div>
