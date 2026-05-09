@@ -79,10 +79,10 @@ export default function ContactSection({ lang }: Props) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
           {/* Info */}
           <div>
-            <div className="space-y-7 mb-12">
+            <div className="space-y-8 mb-12">
               {infoItems.map((item) => (
                 <div key={item.label} className="flex gap-5">
-                  <div className="w-9 h-9 border border-[#C9A84C]/30 flex items-center justify-center flex-shrink-0">
+                  <div className="w-9 h-9 border border-[#C9A84C]/30 flex items-center justify-center flex-shrink-0 mt-0.5">
                     {item.icon}
                   </div>
                   <div>
@@ -105,29 +105,29 @@ export default function ContactSection({ lang }: Props) {
                   </div>
                 </div>
               ))}
-            </div>
 
-            {/* Hours */}
-            <div className="flex gap-5 mb-12">
-              <div className="w-9 h-9 border border-[#C9A84C]/30 flex items-center justify-center flex-shrink-0">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10"/>
-                  <polyline points="12 6 12 12 16 14"/>
-                </svg>
-              </div>
-              <div>
-                <p className="text-[10px] uppercase tracking-[0.25em] text-neutral-400 mb-2">
-                  {lang === "zh" ? "營業時間" : "Hours"}
-                </p>
-                <div className="space-y-1">
-                  {contact.hours.map((row) => (
-                    <div key={row.days} className="flex gap-4 text-sm text-neutral-700">
-                      <span className="w-28 flex-shrink-0">
-                        {lang === "zh" ? row.daysZh : row.days}
-                      </span>
-                      <span>{row.time}</span>
-                    </div>
-                  ))}
+              {/* Hours — same spacing as infoItems */}
+              <div className="flex gap-5">
+                <div className="w-9 h-9 border border-[#C9A84C]/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.25em] text-neutral-400 mb-1.5">
+                    {lang === "zh" ? "營業時間" : "Hours"}
+                  </p>
+                  <div className="space-y-1">
+                    {contact.hours.map((row) => (
+                      <div key={row.days} className="flex gap-4 text-sm text-neutral-700">
+                        <span className="w-28 flex-shrink-0">
+                          {lang === "zh" ? row.daysZh : row.days}
+                        </span>
+                        <span>{row.time}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
