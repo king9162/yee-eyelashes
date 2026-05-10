@@ -10,7 +10,7 @@ export default function PromoPopup({ lang }: Props) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const dismissed = sessionStorage.getItem("promo-dismissed-mothers-day");
+    const dismissed = sessionStorage.getItem("promo-dismissed-new-client");
     if (!dismissed) {
       const t = setTimeout(() => setVisible(true), 800);
       return () => clearTimeout(t);
@@ -18,7 +18,7 @@ export default function PromoPopup({ lang }: Props) {
   }, []);
 
   const dismiss = () => {
-    sessionStorage.setItem("promo-dismissed-mothers-day", "1");
+    sessionStorage.setItem("promo-dismissed-new-client", "1");
     setVisible(false);
   };
 
@@ -49,7 +49,7 @@ export default function PromoPopup({ lang }: Props) {
         <div className="px-6 sm:px-10 pt-9 pb-10 text-center">
           {/* Eyebrow */}
           <p className="text-[10px] uppercase tracking-[0.5em] text-[#C9A84C] mb-4">
-            {lang === "zh" ? "母親節限時優惠" : "Mother's Day Special"}
+            {lang === "zh" ? "新客戶專屬優惠" : "New Client Offer"}
           </p>
 
           {/* Headline */}
@@ -57,19 +57,19 @@ export default function PromoPopup({ lang }: Props) {
             className="text-[1.9rem] sm:text-[2.2rem] font-light text-[#1C1C1C] leading-tight mb-3"
             style={{ fontFamily: "var(--font-serif)" }}
           >
-            {lang === "zh" ? "新客戶首次到訪 享 50% 折扣" : "50% Off Your First Visit"}
+            {lang === "zh" ? "新客戶首次到訪 享 30% 折扣" : "30% Off Your First Visit"}
           </h2>
 
           {/* Sub-headline */}
-          <p className="text-[10px] uppercase tracking-[0.2em] text-[#C9A84C] mb-5 whitespace-nowrap">
-            {lang === "zh" ? "全線眼睫毛服務 · 即日起至 5/10" : "All Eyelash Extensions · Until May 10"}
+          <p className="text-[10px] uppercase tracking-[0.2em] text-[#C9A84C] mb-5">
+            {lang === "zh" ? "全線眼睫毛服務" : "All Eyelash Extensions"}
           </p>
 
           {/* Body */}
           <p className="text-[12px] text-neutral-500 leading-[2] mb-7 mx-auto">
             {lang === "zh"
-              ? <>新客戶專屬優惠。<br />到訪更享精美禮品袋。<br />折扣於到店時直接套用，無需折扣碼。</>
-              : <>New clients only.<br />Receive a complimentary gift bag with your visit.<br />Discount applied on-site, no code required.</>}
+              ? <>新客戶專屬優惠。<br />折扣於到店時直接套用，無需折扣碼。</>
+              : <>New clients only.<br />Discount applied on-site, no code required.</>}
           </p>
 
           {/* CTA */}

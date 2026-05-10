@@ -18,7 +18,7 @@ export const promotions: Promotion[] = [
     descriptionZh: "新客戶全線眼睫毛服務享 50% 折扣，即日起至 5/10。每位到訪客人獲贈精美禮品袋。",
     note: "Valid for first-time clients only. No code required — discount applied on-site.",
     noteZh: "僅限新客戶首次光臨。無需折扣碼，到店直接套用。",
-    active: true,
+    active: false,
   },
   {
     id: "new-clients",
