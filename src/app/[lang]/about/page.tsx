@@ -83,9 +83,7 @@ export default async function AboutPage({ params }: Props) {
                     <p>
                       我們相信，真正出色的睫毛源於對細節的執著。每位客人到來，我們都會先進行深入諮詢，了解您的眼型、骨骼輪廓與日常生活方式，再為您量身打造最適合的款式與材質。
                     </p>
-                    <p>
-                      我們只選用醫用級黏合劑與頂級輕量睫毛纖維，確保每一次服務都安全、舒適，並對您的天然睫毛零傷害。
-                    </p>
+
                     <p>
                       無論您是初次嫁接的新客，還是多年來一直信賴我們的老朋友，我們都以同樣的用心與專注，為您呈現最完美的效果。
                     </p>
@@ -98,9 +96,7 @@ export default async function AboutPage({ params }: Props) {
                     <p>
                       We believe that truly exceptional lashes begin with listening. Every appointment starts with a thorough consultation where we study your eye shape, bone structure, and lifestyle before selecting a single lash. The result is a set that is uniquely yours — not just beautiful, but effortless to wear.
                     </p>
-                    <p>
-                      We use only medical-grade, formaldehyde-free adhesives and premium lightweight lash fibers selected for both beauty and safety. Your natural lash health is never compromised.
-                    </p>
+
                     <p>
                       Whether you're a first-time client or a longtime regular, you'll receive the same level of precision, care, and attention to detail that has made Yee Eyelashes a trusted name in Manhasset and beyond.
                     </p>
