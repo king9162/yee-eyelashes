@@ -15,13 +15,6 @@ export const faqs: FAQItem[] = [
     answerZh: "是的。我們使用醫用級、不含甲醛的黏合劑，以及專為敏感眼睛選用的頂級輕量睫毛纖維。在您首次預約前，我們會進行全面諮詢，了解任何過敏體質並為您選擇最安全的材料。您的天然睫毛健康始終是我們的第一優先。",
   },
   {
-    id: "faq-elly",
-    questionEn: "Are you the lash studio formerly known as Elly Lashes in Manhasset?",
-    questionZh: "你們是以前在 Manhasset 的 Elly 美睫工作室嗎？",
-    answerEn: "Yes — if you previously visited a lash studio on Plandome Road in Manhasset and are looking for the same location, you're in the right place. We are now Yee Eyelashes, located at 278 Plandome Rd, 2nd Floor, Manhasset, NY. We continue to offer professional lash extensions and beauty services to clients across Nassau County and Long Island. We'd love to welcome you back.",
-    answerZh: "是的——如果您之前曾在 Manhasset Plandome Road 附近光顧過美睫工作室，現在我們以 Yee Eyelashes 的名義繼續為您服務。地址不變：278 Plandome Rd 2樓，Manhasset，紐約。我們期待再次為您服務。",
-  },
-  {
     id: "faq6",
     questionEn: "Do lash extensions damage natural lashes?",
     questionZh: "睫毛嫁接會損傷天然睫毛嗎？",
