@@ -25,6 +25,7 @@ export default function Header({ lang }: Props) {
   const navLinks = [
     { label: t.nav.home,     href: `/${lang}` },
     { label: t.nav.services, href: `/${lang}/services` },
+    { label: t.nav.about,    href: `/${lang}/about` },
     { label: t.nav.coupon,   href: `/${lang}/coupon` },
     { label: t.nav.faq,      href: `/${lang}/faq` },
     { label: t.nav.contact,  href: `/${lang}/contact` },

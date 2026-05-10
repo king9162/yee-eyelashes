@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 const BASE_URL = "https://www.yeeeyelashes.com";
 const langs = ["en", "zh"] as const;
-const pages = ["", "/services", "/faq", "/coupon", "/gallery", "/contact"] as const;
+const pages = ["", "/services", "/about", "/faq", "/coupon", "/gallery", "/contact"] as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const entries: MetadataRoute.Sitemap = [];

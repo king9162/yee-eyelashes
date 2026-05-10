@@ -7,6 +7,7 @@ const zh = {
     faq: "常見問題",
     booking: "立即預約",
     contact: "聯絡我們",
+    about: "關於我們",
   },
   promo: {
     text: "✨ 新客專屬優惠：首次全套嫁接享 8 折優惠，預約時告知即可。",

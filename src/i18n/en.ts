@@ -7,6 +7,7 @@ const en = {
     faq: "FAQ",
     booking: "Book Now",
     contact: "Contact",
+    about: "About",
   },
   promo: {
     text: "✨ New Client Offer: Enjoy 20% off your first full set. Mention this offer when booking.",
