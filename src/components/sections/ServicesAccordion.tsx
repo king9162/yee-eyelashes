@@ -100,10 +100,11 @@ const FILLS_PMU: FlatItem[] = [
 
 // ─── Sub-components ───────────────────────────────────────────────
 
-function LashCard({ lang, tier, tierZh, badge, desc, descZh, photo, types, bookHref }: {
+function LashCard({ lang, tier, tierZh, badge, desc, descZh, photo, types, bookHref, designStylePrices }: {
   lang: Lang; tier: string; tierZh: string; badge: string;
   desc: string; descZh: string; photo: string;
   types: LashServiceType[]; bookHref: string;
+  designStylePrices?: [number, number, number, number, number];
 }) {
   const zh = lang === "zh";
   const [open, setOpen] = useState<string | null>(null);
@@ -156,6 +157,20 @@ function LashCard({ lang, tier, tierZh, badge, desc, descZh, photo, types, bookH
                       )}
                     </div>
                   ))}
+                  {designStylePrices && (() => {
+                    const idx = types.indexOf(svc);
+                    const dsPrice = designStylePrices[idx];
+                    return (
+                      <div className="py-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[12px] text-neutral-600 font-medium">{zh ? "設計款" : "Design Style"}</span>
+                          <div className="flex items-center gap-5">
+                            <span className="text-[13px] text-[#C9A84C] min-w-[52px] text-right">${dsPrice}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             </div>
@@ -455,6 +470,7 @@ export default function ServicesAccordion({ lang }: Props) {
               photo="/images/lash-premium.jpg"
               types={pcTypes}
               bookHref={bookHref}
+              designStylePrices={[140, 80, 90, 110, 360]}
             />
             <ThreeDCard lang={lang} bookHref={bookHref} />
             <FillsPmuCard lang={lang} bookHref={bookHref} />
