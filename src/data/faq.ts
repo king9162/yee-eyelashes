@@ -50,6 +50,13 @@ export const faqs: FAQItem[] = [
     answerZh: "不會——只要由持證專業人員正確施術。我們的技術包括對每根天然睫毛的精確隔離，以及不會對毛囊造成任何壓力的輕量材料。我們致力於您天然睫毛的長期健康，而不僅僅是當下的效果。我們許多客戶已跟隨我們多年，天然睫毛完全沒有受損。",
   },
   {
+    id: "faq-elly",
+    questionEn: "Are you the lash studio formerly known as Elly Lashes in Manhasset?",
+    questionZh: "你們是以前在 Manhasset 的 Elly 美睫工作室嗎？",
+    answerEn: "Yes — if you previously visited a lash studio on Plandome Road in Manhasset and are looking for the same location, you're in the right place. We are now Yee Eyelashes, located at 278 Plandome Rd, 2nd Floor, Manhasset, NY. We continue to offer professional lash extensions and beauty services to clients across Nassau County and Long Island. We'd love to welcome you back.",
+    answerZh: "是的——如果您之前曾在 Manhasset Plandome Road 附近光顧過美睫工作室，現在我們以 Yee Eyelashes 的名義繼續為您服務。地址不變：278 Plandome Rd 2樓，Manhasset，紐約。我們期待再次為您服務。",
+  },
+  {
     id: "faq7",
     questionEn: "How much do lash extensions cost in Manhasset, NY?",
     questionZh: "曼哈薩特的睫毛嫁接費用是多少？",
