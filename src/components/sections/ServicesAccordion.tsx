@@ -22,18 +22,18 @@ const PCS = [60, 80, 100, 120] as const;
 
 const MS: Record<number, [number,string,number,string,number,string,number,string,number,string]> = {
   60:  [60,"1hr",        30,"1hr",       40,"1hr",       50,"1hr",       150,"1hr"],
-  80:  [80,"1hr",        40,"1hr",       50,"1hr",       70,"1hr",       170,"1hr"],
-  100: [100,"1hr 30min", 50,"1hr",       60,"1hr",       80,"1hr",       220,"1hr"],
-  120: [120,"1hr 30min", 60,"1hr 30min", 70,"1hr 30min", 90,"1hr 30min", 260,"1hr 30min"],
+  80:  [80,"1hr",        40,"1hr",       50,"1hr",       70,"1hr",       200,"1hr"],
+  100: [100,"1hr 30min", 50,"1hr",       60,"1hr",       80,"1hr",       260,"1hr"],
+  120: [120,"1hr 30min", 60,"1hr 30min", 70,"1hr 30min", 90,"1hr 30min", 300,"1hr 30min"],
   180: [160,"2hr",       80,"2hr",       90,"2hr",      110,"2hr",       340,"2hr"],
 };
 const PC: Record<number, [number,string,number,string,number,string,number,string,number,string]> = {
-  60:  [80,"1hr",        50,"1hr",       60,"1hr",       70,"1hr",       180,"1hr"],
-  80:  [100,"1hr",       60,"1hr",       70,"1hr",       90,"1hr",       200,"1hr"],
-  100: [120,"1hr 30min", 70,"1hr",       80,"1hr",      100,"1hr",       250,"1hr"],
-  120: [140,"1hr 30min", 80,"1hr 30min", 90,"1hr 30min",110,"1hr 30min", 290,"1hr 30min"],
-  140: [160,"1hr 30min", 90,"1hr 30min",100,"1hr 30min",120,"1hr 30min", 310,"1hr 30min"],
-  180: [180,"2hr",      100,"2hr",      110,"2hr",      130,"2hr",       370,"2hr"],
+  60:  [80,"1hr",        50,"1hr",       60,"1hr",       70,"1hr",       200,"1hr"],
+  80:  [100,"1hr",       60,"1hr",       70,"1hr",       90,"1hr",       260,"1hr"],
+  100: [120,"1hr 30min", 70,"1hr",       80,"1hr",      100,"1hr",       300,"1hr"],
+  120: [140,"1hr 30min", 80,"1hr 30min", 90,"1hr 30min",110,"1hr 30min", 360,"1hr 30min"],
+  140: [160,"1hr 30min", 90,"1hr 30min",100,"1hr 30min",120,"1hr 30min", 410,"1hr 30min"],
+  180: [180,"2hr",      100,"2hr",      110,"2hr",      130,"2hr",       460,"2hr"],
 };
 
 // Descriptions for each pcs count (shown under New Set only)
