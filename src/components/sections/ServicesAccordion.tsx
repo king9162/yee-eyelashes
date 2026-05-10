@@ -160,11 +160,13 @@ function LashCard({ lang, tier, tierZh, badge, desc, descZh, photo, types, bookH
                   {designStylePrices && (() => {
                     const idx = types.indexOf(svc);
                     const dsPrice = designStylePrices[idx];
+                    const dsDur = svc.rows.find(r => r.pcs === 120)?.dur ?? "";
                     return (
                       <div className="py-3">
                         <div className="flex items-center justify-between">
                           <span className="text-[12px] text-neutral-600 font-medium">{zh ? "設計款" : "Design Style"}</span>
                           <div className="flex items-center gap-5">
+                            {dsDur && <span className="text-[11px] text-neutral-300">{dsDur}</span>}
                             <span className="text-[13px] text-[#C9A84C] min-w-[52px] text-right">${dsPrice}</span>
                           </div>
                         </div>
