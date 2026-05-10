@@ -126,12 +126,6 @@ export default async function AboutPage({ params }: Props) {
                   descZh: "每位客人都是獨特的。我們根據您的眼型、生活方式與個人喜好量身設計，從不套用固定模板。",
                 },
                 {
-                  titleEn: "Safety First",
-                  titleZh: "安全第一",
-                  descEn: "We use medical-grade, formaldehyde-free adhesives and premium lightweight materials. The long-term health of your natural lashes is our priority.",
-                  descZh: "我們使用醫用級不含甲醛的黏合劑與頂級輕量材料，天然睫毛的長期健康始終是我們的首要考量。",
-                },
-                {
                   titleEn: "Lasting Results",
                   titleZh: "持久效果",
                   descEn: "Precision technique and premium materials mean your lashes look great longer. We also provide personalized aftercare guidance at every visit.",
