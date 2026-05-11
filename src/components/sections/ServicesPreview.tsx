@@ -17,6 +17,17 @@ const categories = [
     durationZh: "50 分鐘 – 1.5 小時",
   },
   {
+    n: "02",
+    nameEn: "Lash Lift & Tint",
+    nameZh: "睫毛燙翹與染色",
+    descEn: "Give your natural lashes a long-lasting curl and lift — no extensions needed. Paired with a professional tint for deeper color and definition. Results last 6–8 weeks with zero daily maintenance.",
+    descZh: "無需嫁接，讓天然睫毛持久捲翹提升。搭配專業染色增添深邃色澤與輪廓，效果持續 6-8 週，完全不需日常護理。",
+    fromEn: "From $88",
+    fromZh: "從 $88 起",
+    durationEn: "~1 hr",
+    durationZh: "約 1 小時",
+  },
+  {
     n: "03",
     nameEn: "Refills & Care",
     nameZh: "補睫與護理",
