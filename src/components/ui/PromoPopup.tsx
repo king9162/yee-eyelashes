@@ -69,7 +69,7 @@ export default function PromoPopup({ lang }: Props) {
           <p className="text-[12px] text-neutral-500 leading-[2] mb-7 mx-auto">
             {lang === "zh"
               ? <>新客戶專屬優惠。<br />折扣於到店時直接套用，無需折扣碼。</>
-              : <>New clients only.<br />Discount applied on-site, no code required.</>}
+              : <>New clients.<br />Discount applied on-site, no code required.</>}
           </p>
 
           {/* CTA */}
