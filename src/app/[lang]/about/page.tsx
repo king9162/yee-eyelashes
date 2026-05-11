@@ -91,10 +91,10 @@ export default async function AboutPage({ params }: Props) {
                 ) : (
                   <>
                     <p>
-                      Yee Eyelashes is a boutique lash and permanent makeup studio located at 278 Plandome Rd, Manhasset, NY — serving clients across Nassau County and Long Island.
+                      Yee Eyelashes is a boutique lash and permanent makeup studio located at 278 Plandome Rd, Manhasset, NY, serving clients across Nassau County and Long Island.
                     </p>
                     <p>
-                      We believe that truly exceptional lashes begin with listening. Every appointment starts with a thorough consultation where we study your eye shape, bone structure, and lifestyle before selecting a single lash. The result is a set that is uniquely yours — not just beautiful, but effortless to wear.
+                      We believe that truly exceptional lashes begin with listening. Every appointment starts with a thorough consultation where we study your eye shape, bone structure, and lifestyle before selecting a single lash. The result is a set that is uniquely yours, not just beautiful, but effortless to wear.
                     </p>
 
                     <p>
@@ -118,7 +118,7 @@ export default async function AboutPage({ params }: Props) {
                 {
                   titleEn: "Personalized for You",
                   titleZh: "為您量身打造",
-                  descEn: "No two clients are the same. We design every set around your unique eye shape, lifestyle, and preferences — never a one-size-fits-all approach.",
+                  descEn: "No two clients are the same. We design every set around your unique eye shape, lifestyle, and preferences. Never a one-size-fits-all approach.",
                   descZh: "每位客人都是獨特的。我們根據您的眼型、生活方式與個人喜好量身設計，從不套用固定模板。",
                 },
                 {
