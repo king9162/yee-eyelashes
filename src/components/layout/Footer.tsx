@@ -82,9 +82,15 @@ export default function Footer({ lang }: Props) {
                   </p>
                   <a
                     href={`tel:${contact.phone}`}
-                    className="text-white/75 hover:text-[#C9A84C] text-[13px] sm:text-[15px] tracking-[0.02em] transition-colors duration-300"
+                    className="block text-white/75 hover:text-[#C9A84C] text-[13px] sm:text-[15px] tracking-[0.02em] transition-colors duration-300"
                   >
                     {contact.phone}
+                  </a>
+                  <a
+                    href={`tel:${contact.phone2}`}
+                    className="block text-white/75 hover:text-[#C9A84C] text-[13px] sm:text-[15px] tracking-[0.02em] transition-colors duration-300 mt-1"
+                  >
+                    {contact.phone2}
                   </a>
                 </div>
               </div>

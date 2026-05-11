@@ -48,7 +48,7 @@ export default function ContactSection({ lang }: Props) {
     },
     {
       label: t.contact.phone_label,
-      value: contact.phone,
+      value: `${contact.phone} / ${contact.phone2}`,
       href: `tel:${contact.phone}`,
       icon: (
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
