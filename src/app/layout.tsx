@@ -88,9 +88,9 @@ const localBusinessSchema = {
   name: "Yee Eyelashes",
   image: "https://www.yeeeyelashes.com/images/yee-logo-v1-cropped.png",
   description:
-    "Yee Eyelashes is Manhasset's premier lash studio, specializing in bespoke classic, hybrid, volume, and mega-volume eyelash extensions. We also offer lash lift & tint, brow lamination, waxing, and permanent makeup services. Located at 278 Plandome Rd, 2FL, Manhasset, NY — serving Nassau County and Long Island.",
+    "Yee Eyelashes is Manhasset's premier lash studio, specializing in bespoke classic, premium cashmere, and 3D volume eyelash extensions, plus permanent makeup services. Located at 278 Plandome Rd 2FL, Manhasset, NY — serving Nassau County and Long Island.",
   url: "https://www.yeeeyelashes.com",
-  telephone: "+1-929-806-2467",
+  telephone: "+1-516-984-3859",
   priceRange: "$$",
   address: {
     "@type": "PostalAddress",
@@ -121,12 +121,14 @@ const localBusinessSchema = {
     "@type": "OfferCatalog",
     name: "Lash Extension Services",
     itemListElement: [
-      { "@type": "Offer", itemOffered: { "@type": "Service", name: "Classic Lash Extensions" } },
-      { "@type": "Offer", itemOffered: { "@type": "Service", name: "Hybrid Lash Extensions" } },
-      { "@type": "Offer", itemOffered: { "@type": "Service", name: "Volume Lash Extensions" } },
-      { "@type": "Offer", itemOffered: { "@type": "Service", name: "Mega Volume Lash Extensions" } },
-      { "@type": "Offer", itemOffered: { "@type": "Service", name: "Lash Lift & Tint" } },
-      { "@type": "Offer", itemOffered: { "@type": "Service", name: "Permanent Makeup" } },
+      { "@type": "Offer", itemOffered: { "@type": "Service", name: "Real Mink Lash Extensions", description: "Classic faux mink lash extensions, semi-matte finish, starting at $60" } },
+      { "@type": "Offer", itemOffered: { "@type": "Service", name: "Premium Cashmere Lash Extensions", description: "Luxury royal cashmere lash extensions with split tip, starting at $80" } },
+      { "@type": "Offer", itemOffered: { "@type": "Service", name: "3D Volume Lash Extensions", description: "Multi-layered volume lashes for a full dramatic look, starting at $160" } },
+      { "@type": "Offer", itemOffered: { "@type": "Service", name: "Lash Extension Refills", description: "1, 2, and 3-week lash refills starting at $30" } },
+      { "@type": "Offer", itemOffered: { "@type": "Service", name: "Microblading", description: "Semi-permanent eyebrow microblading, starting at $599" } },
+      { "@type": "Offer", itemOffered: { "@type": "Service", name: "Ombre Powder Brows", description: "Soft powder brow permanent makeup, starting at $599" } },
+      { "@type": "Offer", itemOffered: { "@type": "Service", name: "Nano Hairstroke Brows", description: "Ultra-fine nano hairstroke brow technique, starting at $599" } },
+      { "@type": "Offer", itemOffered: { "@type": "Service", name: "Classic Eyeliner", description: "Permanent makeup classic eyeliner, starting at $380" } },
     ],
   },
   areaServed: [

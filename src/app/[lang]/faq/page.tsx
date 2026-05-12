@@ -14,8 +14,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         description: "Yee Eyelashes 常見問題解答。了解睫毛嫁接、護理、預約及服務相關資訊。",
       }
     : {
-        title: "FAQ | YEE EYELASHES",
-        description: "Frequently asked questions about lash extensions, aftercare, booking, and services at Yee Eyelashes in Manhasset, NY.",
+        title: "Lash Extension FAQ | YEE EYELASHES Manhasset, NY",
+        description: "Common questions about lash extensions in Manhasset, NY — how long they last, pricing, aftercare, safety, and what makes Yee Eyelashes different. Get answers before you book.",
+        alternates: {
+          canonical: "https://www.yeeeyelashes.com/en/faq",
+          languages: {
+            "en": "https://www.yeeeyelashes.com/en/faq",
+            "zh-TW": "https://www.yeeeyelashes.com/zh/faq",
+            "x-default": "https://www.yeeeyelashes.com/en/faq",
+          },
+        },
+        openGraph: {
+          title: "Lash Extension FAQ | Yee Eyelashes Manhasset NY",
+          description: "Everything you want to know about lash extensions — how long they last, what they cost, how to prepare, and more. Serving Manhasset, Great Neck, and Nassau County.",
+          url: "https://www.yeeeyelashes.com/en/faq",
+          type: "website",
+          locale: "en_US",
+          siteName: "Yee Eyelashes",
+        },
       };
 }
 

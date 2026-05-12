@@ -16,14 +16,7 @@ type Props = {
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang } = await params;
   return {
-    alternates: {
-      canonical: `https://www.yeeeyelashes.com/${lang}`,
-      languages: {
-        "en": "https://www.yeeeyelashes.com/en",
-        "zh-TW": "https://www.yeeeyelashes.com/zh",
-        "x-default": "https://www.yeeeyelashes.com/en",
-      },
-    },
+    // Canonical and hreflang are set per-page to avoid wrong canonical on inner pages
     ...(lang === "zh" && {
       title: "YEE EYELASHES | 紐約曼哈薩特頂級睫毛工作室",
       description: "Yee Eyelashes 是曼哈薩特頂尖的睫毛嫁接工作室，專業提供經典、混合、豐盈及超豐盈睫毛嫁接。位於 278 Plandome Rd，曼哈薩特，紐約。服務拿騷縣全區。",

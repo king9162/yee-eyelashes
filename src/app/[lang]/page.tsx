@@ -33,11 +33,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     : {
         title: "YEE EYELASHES | Luxury Lash Extensions in Manhasset, NY",
         description:
-          "Nassau County's most sought-after lash studio. Classic, hybrid, volume & mega-volume extensions custom-crafted for your eye shape. 278 Plandome Rd, Manhasset NY. Book today.",
+          "Nassau County's premier lash studio. Real Mink, Premium Cashmere & 3D volume extensions custom-crafted for your eye shape. 278 Plandome Rd, Manhasset NY. Book today.",
+        alternates: {
+          canonical: "https://www.yeeeyelashes.com/en",
+          languages: {
+            "en": "https://www.yeeeyelashes.com/en",
+            "zh-TW": "https://www.yeeeyelashes.com/zh",
+            "x-default": "https://www.yeeeyelashes.com/en",
+          },
+        },
         openGraph: {
           title: "YEE EYELASHES | Luxury Lash Extensions in Manhasset, NY",
           description:
-            "Bespoke lash extensions designed for the discerning woman. Classic, hybrid, volume & mega-volume sets handcrafted in Manhasset, NY. Serving Nassau County.",
+            "Bespoke lash extensions designed for the discerning woman. Real Mink, Premium Cashmere & 3D volume sets handcrafted in Manhasset, NY. Serving Nassau County.",
           url: "https://www.yeeeyelashes.com/en",
           type: "website",
           locale: "en_US",

@@ -1,4 +1,9 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 import { isValidLang, type Lang } from "@/i18n";
 import { supabaseAdmin } from "@/lib/supabase";
 import { generateCancelToken } from "@/lib/email";
