@@ -19,6 +19,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       };
 }
 
+const couponBreadcrumb = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: "https://www.yeeeyelashes.com/en" },
+    { "@type": "ListItem", position: 2, name: "Promotions", item: "https://www.yeeeyelashes.com/en/coupon" },
+  ],
+};
+
+const offerSchema = {
+  "@context": "https://schema.org",
+  "@type": "Offer",
+  name: "New Client 30% Off",
+  description: "New clients receive 30% off their first eyelash extension service at Yee Eyelashes in Manhasset, NY. Discount applied on-site, no code required.",
+  seller: { "@type": "LocalBusiness", name: "Yee Eyelashes", url: "https://www.yeeeyelashes.com" },
+  eligibleCustomerType: "https://schema.org/NewCustomer",
+  availability: "https://schema.org/InStock",
+  url: "https://www.yeeeyelashes.com/en/coupon",
+  areaServed: { "@type": "City", name: "Manhasset", containedIn: "Nassau County, NY" },
+};
+
 export default async function CouponPage({ params }: Props) {
   const { lang: rawLang } = await params;
   if (!isValidLang(rawLang)) notFound();
@@ -29,6 +50,8 @@ export default async function CouponPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-[#F8F5EF]">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(couponBreadcrumb) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(offerSchema) }} />
 
       {/* Header */}
       <div className="bg-[#F8F5EF] pt-[150px] pb-12 px-6 text-center border-b border-neutral-200">

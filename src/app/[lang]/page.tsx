@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { isValidLang, type Lang } from "@/i18n";
+import { faqs } from "@/data/faq";
 import dynamic from "next/dynamic";
 import Hero from "@/components/sections/Hero";
 import ServicesPreview from "@/components/sections/ServicesPreview";
@@ -62,6 +63,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       };
 }
 
+const homeFaqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqs.map((faq) => ({
+    "@type": "Question",
+    name: faq.questionEn,
+    acceptedAnswer: { "@type": "Answer", text: faq.answerEn },
+  })),
+};
+
+const homeBreadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: "https://www.yeeeyelashes.com/en" },
+  ],
+};
+
 export default async function HomePage({ params }: Props) {
   const { lang: rawLang } = await params;
 
@@ -70,6 +89,8 @@ export default async function HomePage({ params }: Props) {
 
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(homeFaqSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(homeBreadcrumbSchema) }} />
       <PromoPopup lang={lang} />
       <Hero lang={lang} />
       <ServicesPreview lang={lang} />

@@ -20,7 +20,7 @@ const montserrat = Montserrat({
 export const metadata: Metadata = {
   title: "YEE EYELASHES | Luxury Lash Extensions in Manhasset, NY",
   description:
-    "Yee Eyelashes is Manhasset's premier lash studio, specializing in bespoke classic, hybrid, volume, and mega-volume eyelash extensions. We also offer lash lift & tint, brow lamination, waxing, and permanent makeup services. Located at 278 Plandome Rd, 2FL, Manhasset, NY — serving Nassau County and Long Island.",
+    "Yee Eyelashes is Manhasset's premier lash studio, specializing in Real Mink, Premium Cashmere, and 3D volume eyelash extensions, plus permanent makeup services. Located at 278 Plandome Rd 2FL, Manhasset, NY. Serving Nassau County and Long Island.",
   keywords: [
     "eyelash extensions Manhasset",
     "lash extensions Manhasset NY",
@@ -157,6 +157,27 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: "Yee Eyelashes",
+            url: "https://www.yeeeyelashes.com",
+            description: "Premier lash extension and permanent makeup studio in Manhasset, NY. Serving Nassau County and Long Island.",
+            inLanguage: ["en", "zh-TW"],
+            publisher: {
+              "@type": "Organization",
+              name: "Yee Eyelashes",
+              url: "https://www.yeeeyelashes.com",
+              logo: "https://www.yeeeyelashes.com/images/yee-logo-v1-cropped.png",
+              sameAs: [
+                "https://www.instagram.com/yee_lashesny",
+                "https://www.tiktok.com/@yee_lashesny",
+              ],
+            },
+          }) }}
         />
       </head>
       <body className="min-h-screen bg-white text-black antialiased" suppressHydrationWarning>

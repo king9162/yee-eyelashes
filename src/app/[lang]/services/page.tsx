@@ -43,6 +43,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       };
 }
 
+const servicesBreadcrumb = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: "https://www.yeeeyelashes.com/en" },
+    { "@type": "ListItem", position: 2, name: "Services", item: "https://www.yeeeyelashes.com/en/services" },
+  ],
+};
+
 const servicesSchema = {
   "@context": "https://schema.org",
   "@type": "ItemList",
@@ -131,10 +140,8 @@ export default async function ServicesPage({ params }: Props) {
 
   return (
     <div className="bg-[#F8F5EF] min-h-screen pt-[76px] md:pt-[130px]">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(servicesSchema) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(servicesBreadcrumb) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(servicesSchema) }} />
       <PromoBanner lang={lang} />
       <ServicesAccordion lang={lang} />
     </div>
