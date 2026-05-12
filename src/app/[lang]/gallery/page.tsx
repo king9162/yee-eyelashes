@@ -23,10 +23,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       }
     : {
         title: "Lash Extension Gallery | YEE EYELASHES Manhasset NY",
-        description: "See the artistry at Yee Eyelashes. Real results — classic, hybrid, volume & mega-volume lash extensions by Manhasset's most sought-after lash studio.",
+        description: "See the artistry at Yee Eyelashes. Real results — Real Mink, Premium Cashmere & 3D volume lash extensions by Manhasset's premier lash studio.",
+        alternates: {
+          canonical: "https://www.yeeeyelashes.com/en/gallery",
+          languages: {
+            "en": "https://www.yeeeyelashes.com/en/gallery",
+            "zh-TW": "https://www.yeeeyelashes.com/zh/gallery",
+            "x-default": "https://www.yeeeyelashes.com/en/gallery",
+          },
+        },
         openGraph: {
           title: "Lash Extension Gallery | YEE EYELASHES Manhasset NY",
-          description: "Browse our portfolio of classic, hybrid, volume & mega-volume lash extensions. Premium artistry in Manhasset, Nassau County, NY.",
+          description: "Browse our portfolio of Real Mink, Premium Cashmere & 3D volume lash extensions. Premium artistry in Manhasset, Nassau County, NY.",
           url: "https://www.yeeeyelashes.com/en/gallery",
           type: "website",
           locale: "en_US",

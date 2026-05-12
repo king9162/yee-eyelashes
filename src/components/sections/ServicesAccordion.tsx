@@ -113,7 +113,7 @@ function LashCard({ lang, tier, tierZh, badge, desc, descZh, photo, types, bookH
     <div className="flex flex-col bg-white">
       {/* Photo */}
       <div className="relative w-full overflow-hidden" style={{ aspectRatio: "4/3" }}>
-        <Image src="/images/lash-premium.jpg" alt={tier} fill className="object-cover transition-transform duration-700 hover:scale-[1.03]" sizes="(max-width:1024px) 100vw, 33vw" />
+        <Image src="/images/lash-premium.jpg" alt={`${tier} lash extensions at Yee Eyelashes Manhasset NY`} fill className="object-cover transition-transform duration-700 hover:scale-[1.03]" sizes="(max-width:1024px) 100vw, 33vw" />
       </div>
 
       {/* Header */}
@@ -215,7 +215,7 @@ function FillsPmuCard({ lang, bookHref }: { lang: Lang; bookHref: string }) {
     <div className="flex flex-col bg-white">
       {/* Photo */}
       <div className="relative w-full overflow-hidden" style={{ aspectRatio: "4/3" }}>
-        <Image src="/images/lash-premium.jpg" alt="Care & PMU" fill className="object-cover transition-transform duration-700 hover:scale-[1.03]" sizes="(max-width:1024px) 100vw, 33vw" />
+        <Image src="/images/lash-premium.jpg" alt="Lash extension add-ons and permanent makeup services at Yee Eyelashes Manhasset NY" fill className="object-cover transition-transform duration-700 hover:scale-[1.03]" sizes="(max-width:1024px) 100vw, 33vw" />
       </div>
 
       {/* Header */}
@@ -299,7 +299,7 @@ function ThreeDCard({ lang, bookHref }: { lang: Lang; bookHref: string }) {
     <div className="flex flex-col bg-white">
       {/* Photo */}
       <div className="relative w-full overflow-hidden" style={{ aspectRatio: "4/3" }}>
-        <Image src="/images/lash-premium.jpg" alt="3D Lashes" fill className="object-cover transition-transform duration-700 hover:scale-[1.03]" sizes="(max-width:1024px) 100vw, 25vw" />
+        <Image src="/images/lash-premium.jpg" alt="3D volume lash extensions Manhasset NY — Yee Eyelashes" fill className="object-cover transition-transform duration-700 hover:scale-[1.03]" sizes="(max-width:1024px) 100vw, 25vw" />
       </div>
 
       {/* Header */}
@@ -364,7 +364,7 @@ function DesignStyleCard({ lang, bookHref }: { lang: Lang; bookHref: string }) {
     <div className="flex flex-col bg-white">
       {/* Photo */}
       <div className="relative w-full overflow-hidden" style={{ aspectRatio: "4/3" }}>
-        <Image src="/images/lash-premium.jpg" alt="Design Style Lashes" fill className="object-cover transition-transform duration-700 hover:scale-[1.03]" sizes="(max-width:1024px) 100vw, 25vw" />
+        <Image src="/images/lash-premium.jpg" alt="Design style custom lash extensions at Yee Eyelashes Manhasset NY" fill className="object-cover transition-transform duration-700 hover:scale-[1.03]" sizes="(max-width:1024px) 100vw, 25vw" />
       </div>
 
       {/* Header */}

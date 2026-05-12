@@ -8,11 +8,11 @@ const BLUR_DATA =
   "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwMCIgaGVpZ2h0PSI4MDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iIzFjMWMxYyIvPjwvc3ZnPg==";
 
 const slides = [
-  { src: "/images/hero-1.jpg", alt: "Yee Eyelashes treatment room" },
-  { src: "/images/hero-2.jpg", alt: "Yee Eyelashes lounge area" },
-  { src: "/images/hero-5.jpg", alt: "Yee Eyelashes gift bags" },
-  { src: "/images/hero-3.jpg", alt: "Yee Eyelashes studio detail" },
-  { src: "/images/hero-4.jpg", alt: "Yee Eyelashes studio decor" },
+  { src: "/images/hero-1.jpg", alt: "Yee Eyelashes lash extension treatment room — Manhasset NY" },
+  { src: "/images/hero-2.jpg", alt: "Yee Eyelashes luxury lash studio — 278 Plandome Rd Manhasset" },
+  { src: "/images/hero-5.jpg", alt: "Yee Eyelashes complimentary gift bags for new clients" },
+  { src: "/images/hero-3.jpg", alt: "Yee Eyelashes lash studio interior — Nassau County NY" },
+  { src: "/images/hero-4.jpg", alt: "Yee Eyelashes premium lash studio — Manhasset Long Island" },
 ];
 
 export default function HeroSlider() {

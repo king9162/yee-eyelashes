@@ -20,7 +20,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ? {
         title: "YEE EYELASHES | 紐約曼哈薩特頂級睫毛工作室",
         description:
-          "Yee Eyelashes — 紐約曼哈薩特頂級睫毛工作室。提供經典、混合、豐盈及超豐盈睫毛嫁接，以及睫毛燙翹與半永久彩妝服務。立即預約，展現您的獨特魅力。",
+          "Yee Eyelashes — 紐約曼哈薩特頂級睫毛工作室。提供 Real Mink、Premium Cashmere 及 3D 豐盈睫毛嫁接，以及半永久彩妝服務。立即預約，展現您的獨特魅力。",
+        alternates: {
+          canonical: "https://www.yeeeyelashes.com/zh",
+          languages: {
+            "en": "https://www.yeeeyelashes.com/en",
+            "zh-TW": "https://www.yeeeyelashes.com/zh",
+            "x-default": "https://www.yeeeyelashes.com/en",
+          },
+        },
         openGraph: {
           title: "YEE EYELASHES | 紐約曼哈薩特頂級睫毛工作室",
           description: "曼哈薩特最專業的睫毛工作室。精緻睫毛嫁接，為您量身打造最適合的妝效。歡迎預約諮詢。",
