@@ -58,6 +58,7 @@ const seoPages = [
 
 export default function SEOPagesView() {
   return (
+    <div className="flex-1 overflow-y-auto">
     <div className="p-6 md:p-10 max-w-4xl">
       <div className="mb-8">
         <h1 className="text-2xl font-light text-neutral-800 mb-2">SEO Pages</h1>
@@ -112,6 +113,7 @@ export default function SEOPagesView() {
           Each page targets a specific search term (e.g. &quot;lash lift Manhasset&quot;) and is included in the sitemap so Google can index it. They are not linked from the header or footer, so regular website visitors will only land on them from a Google search. This is a standard SEO strategy used by the top-ranked competitors.
         </p>
       </div>
+    </div>
     </div>
   );
 }
