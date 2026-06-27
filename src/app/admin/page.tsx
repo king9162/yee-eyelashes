@@ -490,8 +490,12 @@ export default function AdminPage() {
         return acc;
       }, {} as Record<string, { client: Client; visits: { date: string; notes: string }[] }>)
     ).sort((a, b) => {
-      const latestA = a.visits.map(v => v.date ?? "").sort().at(-1) ?? "";
-      const latestB = b.visits.map(v => v.date ?? "").sort().at(-1) ?? "";
+      const aKey = normPhone(a.client.phone ?? "") || a.client.email;
+      const bKey = normPhone(b.client.phone ?? "") || b.client.email;
+      const cA = (aKey ? cancelledDatesMap.get(aKey) : undefined) ?? new Set<string>();
+      const cB = (bKey ? cancelledDatesMap.get(bKey) : undefined) ?? new Set<string>();
+      const latestA = a.visits.map(v => v.date ?? "").filter(d => d && !cA.has(d)).sort().at(-1) ?? "";
+      const latestB = b.visits.map(v => v.date ?? "").filter(d => d && !cB.has(d)).sort().at(-1) ?? "";
       return latestB.localeCompare(latestA);
     });
 
@@ -609,6 +613,16 @@ export default function AdminPage() {
 
   type ClientGroup = { client: Client; visits: { date: string; notes: string; id: string }[]; isDeleted: boolean };
 
+  // Pre-compute cancelled booking dates per client key for sort/count
+  const cancelledDatesMap = new Map<string, Set<string>>();
+  for (const b of bookings) {
+    if (b.status !== "cancelled" || !b.date) continue;
+    const k = normPhone(b.phone ?? "") || b.email;
+    if (!k) continue;
+    if (!cancelledDatesMap.has(k)) cancelledDatesMap.set(k, new Set());
+    cancelledDatesMap.get(k)!.add(b.date);
+  }
+
   function buildClientGroups(list: Client[]): ClientGroup[] {
     return Object.values(
       list.reduce((acc, c) => {
@@ -631,8 +645,12 @@ export default function AdminPage() {
         return (a.client.first_name ?? "").localeCompare(b.client.first_name ?? "") ||
                (a.client.last_name  ?? "").localeCompare(b.client.last_name  ?? "");
       }
-      const latestA = a.visits.map(v => v.date ?? "").sort().at(-1) ?? "";
-      const latestB = b.visits.map(v => v.date ?? "").sort().at(-1) ?? "";
+      const aKey = normPhone(a.client.phone ?? "") || a.client.email;
+      const bKey = normPhone(b.client.phone ?? "") || b.client.email;
+      const cancelledA = (aKey ? cancelledDatesMap.get(aKey) : undefined) ?? new Set<string>();
+      const cancelledB = (bKey ? cancelledDatesMap.get(bKey) : undefined) ?? new Set<string>();
+      const latestA = a.visits.map(v => v.date ?? "").filter(d => d && !cancelledA.has(d)).sort().at(-1) ?? "";
+      const latestB = b.visits.map(v => v.date ?? "").filter(d => d && !cancelledB.has(d)).sort().at(-1) ?? "";
       return latestB.localeCompare(latestA);
     });
   }
