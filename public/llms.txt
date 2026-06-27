@@ -1,0 +1,32 @@
+# Yee Eyelashes — llms.txt
+# https://www.yeeeyelashes.com
+
+> Yee Eyelashes is Manhasset's premier lash bar and boutique studio, located at 278 Plandome Rd, 2nd Floor, Manhasset, NY 11030. We specialize in Real Mink, Premium Cashmere, Design Style sparkle lashes, and 3D Volume lash extensions, as well as Lash Lift, Lash Tint, and Permanent Makeup. Serving Manhasset, Great Neck, Port Washington, Garden City, and Nassau County, NY. Phone: (516) 984-3859. Hours: Monday–Saturday 9:30am–7:00pm.
+
+## Services
+
+- Real Mink Lash Extensions: Faux mink lashes with a semi-matte finish. Natural, fine, and lightweight. New sets from $60. Available in 60, 80, 100, 120, and 180 lashes per eye.
+- Premium Cashmere Lash Extensions: Royal Cashmere lashes with a concave base and split tip. Softer, fuller, more luxurious feel. New sets from $80.
+- Design Style Lash Extensions: Fully customized bespoke lash sets designed around your eye shape, facial structure, and personal style using Premium Cashmere materials. Starting at $130.
+- 3D Volume Lash Extensions: Multi-layered volume fans applied per natural lash for a full, dramatic look. Starting at $150.
+- Lash Refills: 1-week, 2-week, and 3-week refill services from $30 to maintain your extensions.
+- Microblading: Semi-permanent eyebrow hair-stroke technique. Starting at $599, includes 6–8 week touch-up.
+- Ombre Powder Brows: Soft powder brow permanent makeup. Starting at $599.
+- Nano Hairstroke Brows: Ultra-fine digital hair-stroke brows. Starting at $599.
+- Classic Eyeliner: Permanent makeup eyeliner. Starting at $380.
+
+## Pages
+
+- [Home](https://www.yeeeyelashes.com/en): Overview of all services, studio information, and booking link.
+- [Services & Pricing](https://www.yeeeyelashes.com/en/services): Full service menu with detailed pricing for all lash and permanent makeup services.
+- [FAQ](https://www.yeeeyelashes.com/en/faq): Answers to common questions about lash extensions, aftercare, pricing, and permanent makeup.
+- [About](https://www.yeeeyelashes.com/en/about): Studio story, values, and approach to personalized lash artistry.
+- [Gallery](https://www.yeeeyelashes.com/en/gallery): Photos of lash extension and permanent makeup work.
+- [Contact](https://www.yeeeyelashes.com/en/contact): Address, phone, hours, and contact form.
+- [Lash Extensions & Lash Bar Manhasset](https://www.yeeeyelashes.com/en/lash-extensions-manhasset): Dedicated landing page covering Real Mink, Premium Cashmere, Design Style sparkle, and 3D volume lash extensions in Manhasset, NY — including FAQ and NYC travel info.
+- [Lash Health & Safety Protocol](https://www.yeeeyelashes.com/en/lash-health-safety): Full safety protocol page covering medical-grade adhesives, formaldehyde-free adhesive, patch testing, 1:1 isolation standard, sensitive-eye protocols, sanitation, and first-timer guidance.
+- [Book Appointment](https://square.site/appointments/buyer/widget/qe4tfv3078b5gx/LYH1D5CHJ3Q63): Online booking portal.
+
+## Languages
+
+This site is available in English (/en) and Traditional Chinese (/zh).
