@@ -22,18 +22,18 @@ const PCS = [60, 80, 100, 120] as const;
 
 const MS: Record<number, [number,string,number,string,number,string,number,string,number,string]> = {
   60:  [60,"1hr",        30,"1hr",       40,"1hr",       50,"1hr",       150,"1hr"],
-  80:  [80,"1hr",        40,"1hr",       50,"1hr",       70,"1hr",       200,"1hr"],
-  100: [100,"1hr 30min", 50,"1hr",       60,"1hr",       80,"1hr",       260,"1hr"],
-  120: [120,"1hr 30min", 60,"1hr 30min", 70,"1hr 30min", 90,"1hr 30min", 300,"1hr 30min"],
+  80:  [80,"1hr",        40,"1hr",       50,"1hr",       70,"1hr",       190,"1hr"],
+  100: [100,"1hr 30min", 45,"1hr",       55,"1hr",       75,"1hr",       240,"1hr"],
+  120: [120,"1hr 30min", 55,"1hr 30min", 65,"1hr 30min", 85,"1hr 30min", 280,"1hr 30min"],
   180: [160,"2hr",       80,"2hr",       90,"2hr",      110,"2hr",       340,"2hr"],
 };
 const PC: Record<number, [number,string,number,string,number,string,number,string,number,string]> = {
-  60:  [80,"1hr",        50,"1hr",       60,"1hr",       70,"1hr",       200,"1hr"],
-  80:  [100,"1hr",       60,"1hr",       70,"1hr",       90,"1hr",       260,"1hr"],
-  100: [120,"1hr 30min", 70,"1hr",       80,"1hr",      100,"1hr",       300,"1hr"],
-  120: [140,"1hr 30min", 80,"1hr 30min", 90,"1hr 30min",110,"1hr 30min", 360,"1hr 30min"],
-  140: [160,"1hr 30min", 90,"1hr 30min",100,"1hr 30min",120,"1hr 30min", 410,"1hr 30min"],
-  180: [180,"2hr",      100,"2hr",      110,"2hr",      130,"2hr",       460,"2hr"],
+  60:  [80,"1hr",        45,"1hr",       55,"1hr",       65,"1hr",       200,"1hr"],
+  80:  [100,"1hr",       50,"1hr",       60,"1hr",       70,"1hr",       240,"1hr"],
+  100: [120,"1hr 30min", 60,"1hr",       69,"1hr",       79,"1hr",       280,"1hr"],
+  120: [130,"1hr 30min", 70,"1hr 30min", 79,"1hr 30min",105,"1hr 30min", 320,"1hr 30min"],
+  140: [150,"1hr 30min", 85,"1hr 30min", 95,"1hr 30min",115,"1hr 30min", 360,"1hr 30min"],
+  180: [170,"2hr",       95,"2hr",      105,"2hr",      125,"2hr",       420,"2hr"],
 };
 
 // Descriptions for each pcs count (shown under New Set only)
@@ -83,6 +83,10 @@ function buildLashTypes(data: typeof MS): LashServiceType[] {
 type FlatItem = { name: string; nameZh: string; price?: number; duration?: string; note?: string; noteZh?: string; isHeader?: boolean };
 
 const FILLS_PMU: FlatItem[] = [
+  { name: "Lash Lift & Tint",     nameZh: "睫毛燙翹與染色",         isHeader: true },
+  { name: "Eyelash Lift",         nameZh: "睫毛燙翹",  price: 79,  duration: "45min" },
+  { name: "Eyelash Tinting",      nameZh: "睫毛染色",  price: 20,  duration: "20min" },
+  { name: "Eyebrow Tinting",      nameZh: "眉毛染色",  price: 30,  duration: "20min" },
   { name: "Eyelash Extension & Removal", nameZh: "睫毛嫁接與卸除",   isHeader: true },
   { name: "Bottom Lash Ext.",     nameZh: "下睫毛嫁接", price: 30,  duration: "30min" },
   { name: "Color Lash Ext.",      nameZh: "彩色睫毛嫁接",price: 25, duration: "20min" },
@@ -395,7 +399,7 @@ function DesignStyleCard({ lang, bookHref }: { lang: Lang; bookHref: string }) {
               <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-[200px]" : "max-h-0"}`}>
                 <div className="px-8 pb-4">
                   <div className="flex items-center justify-end py-3">
-                    <span className="text-[13px] text-[#C9A84C]">$140</span>
+                    <span className="text-[13px] text-[#C9A84C]">$130</span>
                   </div>
                 </div>
               </div>
@@ -472,7 +476,7 @@ export default function ServicesAccordion({ lang }: Props) {
               photo="/images/lash-premium.jpg"
               types={pcTypes}
               bookHref={bookHref}
-              designStylePrices={[140, 80, 90, 110, 360]}
+              designStylePrices={[130, 70, 79, 89, 320]}
             />
             <ThreeDCard lang={lang} bookHref={bookHref} />
             <FillsPmuCard lang={lang} bookHref={bookHref} />

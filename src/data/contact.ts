@@ -1,7 +1,7 @@
 export const contact = {
   name: "Yee Eyelashes",
-  address: "278 Plandome Rd 2FL, Manhasset, NY",
-  addressLine1: "278 Plandome Rd 2FL",
+  address: "278 Plandome Rd, 2nd Floor, Manhasset, NY",
+  addressLine1: "278 Plandome Rd, 2nd Floor",
   addressLine2: "Manhasset, NY",
   phone: "516-984-3859",
   phone2: "929-806-2467",
@@ -12,6 +12,7 @@ export const contact = {
   tiktok: "@yee_lashesny",
   tiktokUrl: "https://www.tiktok.com/@yee_lashesny",
   hours: [
-    { days: "Mon – Sun", daysZh: "星期一至日", time: "9:30 AM – 7:00 PM" },
+    { days: "Mon – Sat", daysZh: "星期一至六", time: "9:30 AM – 7:00 PM" },
+    { days: "Sun", daysZh: "星期日", time: "Closed" },
   ],
 };

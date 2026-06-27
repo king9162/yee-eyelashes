@@ -32,11 +32,18 @@ img {
   user-select: none;
 }
 
-/* Headings use Cormorant */
+/* Headings use Cormorant (main site only) */
 h1, h2, h3 {
   font-family: var(--font-serif);
   font-weight: 300;
   letter-spacing: -0.01em;
+}
+
+/* Admin + booking panel override: use sans-serif */
+.admin-panel h1, .admin-panel h2, .admin-panel h3,
+.booking-panel h1, .booking-panel h2, .booking-panel h3 {
+  font-family: var(--font-sans);
+  letter-spacing: normal;
 }
 
 /* ── Global link resets ──────────────── */
@@ -60,7 +67,7 @@ a { text-decoration: none; }
   100% { transform: translateX(-50%); }
 }
 .animate-marquee {
-  animation: marquee 28s linear infinite;
+  animation: marquee 90s linear infinite;
 }
 .animate-marquee:hover {
   animation-play-state: paused;

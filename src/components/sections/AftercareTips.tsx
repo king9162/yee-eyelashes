@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { type Lang } from "@/i18n";
 
 type Props = { lang: Lang };
@@ -93,6 +94,15 @@ export default function AftercareTips({ lang }: Props) {
                 {lang === "zh" ? item.zh : item.en}
               </p>
             ))}
+          </div>
+
+          <div className="mt-10 text-center">
+            <Link
+              href={`/${lang}/lash-health-safety`}
+              className="text-[10px] uppercase tracking-[0.32em] text-neutral-400 hover:text-[#C9A84C] transition-colors duration-300"
+            >
+              {lang === "zh" ? "完整護理指南" : "Full Aftercare Guide"}
+            </Link>
           </div>
 
         </div>

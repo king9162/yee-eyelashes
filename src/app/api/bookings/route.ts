@@ -112,6 +112,24 @@ export async function POST(req: NextRequest) {
       console.error("Betty notification error (non-fatal):", notifyErr);
     }
 
+    // ── 6. Sync client to My Clients panel ───────────────────
+    try {
+      const nameParts  = safeName.trim().split(/\s+/);
+      const firstName  = nameParts[0] ?? safeName;
+      const lastName   = nameParts.slice(1).join(" ") || null;
+      await db.from("clients").insert({
+        first_name:  firstName,
+        last_name:   lastName,
+        phone:       safePhone,
+        email,
+        visit_date:  date,
+        notes:       safeNotes,
+        booking_id:  booking.id,
+      });
+    } catch (clientErr) {
+      console.error("Client sync error (non-fatal):", clientErr);
+    }
+
     return NextResponse.json({ success: true, bookingId: booking.id });
 
   } catch (err) {

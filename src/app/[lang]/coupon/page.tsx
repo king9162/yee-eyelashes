@@ -12,10 +12,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ? {
         title: "優惠活動 | YEE EYELASHES",
         description: "查看 Yee Eyelashes 最新優惠與折扣活動。新客優惠、季節限定特惠，立即預約享受專屬折扣。",
+        alternates: {
+          canonical: "https://www.yeeeyelashes.com/zh/coupon",
+          languages: {
+            "en": "https://www.yeeeyelashes.com/en/coupon",
+            "zh-TW": "https://www.yeeeyelashes.com/zh/coupon",
+            "x-default": "https://www.yeeeyelashes.com/en/coupon",
+          },
+        },
       }
     : {
-        title: "Promotions & Offers | YEE EYELASHES",
-        description: "Browse current promotions and special offers at Yee Eyelashes. New client discounts and seasonal deals — book today.",
+        title: "Promotions & Offers | YEE EYELASHES Manhasset NY",
+        description: "Special offers and discounts on eyelash extensions at Yee Eyelashes, Manhasset NY. New client deals on real mink lashes, 3D lashes, and precision lash artistry. Book today.",
+        alternates: {
+          canonical: "https://www.yeeeyelashes.com/en/coupon",
+          languages: {
+            "en": "https://www.yeeeyelashes.com/en/coupon",
+            "zh-TW": "https://www.yeeeyelashes.com/zh/coupon",
+            "x-default": "https://www.yeeeyelashes.com/en/coupon",
+          },
+        },
       };
 }
 

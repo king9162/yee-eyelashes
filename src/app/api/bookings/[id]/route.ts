@@ -23,44 +23,70 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     const newDate = body.date ?? existing.date;
     const newTime = body.time ?? existing.time;
+    const updateFields: Record<string, unknown> = { date: newDate, time: newTime };
+    if (body.name          !== undefined) updateFields.name          = body.name;
+    if (body.phone         !== undefined) updateFields.phone         = body.phone;
+    if (body.email         !== undefined) updateFields.email         = body.email;
+    if (body.service_label !== undefined) updateFields.service_label = body.service_label;
+    if (body.duration_min  !== undefined) updateFields.duration_min  = body.duration_min;
+    if (body.notes         !== undefined) updateFields.notes         = body.notes;
 
-    const { error } = await db.from("bookings").update({ date: newDate, time: newTime }).eq("id", id);
+    const { error } = await db.from("bookings").update(updateFields).eq("id", id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-    // Update Google Calendar: delete old + create new
-    try {
-      if (existing.calendar_event_id) await deleteCalendarEvent(existing.calendar_event_id);
-      const newEventId = await createCalendarEvent({
-        summary:       `${existing.service_label} — ${existing.name}`,
-        description:   `Client: ${existing.name}\nPhone: ${existing.phone}\nEmail: ${existing.email}${existing.notes ? `\nNotes: ${existing.notes}` : ""}`,
-        date:          newDate,
-        time:          newTime,
-        durationMin:   existing.duration_min ?? 90,
-        attendeeEmail: existing.email,
-        attendeeName:  existing.name,
-      });
-      if (newEventId) await db.from("bookings").update({ calendar_event_id: newEventId }).eq("id", id);
-    } catch (e) { console.error("Calendar update error (non-fatal):", e); }
+    if (!body.skipSquare) {
+      // Update Google Calendar: delete old + create new
+      try {
+        if (existing.calendar_event_id) await deleteCalendarEvent(existing.calendar_event_id);
+        const newEventId = await createCalendarEvent({
+          summary:       `${existing.service_label} — ${existing.name}`,
+          description:   `Client: ${existing.name}\nPhone: ${existing.phone}\nEmail: ${existing.email}${existing.notes ? `\nNotes: ${existing.notes}` : ""}`,
+          date:          newDate,
+          time:          newTime,
+          durationMin:   existing.duration_min ?? 90,
+          attendeeEmail: existing.email,
+          attendeeName:  existing.name,
+        });
+        if (newEventId) await db.from("bookings").update({ calendar_event_id: newEventId }).eq("id", id);
+      } catch (e) { console.error("Calendar update error (non-fatal):", e); }
 
-    // Update Square
-    try {
-      if (existing.square_booking_id) await updateSquareBooking(existing.square_booking_id, newDate, newTime);
-    } catch (e) { console.error("Square update error (non-fatal):", e); }
+      // Update Square
+      try {
+        if (existing.square_booking_id) await updateSquareBooking(existing.square_booking_id, newDate, newTime);
+      } catch (e) { console.error("Square update error (non-fatal):", e); }
+    }
 
+    return NextResponse.json({ success: true });
+  }
+
+  // ── Service label update ─────────────────────────────────────────────────
+  if (body.service_label !== undefined && Object.keys(body).length === 1) {
+    const { error } = await db.from("bookings").update({ service_label: body.service_label }).eq("id", id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ success: true });
+  }
+
+  // ── Merge square_booking_id (internal sync use) ─────────────────────────
+  if (body.square_booking_id !== undefined) {
+    const fields: Record<string, unknown> = { square_booking_id: body.square_booking_id };
+    if (body.service_label) fields.service_label = body.service_label;
+    if (body.duration_min)  fields.duration_min  = body.duration_min;
+    const { error } = await db.from("bookings").update(fields).eq("id", id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ success: true });
   }
 
   // ── Status change ────────────────────────────────────────────────────────
   const { status } = body;
-  if (!["pending", "confirmed", "cancelled"].includes(status)) {
+  if (!["pending", "confirmed", "cancelled", "noshow"].includes(status)) {
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
 
   const { error } = await db.from("bookings").update({ status }).eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  // Delete calendar + Square when cancelled
-  if (status === "cancelled") {
+  // Delete calendar + Square when cancelled (skip if admin-only cancel)
+  if (status === "cancelled" && !body.skipSquare) {
     try {
       const { data: booking } = await db.from("bookings").select("calendar_event_id, square_booking_id").eq("id", id).single();
       if (booking?.calendar_event_id) await deleteCalendarEvent(booking.calendar_event_id);

@@ -1,21 +1,25 @@
-import type { Metadata } from "next";
+"use client";
+
 import Link from "next/link";
-import { type Lang } from "@/i18n";
+import { useEffect } from "react";
+import { useParams } from "next/navigation";
 
-export const metadata: Metadata = {
-  robots: { index: false, follow: false },
-};
-
-type Props = {
-  params: Promise<{ lang: string }>;
-};
-
-export default async function BookingSuccessPage({ params }: Props) {
-  const { lang } = await params;
+export default function BookingSuccessPage() {
+  const params = useParams();
+  const lang = params.lang as string;
   const zh = lang === "zh";
 
+  useEffect(() => {
+    if (typeof window !== "undefined" && (window as any).dataLayer) {
+      (window as any).dataLayer.push({
+        event: "booking_confirmed",
+        page: "booking_success",
+      });
+    }
+  }, []);
+
   return (
-    <div className="min-h-screen bg-[#F8F5EF] flex items-center justify-center px-6">
+    <div className="min-h-screen bg-[#F8F5EF] flex items-center justify-center px-6 pt-[70px]">
       <div className="max-w-[480px] w-full text-center">
 
         {/* Gold checkmark */}
@@ -26,7 +30,7 @@ export default async function BookingSuccessPage({ params }: Props) {
         </div>
 
         <p className="text-[9px] uppercase tracking-[0.55em] text-[#C9A84C] mb-4">
-          {zh ? "付款成功" : "Payment Confirmed"}
+          {zh ? "預約成功" : "Booking Confirmed"}
         </p>
 
         <h1
@@ -38,8 +42,8 @@ export default async function BookingSuccessPage({ params }: Props) {
 
         <p className="text-[13px] text-neutral-500 leading-[1.9] mb-3">
           {zh
-            ? "我們已收到您的付款，預約確認已發送至您的電子信箱，並附有 Calendar 邀請。"
-            : "Your payment was received and your appointment is confirmed. A confirmation email with a calendar invite has been sent to you."}
+            ? "您的預約已確認，確認信已發送至您的電子信箱，並附有 Calendar 邀請。"
+            : "Your appointment is confirmed. A confirmation email with a calendar invite has been sent to you."}
         </p>
 
         <p className="text-[12px] text-neutral-400 leading-[1.8] mb-12">
@@ -64,7 +68,7 @@ export default async function BookingSuccessPage({ params }: Props) {
         </div>
 
         <p className="mt-12 text-[11px] text-neutral-300">
-          📍 278 Plandome Rd 2FL, Manhasset, NY 11030
+          📍 278 Plandome Rd, 2nd Floor, Manhasset, NY 11030
         </p>
       </div>
     </div>

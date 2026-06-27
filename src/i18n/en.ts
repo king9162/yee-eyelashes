@@ -46,7 +46,7 @@ const en = {
     heading: "Visit Our Studio",
     subheading: "Located on Plandome Road in Manhasset, serving Nassau County's most discerning clientele",
     address_label: "Location",
-    address: "278 Plandome Rd 2FL, Manhasset, NY",
+    address: "278 Plandome Rd, 2nd Floor, Manhasset, NY",
     phone_label: "Phone",
     phone: "929-806-2467",
     email_label: "Email",

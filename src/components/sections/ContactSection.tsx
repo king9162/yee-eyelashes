@@ -11,7 +11,7 @@ type Props = {
 
 export default function ContactSection({ lang }: Props) {
   const t = getTranslations(lang);
-  const [formData, setFormData] = useState({ name: "", email: "", message: "" });
+  const [formData, setFormData] = useState({ name: "", email: "", message: "", website: "" });
   const [submitted, setSubmitted] = useState(false);
   const [loading,   setLoading]   = useState(false);
   const [error,     setError]     = useState("");
@@ -168,6 +168,17 @@ export default function ContactSection({ lang }: Props) {
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-7">
+                {/* Honeypot — invisible to users, traps spam bots */}
+                <div style={{ position: "absolute", left: "-9999px", top: "auto", width: "1px", height: "1px", overflow: "hidden" }} aria-hidden="true">
+                  <input
+                    type="text"
+                    name="website"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={formData.website}
+                    onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                  />
+                </div>
                 <div>
                   <label className="block text-[10px] uppercase tracking-[0.25em] text-neutral-400 mb-2.5">
                     {t.contact.form.name}

@@ -7,7 +7,6 @@ import Hero from "@/components/sections/Hero";
 import ServicesPreview from "@/components/sections/ServicesPreview";
 import AftercareTips from "@/components/sections/AftercareTips";
 
-const FAQSection = dynamic(() => import("@/components/sections/FAQSection"));
 const ContactSection = dynamic(() => import("@/components/sections/ContactSection"));
 const PromoPopup = dynamic(() => import("@/components/ui/PromoPopup"));
 
@@ -40,9 +39,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         },
       }
     : {
-        title: "YEE EYELASHES | Luxury Lash Extensions in Manhasset, NY",
+        title: "Yee Eyelashes | Real Mink & Premium Cashmere Lash Extensions Manhasset NY",
         description:
-          "Nassau County's premier lash studio. Real Mink, Premium Cashmere & 3D volume extensions custom-crafted for your eye shape. 278 Plandome Rd, Manhasset NY. Book today.",
+          "Yee Eyelashes — Manhasset's premier lash studio specializing in Real Mink, Premium Cashmere, and Design Style lash extensions. New sets from $60. Lash Lift and Permanent Makeup. 278 Plandome Rd, Nassau County, NY. Book online.",
         alternates: {
           canonical: "https://www.yeeeyelashes.com/en",
           languages: {
@@ -52,9 +51,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
           },
         },
         openGraph: {
-          title: "YEE EYELASHES | Luxury Lash Extensions in Manhasset, NY",
+          title: "Yee Eyelashes | Real Mink & Premium Cashmere Lash Extensions Manhasset NY",
           description:
-            "Bespoke lash extensions designed for the discerning woman. Real Mink, Premium Cashmere & 3D volume sets handcrafted in Manhasset, NY. Serving Nassau County.",
+            "Manhasset's premier lash studio. Real Mink, Premium Cashmere, and Design Style lash extensions. New sets from $60. Lash Lift and Permanent Makeup. Serving Nassau County and Long Island.",
           url: "https://www.yeeeyelashes.com/en",
           type: "website",
           locale: "en_US",
@@ -81,6 +80,76 @@ const homeBreadcrumbSchema = {
   ],
 };
 
+const speakableSchema = {
+  "@context": "https://schema.org/",
+  "@type": "WebPage",
+  "name": "Yee Eyelashes | Real Mink & Premium Cashmere Lash Extensions Manhasset NY",
+  "speakable": {
+    "@type": "SpeakableSpecification",
+    "xPath": [
+      "/html/head/title",
+      "/html/head/meta[@name='description']/@content",
+    ],
+  },
+  "url": "https://www.yeeeyelashes.com/en",
+};
+
+const localBusinessSchema = {
+  "@context": "https://schema.org",
+  "@type": "BeautySalon",
+  "@id": "https://www.yeeeyelashes.com",
+  name: "Yee Eyelashes",
+  url: "https://www.yeeeyelashes.com",
+  telephone: "+15169843859",
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "278 Plandome Rd, 2nd Floor",
+    addressLocality: "Manhasset",
+    addressRegion: "NY",
+    postalCode: "11030",
+    addressCountry: "US",
+  },
+  openingHoursSpecification: [
+    {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
+      opens: "09:30",
+      closes: "19:00",
+    },
+  ],
+  aggregateRating: {
+    "@type": "AggregateRating",
+    ratingValue: "5",
+    reviewCount: "61",
+    bestRating: "5",
+    worstRating: "1",
+  },
+  priceRange: "$$",
+  description: "Yee Eyelashes is Manhasset's premier lash studio specializing in Real Mink, Premium Cashmere, Design Style, and 3D lash extensions. Located at 278 Plandome Rd, 2nd Floor, Manhasset, NY. Also offering Lash Lift, Lash Tint, and Permanent Makeup. Serving Nassau County and Long Island, NY.",
+  hasOfferCatalog: {
+    "@type": "OfferCatalog",
+    name: "Lash & Beauty Services",
+    itemListElement: [
+      { "@type": "Offer", itemOffered: { "@type": "Service", name: "Real Mink Lash Extensions", description: "Faux mink lash extensions with a semi-matte finish. Natural, fine, and lightweight. New sets from $60 in Manhasset, NY." } },
+      { "@type": "Offer", itemOffered: { "@type": "Service", name: "Premium Cashmere Lash Extensions", description: "Royal Cashmere lashes with a concave base and split tip. Softer, fuller, more luxurious. New sets from $80 in Manhasset, NY." } },
+      { "@type": "Offer", itemOffered: { "@type": "Service", name: "Design Style Lash Extensions", description: "Fully customized bespoke lash sets designed around your eye shape and personal style. Starting at $130 in Manhasset, NY." } },
+      { "@type": "Offer", itemOffered: { "@type": "Service", name: "3D Volume Lash Extensions", description: "Multi-fan volume lashes for maximum fullness and dramatic impact. New sets from $150 in Manhasset, NY." } },
+      { "@type": "Offer", itemOffered: { "@type": "Service", name: "Refills and Care for Lashes", description: "1-week, 2-week, and 3-week lash refill services to maintain your eyelash extensions." } },
+      { "@type": "Offer", itemOffered: { "@type": "Service", name: "Lash Lift & Tint", description: "Professional eyelash lift that curls and lifts natural lashes for 6–8 weeks, paired with lash tinting." } },
+      { "@type": "Offer", itemOffered: { "@type": "Service", name: "Permanent Makeup", description: "Microblading, ombre powder brows, combination brows, nano hairstroke brows, and permanent eyeliner." } },
+    ],
+  },
+  areaServed: [
+    { "@type": "City", name: "Manhasset" },
+    { "@type": "AdministrativeArea", name: "Nassau County" },
+    { "@type": "City", name: "Great Neck" },
+    { "@type": "City", name: "Port Washington" },
+    { "@type": "City", name: "Garden City" },
+    { "@type": "City", name: "Long Island" },
+  ],
+  sameAs: ["https://www.instagram.com/yee_lashesny"],
+};
+
 export default async function HomePage({ params }: Props) {
   const { lang: rawLang } = await params;
 
@@ -91,6 +160,8 @@ export default async function HomePage({ params }: Props) {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(homeFaqSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(homeBreadcrumbSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(speakableSchema) }} />
       <PromoPopup lang={lang} />
       <Hero lang={lang} />
       <ServicesPreview lang={lang} />

@@ -25,13 +25,31 @@ export default function Header({ lang }: Props) {
   const navLinks = [
     { label: t.nav.home,     href: `/${lang}` },
     { label: t.nav.services, href: `/${lang}/services` },
+    { label: t.nav.gallery,  href: `/${lang}/gallery` },
     { label: t.nav.about,    href: `/${lang}/about` },
     { label: t.nav.coupon,   href: `/${lang}/coupon` },
-    { label: t.nav.faq,      href: `/${lang}/faq` },
     { label: t.nav.contact,  href: `/${lang}/contact` },
   ];
 
   const isActive = (href: string) => pathname === href;
+  const isBooking = pathname?.includes("/booking");
+
+  if (isBooking) {
+    return (
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100 h-[70px] flex items-center justify-center">
+        <Link href={`/${lang}`}>
+          <Image
+            src="/images/yee-logo-v1-cropped.png"
+            alt="Yee Eyelashes"
+            width={800}
+            height={268}
+            className="h-[38px] w-auto"
+            priority
+          />
+        </Link>
+      </header>
+    );
+  }
 
   return (
     <header
@@ -63,7 +81,7 @@ export default function Header({ lang }: Props) {
           </div>
 
           {/* Zone 2 — Nav, absolutely centered in the header */}
-          <nav className="flex-1 flex justify-center items-center gap-10 lg:gap-14">
+          <nav className="flex-1 flex justify-center items-center gap-7 lg:gap-10">
             {navLinks.map((link) => (
               <Link
                 key={link.href}

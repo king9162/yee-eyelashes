@@ -1,17 +1,24 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { Lang, getTranslations } from "@/i18n";
 import { contact } from "@/data/contact";
 
 type Props = { lang: Lang };
 
 export default function Footer({ lang }: Props) {
+  const pathname = usePathname();
+  if (pathname?.includes("/booking")) return null;
   const t = getTranslations(lang);
 
   const navLinks = [
     { label: t.nav.home,     href: `/${lang}` },
     { label: t.nav.services, href: `/${lang}/services` },
     { label: t.nav.booking,  href: `/${lang}/booking` },
+    { label: lang === "zh" ? "睫毛護理" : "Lash Care", href: `/${lang}/lash-health-safety` },
+    { label: t.nav.faq,      href: `/${lang}/faq` },
     { label: t.nav.contact,  href: `/${lang}/contact` },
   ];
 
@@ -117,6 +124,19 @@ export default function Footer({ lang }: Props) {
               </div>
             </div>
 
+          </div>
+
+          {/* Nav links row */}
+          <div className="pt-8 pb-4 flex flex-wrap justify-center gap-x-8 gap-y-3 border-t border-white/[0.05]">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-white/35 hover:text-white/60 text-[9.5px] uppercase tracking-[0.28em] transition-colors duration-300"
+              >
+                {link.label}
+              </Link>
+            ))}
           </div>
 
           {/* Bottom bar */}

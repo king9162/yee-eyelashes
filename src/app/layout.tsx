@@ -20,7 +20,7 @@ const montserrat = Montserrat({
 export const metadata: Metadata = {
   title: "YEE EYELASHES | Luxury Lash Extensions in Manhasset, NY",
   description:
-    "Yee Eyelashes is Manhasset's premier lash studio, specializing in Real Mink, Premium Cashmere, and 3D volume eyelash extensions, plus permanent makeup services. Located at 278 Plandome Rd 2FL, Manhasset, NY. Serving Nassau County and Long Island.",
+    "Yee Eyelashes is Manhasset's premier lash studio, specializing in Real Mink, Premium Cashmere, and 3D volume eyelash extensions, Lash Lift, plus permanent makeup services. Located at 278 Plandome Rd, 2nd Floor, Manhasset, NY. Serving Nassau County and Long Island.",
   keywords: [
     "eyelash extensions Manhasset",
     "lash extensions Manhasset NY",
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "YEE EYELASHES | Luxury Lash Extensions in Manhasset, NY",
     description:
-      "Bespoke lash extensions designed for the discerning woman. Classic, hybrid, volume & mega-volume sets, handcrafted in Manhasset, NY. Serving Nassau County.",
+      "Real Mink, Premium Cashmere & 3D volume lash extensions, handcrafted for your eye shape in Manhasset, NY. Serving Nassau County and Long Island.",
     url: "https://www.yeeeyelashes.com",
     type: "website",
     locale: "en_US",
@@ -61,7 +61,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "YEE EYELASHES | Luxury Lash Extensions in Manhasset, NY",
-    description: "Bespoke lash extensions in Manhasset, NY. Classic, hybrid, volume & mega-volume sets.",
+    description: "Real Mink, Premium Cashmere & 3D volume lash extensions in Manhasset, NY. Serving Nassau County and Long Island.",
     images: ["https://www.yeeeyelashes.com/api/og"],
   },
   robots: {
@@ -78,7 +78,7 @@ export const metadata: Metadata = {
     canonical: "https://www.yeeeyelashes.com",
   },
   verification: {
-    google: "LSwZX0AAhnl4cVXf2RzQizx218bqqynmg9lMFI7lkdM",
+    google: ["LSwZX0AAhnl4cVXf2RzQizx218bqqynmg9lMFI7lkdM", "hsa8N7MsJ33w6jFfl8R2W8XNaPyrK8VAaaNhH0iD5MQ"],
   },
 };
 
@@ -88,13 +88,13 @@ const localBusinessSchema = {
   name: "Yee Eyelashes",
   image: "https://www.yeeeyelashes.com/images/yee-logo-v1-cropped.png",
   description:
-    "Yee Eyelashes is Manhasset's premier lash studio, specializing in bespoke classic, premium cashmere, and 3D volume eyelash extensions, plus permanent makeup services. Located at 278 Plandome Rd 2FL, Manhasset, NY — serving Nassau County and Long Island.",
+    "Yee Eyelashes is Manhasset's premier lash bar and studio, specializing in Real Mink, Premium Cashmere, Design Style sparkle lashes, and 3D volume eyelash extensions, plus permanent makeup services. Located at 278 Plandome Rd, 2nd Floor, Manhasset, NY — serving Nassau County and Long Island.",
   url: "https://www.yeeeyelashes.com",
   telephone: "+1-516-984-3859",
   priceRange: "$$",
   address: {
     "@type": "PostalAddress",
-    streetAddress: "278 Plandome Rd 2FL",
+    streetAddress: "278 Plandome Rd, 2nd Floor",
     addressLocality: "Manhasset",
     addressRegion: "NY",
     postalCode: "11030",
@@ -108,7 +108,7 @@ const localBusinessSchema = {
   openingHoursSpecification: [
     {
       "@type": "OpeningHoursSpecification",
-      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
       opens: "09:30",
       closes: "19:00",
     },
@@ -124,12 +124,19 @@ const localBusinessSchema = {
       { "@type": "Offer", itemOffered: { "@type": "Service", name: "Real Mink Lash Extensions", description: "Classic faux mink lash extensions, semi-matte finish, starting at $60" } },
       { "@type": "Offer", itemOffered: { "@type": "Service", name: "Premium Cashmere Lash Extensions", description: "Luxury royal cashmere lash extensions with split tip, starting at $80" } },
       { "@type": "Offer", itemOffered: { "@type": "Service", name: "3D Volume Lash Extensions", description: "Multi-layered volume lashes for a full dramatic look, starting at $160" } },
-      { "@type": "Offer", itemOffered: { "@type": "Service", name: "Lash Extension Refills", description: "1, 2, and 3-week lash refills starting at $30" } },
+      { "@type": "Offer", itemOffered: { "@type": "Service", name: "Refills and Care for Lashes", description: "1-week, 2-week, and 3-week lash extension refills and care for lashes starting at $30" } },
       { "@type": "Offer", itemOffered: { "@type": "Service", name: "Microblading", description: "Semi-permanent eyebrow microblading, starting at $599" } },
       { "@type": "Offer", itemOffered: { "@type": "Service", name: "Ombre Powder Brows", description: "Soft powder brow permanent makeup, starting at $599" } },
       { "@type": "Offer", itemOffered: { "@type": "Service", name: "Nano Hairstroke Brows", description: "Ultra-fine nano hairstroke brow technique, starting at $599" } },
       { "@type": "Offer", itemOffered: { "@type": "Service", name: "Classic Eyeliner", description: "Permanent makeup classic eyeliner, starting at $380" } },
     ],
+  },
+  aggregateRating: {
+    "@type": "AggregateRating",
+    ratingValue: "5",
+    reviewCount: "61",
+    bestRating: "5",
+    worstRating: "1",
   },
   areaServed: [
     { "@type": "City", name: "Manhasset" },
@@ -181,6 +188,21 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen bg-white text-black antialiased" suppressHydrationWarning>
+        {/* Google Tag Manager (noscript) */}
+        <noscript>
+          <iframe
+            src="https://www.googletagmanager.com/ns.html?id=GTM-T36QPXDS"
+            height="0" width="0"
+            style={{ display: "none", visibility: "hidden" }}
+          />
+        </noscript>
+        <Script id="gtm" strategy="afterInteractive">{`
+          (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+          })(window,document,'script','dataLayer','GTM-T36QPXDS');
+        `}</Script>
         <Script src="https://www.googletagmanager.com/gtag/js?id=G-V65FBEY2NK" strategy="afterInteractive" />
         <Script id="google-analytics" strategy="afterInteractive">{`
           window.dataLayer = window.dataLayer || [];

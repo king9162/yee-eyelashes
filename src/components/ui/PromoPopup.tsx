@@ -53,12 +53,12 @@ export default function PromoPopup({ lang }: Props) {
           </p>
 
           {/* Headline */}
-          <h2
+          <p
             className="text-[1.9rem] sm:text-[2.2rem] font-light text-[#1C1C1C] leading-tight mb-3"
             style={{ fontFamily: "var(--font-serif)" }}
           >
             {lang === "zh" ? "新客戶首次到訪 享 30% 折扣" : "30% Off Your First Visit"}
-          </h2>
+          </p>
 
           {/* Sub-headline */}
           <p className="text-[10px] uppercase tracking-[0.2em] text-[#C9A84C] mb-5">
@@ -83,8 +83,27 @@ export default function PromoPopup({ lang }: Props) {
             {lang === "zh" ? "立即預約" : "Book Now"}
           </Link>
 
+          {/* Buy More Save More */}
+          <div className="mt-7 pt-6 border-t border-neutral-200">
+            <Link
+              href={`/${lang}/coupon`}
+              onClick={dismiss}
+              className="group block"
+            >
+              <p className="text-[9px] uppercase tracking-[0.4em] text-neutral-400 mb-1 group-hover:text-[#C9A84C] transition-colors duration-200">
+                {lang === "zh" ? "更多優惠" : "Also Available"}
+              </p>
+              <p
+                className="text-[1.9rem] sm:text-[2.2rem] font-light text-[#1C1C1C] group-hover:text-[#C9A84C] transition-colors duration-200 leading-tight"
+                style={{ fontFamily: "var(--font-serif)" }}
+              >
+                {lang === "zh" ? "買越多，省越多 →" : "Buy More, Save More →"}
+              </p>
+            </Link>
+          </div>
+
           {/* Dismiss link */}
-          <p className="mt-6">
+          <p className="mt-5">
             <button
               onClick={dismiss}
               className="text-[10px] text-neutral-300 hover:text-neutral-400 tracking-[0.1em] underline-offset-2 hover:underline transition-colors"

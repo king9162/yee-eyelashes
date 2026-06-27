@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHmac } from "crypto";
 import { supabaseAdmin } from "@/lib/supabase";
-import { sendConfirmationEmail, sendBettyNotification } from "@/lib/email";
+import { sendConfirmationEmail, sendBettyNotification, sendBettyCancellationNotification } from "@/lib/email";
 import { createCalendarEvent } from "@/lib/google-calendar";
 import { sendSMS } from "@/lib/sms";
 
@@ -19,15 +19,230 @@ function verifySignature(body: string, signature: string, url: string): boolean 
 export async function POST(req: NextRequest) {
   const body = await req.text();
   const signature = req.headers.get("x-square-hmacsha256-signature") ?? "";
-  const url = `${process.env.NEXT_PUBLIC_SITE_URL}/api/webhooks/square`;
+
+  // Use the exact URL Square sent to (avoids www vs non-www mismatch)
+  const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? "";
+  const proto = req.headers.get("x-forwarded-proto") ?? "https";
+  const url = `${proto}://${host}/api/webhooks/square`;
 
   if (!verifySignature(body, signature, url)) {
-    console.error("Square webhook: invalid signature");
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Fallback: try with NEXT_PUBLIC_SITE_URL
+    const fallbackUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/api/webhooks/square`;
+    if (!verifySignature(body, signature, fallbackUrl)) {
+      console.error("Square webhook: invalid signature", { url, fallbackUrl });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
   }
 
   const event = JSON.parse(body);
   const eventType: string = event.type ?? "";
+
+  // ── Square Appointment cancelled ──────────────────────────────
+  if (eventType === "booking.cancelled") {
+    const squareBooking = event.data?.object?.booking;
+    const squareBookingId: string | undefined = squareBooking?.id;
+    if (squareBookingId) {
+      try {
+        const db = supabaseAdmin();
+        const { data: existing } = await db.from("bookings")
+          .select("*")
+          .eq("square_booking_id", squareBookingId)
+          .maybeSingle();
+
+        if (existing && existing.status !== "cancelled") {
+          await db.from("bookings")
+            .update({ status: "cancelled" })
+            .eq("square_booking_id", squareBookingId);
+
+          try {
+            await sendBettyCancellationNotification({
+              name:         existing.name,
+              email:        existing.email,
+              phone:        existing.phone,
+              service:      existing.service ?? "square",
+              serviceLabel: existing.service_label ?? "",
+              date:         existing.date,
+              time:         existing.time,
+            });
+          } catch (emailErr) { console.error("Cancel notify error (non-fatal):", emailErr); }
+        }
+      } catch (err) {
+        console.error("booking.cancelled sync error:", err);
+      }
+    }
+    return NextResponse.json({ ok: true });
+  }
+
+  // ── Square Appointment booked → auto-sync client ──────────────
+  if (eventType === "booking.created" || eventType === "booking.updated") {
+    const booking = event.data?.object?.booking;
+    if (!booking) return NextResponse.json({ ok: true });
+
+    // If the updated booking is now cancelled, handle it the same as booking.cancelled
+    const squareStatus = ((booking.status as string) ?? "").toUpperCase();
+    if (eventType === "booking.updated" && squareStatus.includes("CANCEL")) {
+      const squareBookingId: string | undefined = booking.id;
+      if (squareBookingId) {
+        try {
+          const db = supabaseAdmin();
+          const { data: existing } = await db.from("bookings")
+            .select("*")
+            .eq("square_booking_id", squareBookingId)
+            .maybeSingle();
+
+          if (existing && existing.status !== "cancelled") {
+            await db.from("bookings")
+              .update({ status: "cancelled" })
+              .eq("square_booking_id", squareBookingId);
+
+            try {
+              await sendBettyCancellationNotification({
+                name:         existing.name,
+                email:        existing.email,
+                phone:        existing.phone,
+                service:      existing.service ?? "square",
+                serviceLabel: existing.service_label ?? "",
+                date:         existing.date,
+                time:         existing.time,
+              });
+            } catch (emailErr) { console.error("Cancel notify error (non-fatal):", emailErr); }
+          }
+        } catch (err) { console.error("booking.updated cancel sync error:", err); }
+      }
+      return NextResponse.json({ ok: true });
+    }
+
+    const customerId: string | undefined = booking.customer_id;
+    if (!customerId) return NextResponse.json({ ok: true });
+
+    try {
+      // Fetch customer details from Square
+      const customerRes = await fetch(
+        `https://connect.squareup.com/v2/customers/${customerId}`,
+        { headers: { Authorization: `Bearer ${process.env.SQUARE_ACCESS_TOKEN}` } }
+      );
+      const customerData = await customerRes.json();
+      const c = customerData.customer;
+      if (!c) return NextResponse.json({ ok: true });
+
+      const firstName       = c.given_name   ?? "";
+      const lastName        = c.family_name  ?? "";
+      const phone           = c.phone_number ?? "";
+      const email           = c.email_address ?? "";
+      // Square "Client notes" — manually added by us on the customer profile
+      const squareClientNote = (c.note as string | undefined) ?? "";
+      const visitDate   = booking.start_at
+        ? new Date(booking.start_at).toLocaleDateString("en-CA", { timeZone: "America/New_York" })
+        : "";
+      const durationMin = booking.appointment_segments?.[0]?.duration_minutes ?? 60;
+
+      const db = supabaseAdmin();
+
+      const phoneDigits = phone.replace(/\D/g, "").slice(-10);
+
+      // Insert a new client row for each appointment (same as manual bookings)
+      // Check for exact duplicate: same phone + same visit date
+      const { data: allClients } = await db.from("clients").select("id, phone, email, visit_date, notes");
+      const existingClient = allClients?.find(cl => {
+        const samePhone = phoneDigits && cl.phone?.replace(/\D/g, "").slice(-10) === phoneDigits;
+        const sameEmail = email && cl.email === email;
+        return (samePhone || sameEmail) && cl.visit_date === visitDate;
+      });
+
+      if (!existingClient) {
+        await db.from("clients").insert({
+          first_name:  firstName,
+          last_name:   lastName,
+          phone,
+          email,
+          visit_date:  visitDate,
+          notes:       squareClientNote,
+          owner:       "main",
+        });
+      } else if (squareClientNote && !existingClient.notes) {
+        await db.from("clients").update({ notes: squareClientNote }).eq("id", existingClient.id);
+      }
+
+      // Sync to bookings table (for admin calendar)
+      const squareBookingId: string = booking.id ?? "";
+      const bookingTime = booking.start_at
+        ? new Date(booking.start_at).toLocaleTimeString("en-US", {
+            hour: "numeric", minute: "2-digit", timeZone: "America/New_York",
+          })
+        : "";
+      // Fetch real service name from catalog
+      let serviceLabel = booking.appointment_segments?.[0]?.service_variation_name ?? "";
+      const varId = booking.appointment_segments?.[0]?.service_variation_id as string | undefined;
+      if (!serviceLabel && varId) {
+        try {
+          const catRes = await fetch(`https://connect.squareup.com/v2/catalog/object/${varId}`, {
+            headers: { Authorization: `Bearer ${process.env.SQUARE_ACCESS_TOKEN}`, "Square-Version": "2024-01-18" },
+          });
+          if (catRes.ok) {
+            const catData = await catRes.json();
+            serviceLabel = catData.object?.item_variation_data?.name ?? "";
+          }
+        } catch { /* non-fatal */ }
+      }
+      if (!serviceLabel) serviceLabel = `${durationMin} min`;
+      const fullName = `${firstName} ${lastName}`.trim();
+
+      if (eventType === "booking.created" && squareBookingId) {
+        const { data: existingBooking } = await db
+          .from("bookings")
+          .select("id")
+          .eq("square_booking_id", squareBookingId)
+          .maybeSingle();
+
+        if (!existingBooking) {
+          await db.from("bookings").insert({
+            name:             fullName,
+            phone,
+            email,
+            service:          "square",
+            service_label:    serviceLabel,
+            date:             visitDate,
+            time:             bookingTime,
+            status:           "confirmed",
+            duration_min:     durationMin,
+            notes:            "",
+            square_booking_id: squareBookingId,
+          });
+          // Log this new booking
+          await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/admin/sync-log`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.ADMIN_SECRET_KEY}` },
+            body: JSON.stringify([{ ts: new Date().toISOString(), type: "booking", name: fullName, sub: `${visitDate} ${bookingTime} · ${serviceLabel}` }]),
+          }).catch(() => {/* non-fatal */});
+        }
+      } else if (eventType === "booking.updated" && squareBookingId) {
+        await db.from("bookings").update({
+          service_label: serviceLabel,
+          date:          visitDate,
+          time:          bookingTime,
+          duration_min:  durationMin,
+        }).eq("square_booking_id", squareBookingId);
+      }
+
+      // Notify owner of new booking
+      if (eventType === "booking.created" && (firstName || lastName)) {
+        try {
+          await sendBettyNotification({
+            name:         `${firstName} ${lastName}`.trim(),
+            email:        email || "—",
+            phone:        phone || "—",
+            service:      "square",
+            serviceLabel: serviceLabel || `Square Appointment (${durationMin} min)`,
+            date:         visitDate,
+            time:         booking.start_at ? new Date(booking.start_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "America/New_York" }) : "—",
+          });
+        } catch (err) { console.error("Betty notify error (non-fatal):", err); }
+      }
+    } catch (err) {
+      console.error("booking.created sync error:", err);
+    }
+    return NextResponse.json({ ok: true });
+  }
 
   // payment.updated fires when a payment transitions state;
   // we only act when it reaches COMPLETED
@@ -132,7 +347,7 @@ export async function POST(req: NextRequest) {
         const friendlyDate = `${m}/${d}/${y}`;
         await sendSMS(
           booking.phone,
-          `Hi ${booking.name}! ✨ Your Yee Eyelashes appointment has been confirmed.\n\nService: ${booking.service_label}\nDate: ${friendlyDate} at ${booking.time}\n📍 278 Plandome Rd 2FL, Manhasset, NY\n📞 929-806-2467\n\nSee you soon!`
+          `Hi ${booking.name}! ✨ Your Yee Eyelashes appointment has been confirmed.\n\nService: ${booking.service_label}\nDate: ${friendlyDate} at ${booking.time}\n📍 278 Plandome Rd, 2nd Floor, Manhasset, NY\n📞 929-806-2467\n\nSee you soon!`
         );
       } catch (err) {
         console.error("Client SMS error (non-fatal):", err);

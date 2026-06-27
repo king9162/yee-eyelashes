@@ -12,6 +12,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ? {
         title: "常見問題 | YEE EYELASHES",
         description: "Yee Eyelashes 常見問題解答。了解睫毛嫁接、護理、預約及服務相關資訊。",
+        alternates: {
+          canonical: "https://www.yeeeyelashes.com/zh/faq",
+          languages: {
+            "en": "https://www.yeeeyelashes.com/en/faq",
+            "zh-TW": "https://www.yeeeyelashes.com/zh/faq",
+            "x-default": "https://www.yeeeyelashes.com/en/faq",
+          },
+        },
       }
     : {
         title: "Lash Extension FAQ | YEE EYELASHES Manhasset, NY",
@@ -35,6 +43,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       };
 }
 
+const faqSpeakable = {
+  "@context": "https://schema.org/",
+  "@type": "WebPage",
+  "name": "Lash Extension FAQ | YEE EYELASHES Manhasset, NY",
+  "speakable": {
+    "@type": "SpeakableSpecification",
+    "xPath": ["/html/head/title", "/html/head/meta[@name='description']/@content"],
+  },
+  "url": "https://www.yeeeyelashes.com/en/faq",
+};
+
+const faqBreadcrumb = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: "https://www.yeeeyelashes.com/en" },
+    { "@type": "ListItem", position: 2, name: "FAQ", item: "https://www.yeeeyelashes.com/en/faq" },
+  ],
+};
+
 const faqSchema = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
@@ -55,6 +83,8 @@ export default async function FAQPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-white">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSpeakable) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqBreadcrumb) }} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}

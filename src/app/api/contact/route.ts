@@ -7,7 +7,9 @@ const getResend   = () => new Resend(process.env.RESEND_API_KEY ?? "placeholder"
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, email, message } = await req.json();
+    const { name, email, message, website } = await req.json();
+
+    if (website) return NextResponse.json({ success: true });
 
     if (!name || !email || !message) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
@@ -70,7 +72,7 @@ export async function POST(req: NextRequest) {
                 <p style="margin:0;font-size:13px;color:#1c1c1c;line-height:1.8;">${message.replace(/\n/g, "<br/>")}</p>
               </td></tr></table>
               <p style="font-size:13px;color:#999;line-height:1.8;">
-                📍 278 Plandome Rd 2FL, Manhasset, NY 11030<br/>
+                📍 278 Plandome Rd, 2nd Floor, Manhasset, NY 11030<br/>
                 📞 <a href="tel:9298062467" style="color:#C9A84C;text-decoration:none;">929-806-2467</a>
               </p>
             </div>

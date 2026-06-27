@@ -44,8 +44,8 @@ function buildGoogleCalendarUrl(data: BookingEmailData): string {
     action:   "TEMPLATE",
     text:     `Yee Eyelashes — ${data.serviceLabel}`,
     dates:    `${fmt(start)}/${fmt(end)}`,
-    details:  "Your appointment at Yee Eyelashes. 278 Plandome Rd 2FL, Manhasset, NY 11030 | 📞 929-806-2467",
-    location: "278 Plandome Rd 2FL, Manhasset, NY 11030",
+    details:  "Your appointment at Yee Eyelashes. 278 Plandome Rd, 2nd Floor, Manhasset, NY 11030 | 📞 (516) 984-3859",
+    location: "278 Plandome Rd, 2nd Floor, Manhasset, NY 11030",
   });
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
@@ -134,8 +134,8 @@ export async function sendConfirmationEmail(data: BookingEmailData) {
           </table>
           ${cancelBlock}
           <p style="margin:28px 0 6px;font-size:13px;color:#999;line-height:1.8;">
-            📍 278 Plandome Rd 2FL, Manhasset, NY 11030<br/>
-            📞 <a href="tel:9298062467" style="color:#C9A84C;text-decoration:none;">929-806-2467</a><br/>
+            📍 278 Plandome Rd, 2nd Floor, Manhasset, NY 11030<br/>
+            📞 <a href="tel:5169843859" style="color:#C9A84C;text-decoration:none;">(516) 984-3859</a><br/>
             📷 <a href="https://www.instagram.com/yee_lashesny" style="color:#C9A84C;text-decoration:none;">@yee_lashesny</a>
           </p>
           <p style="margin:28px 0 0;font-size:12px;color:#bbb;line-height:1.8;">${policy}</p>
@@ -265,8 +265,8 @@ export async function sendCancellationEmail(data: BookingEmailData) {
             </td></tr>
           </table>
           <p style="font-size:13px;color:#999;line-height:1.8;">
-            📍 278 Plandome Rd 2FL, Manhasset, NY 11030<br/>
-            📞 <a href="tel:9298062467" style="color:#C9A84C;text-decoration:none;">929-806-2467</a>
+            📍 278 Plandome Rd, 2nd Floor, Manhasset, NY 11030<br/>
+            📞 <a href="tel:5169843859" style="color:#C9A84C;text-decoration:none;">(516) 984-3859</a>
           </p>
         </td></tr>
         <tr><td style="padding:20px 48px;background:#1c1c1c;text-align:center;">
@@ -336,6 +336,144 @@ export async function sendBettyCancellationNotification(data: BookingEmailData) 
 </html>`,
   });
   if (error) throw new Error(`Resend betty cancel error: ${JSON.stringify(error)}`);
+}
+
+// ── 5. Google Review invitation ──────────────────────────────────────────────
+export async function sendGoogleReviewEmail(data: {
+  name:  string;
+  email: string;
+}) {
+  const reviewUrl = process.env.GOOGLE_REVIEW_URL
+    ?? "https://search.google.com/local/writereview?placeid=ChIJ_____YEE_EYELASHES";
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
+<body style="margin:0;padding:0;background:#f8f5ef;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f5ef;padding:40px 20px;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;max-width:560px;width:100%;">
+        <tr><td style="background:#C9A84C;height:4px;"></td></tr>
+        <tr><td style="padding:48px 48px 32px;text-align:center;border-bottom:1px solid #f0ece4;">
+          <p style="margin:0 0 8px;font-size:10px;letter-spacing:0.5em;text-transform:uppercase;color:#C9A84C;">Yee Eyelashes</p>
+          <h1 style="margin:0;font-size:26px;font-weight:300;color:#1c1c1c;letter-spacing:-0.01em;">How was your experience?</h1>
+        </td></tr>
+        <tr><td style="padding:40px 48px;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#fef9ec;border:1px solid #f0dfa0;border-radius:6px;margin-bottom:24px;">
+            <tr><td style="padding:16px 24px;">
+              <p style="margin:0;font-size:15px;font-weight:600;color:#1c1c1c;">🎁 Get $10 off your next visit</p>
+              <p style="margin:6px 0 0;font-size:13px;color:#777;line-height:1.7;">Leave us a Google review and receive <strong>$10 off</strong> your next appointment. Just show us your review when you come in!</p>
+            </td></tr>
+          </table>
+          <p style="margin:0 0 24px;font-size:14px;color:#777;line-height:1.9;">
+            Hi ${data.name}, thank you so much for visiting Yee Eyelashes! We hope you loved your lashes. ✨
+          </p>
+          <p style="margin:0 0 28px;font-size:14px;color:#777;line-height:1.9;">
+            If you have a moment, we'd truly appreciate a Google review. It helps other clients discover us and means the world to our small business.
+          </p>
+          <table cellpadding="0" cellspacing="0" style="margin:0 auto 32px;">
+            <tr><td style="background:#1c1c1c;text-align:center;">
+              <a href="${reviewUrl}" style="display:inline-block;padding:16px 44px;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:#ffffff;text-decoration:none;">
+                Leave a Google Review ★
+              </a>
+            </td></tr>
+          </table>
+          <p style="margin:0;font-size:13px;color:#bbb;text-align:center;line-height:1.8;">
+            It only takes 30 seconds. We truly appreciate your support!
+          </p>
+          <p style="margin:28px 0 0;font-size:13px;color:#999;line-height:1.8;">
+            📍 278 Plandome Rd, 2F, Manhasset, NY 11030<br/>
+            📞 <a href="tel:5169843859" style="color:#C9A84C;text-decoration:none;">(516) 984-3859</a><br/>
+            📷 <a href="https://www.instagram.com/yee_lashesny" style="color:#C9A84C;text-decoration:none;">@yee_lashesny</a>
+          </p>
+        </td></tr>
+        <tr><td style="padding:24px 48px;background:#1c1c1c;text-align:center;">
+          <p style="margin:0;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:#555;">
+            © ${new Date().getFullYear()} Yee Eyelashes · Manhasset, NY
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  const { error } = await getResend().emails.send({
+    from:    `Yee Eyelashes <${FROM}>`,
+    to:      data.email,
+    subject: `${data.name}, we'd love your feedback! — Yee Eyelashes ✨`,
+    html,
+  });
+  if (error) throw new Error(`Resend review email error: ${JSON.stringify(error)}`);
+}
+
+// ── 6. 14-day refill reminder (Chinese, sent to client) ─────────────────────
+export async function sendRefillReminderEmail(data: {
+  name:         string;
+  email:        string;
+  phone:        string;
+  serviceLabel: string;
+  lang?:        string;
+}) {
+  const rebookUrl = "https://square.site/appointments/buyer/widget/qe4tfv3078b5gx/LYH1D5CHJ3Q63";
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
+<body style="margin:0;padding:0;background:#f8f5ef;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f5ef;padding:40px 20px;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;max-width:560px;width:100%;">
+        <tr><td style="background:#C9A84C;height:4px;"></td></tr>
+        <tr><td style="padding:48px 48px 32px;text-align:center;border-bottom:1px solid #f0ece4;">
+          <p style="margin:0 0 8px;font-size:10px;letter-spacing:0.5em;text-transform:uppercase;color:#C9A84C;">Yee Eyelashes</p>
+          <h1 style="margin:0;font-size:26px;font-weight:300;color:#1c1c1c;letter-spacing:-0.01em;">Time for a Refill!</h1>
+        </td></tr>
+        <tr><td style="padding:40px 48px;">
+          <p style="margin:0 0 24px;font-size:14px;color:#777;line-height:1.9;">
+            Hi ${data.name}, it's been two weeks since your last lash appointment. It's the perfect time to come in for a refill and keep your lashes looking full and beautiful!
+          </p>
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#fafaf8;border-left:2px solid #C9A84C;margin-bottom:28px;">
+            <tr><td style="padding:24px 28px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                ${row("Last Service", data.serviceLabel)}
+                ${row("Recommended", "2-Week Refill")}
+              </table>
+            </td></tr>
+          </table>
+          <table cellpadding="0" cellspacing="0" style="margin:0 auto 24px;">
+            <tr><td style="background:#1c1c1c;text-align:center;">
+              <a href="${rebookUrl}" style="display:inline-block;padding:14px 40px;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:#ffffff;text-decoration:none;">
+                Book Your Refill
+              </a>
+            </td></tr>
+          </table>
+          <p style="font-size:13px;color:#999;line-height:1.8;">
+            📍 278 Plandome Rd, 2F, Manhasset, NY 11030<br/>
+            📞 <a href="tel:5169843859" style="color:#C9A84C;text-decoration:none;">(516) 984-3859</a><br/>
+            📷 <a href="https://www.instagram.com/yee_lashesny" style="color:#C9A84C;text-decoration:none;">@yee_lashesny</a>
+          </p>
+        </td></tr>
+        <tr><td style="padding:24px 48px;background:#1c1c1c;text-align:center;">
+          <p style="margin:0;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:#555;">
+            © ${new Date().getFullYear()} Yee Eyelashes · Manhasset, NY
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  const { error } = await getResend().emails.send({
+    from:    `Yee Eyelashes <${FROM}>`,
+    to:      data.email,
+    subject: `${data.name}, your lashes are ready for a refill! — Yee Eyelashes`,
+    html,
+  });
+  if (error) throw new Error(`Resend refill reminder error: ${JSON.stringify(error)}`);
 }
 
 function row(label: string, value: string) {

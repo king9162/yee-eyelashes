@@ -11,6 +11,26 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   compress: true,
+  async redirects() {
+    const barePages = [
+      "services", "about", "faq", "contact", "gallery",
+      "coupon", "booking", "lash-health-safety", "lash-extensions-manhasset",
+      "privacy", "terms",
+    ];
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "yeeeyelashes.com" }],
+        destination: "https://www.yeeeyelashes.com/:path*",
+        permanent: true,
+      },
+      ...barePages.map((page) => ({
+        source: `/${page}`,
+        destination: `/en/${page}`,
+        permanent: true,
+      })),
+    ];
+  },
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },

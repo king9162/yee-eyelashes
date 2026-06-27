@@ -46,7 +46,7 @@ const zh = {
     heading: "歡迎蒞臨我們的工作室",
     subheading: "位於Manhasset Plandome Road，服務Nassau County最挑剔的客戶",
     address_label: "地址",
-    address: "278 Plandome Rd 2FL, Manhasset, NY",
+    address: "278 Plandome Rd, 2nd Floor, Manhasset, NY",
     phone_label: "電話",
     phone: "929-806-2467",
     email_label: "電郵",

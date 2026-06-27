@@ -302,7 +302,7 @@ export default function BookingForm({ lang }: Props) {
             {zh ? "確認信已發送至 " : "Confirmation sent to "}<span className="text-[#C9A84C]">{info.email}</span>
           </p>
           <p className="text-[12px] text-neutral-400">
-            📍 278 Plandome Rd 2FL, Manhasset, NY · <a href="tel:9298062467" className="text-[#C9A84C]">929-806-2467</a>
+            📍 278 Plandome Rd, 2nd Floor, Manhasset, NY · <a href="tel:9298062467" className="text-[#C9A84C]">929-806-2467</a>
           </p>
         </div>
       </div>

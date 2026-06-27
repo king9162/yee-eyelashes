@@ -10,6 +10,14 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
     ? {
         title: "關於我們 | YEE EYELASHES — 曼哈薩特，紐約",
         description: "認識 Yee Eyelashes。我們是位於紐約曼哈薩特的專業睫毛工作室，致力於為每位客戶提供個人化、高品質的睫毛嫁接與半永久彩妝服務。",
+        alternates: {
+          canonical: "https://www.yeeeyelashes.com/zh/about",
+          languages: {
+            "en": "https://www.yeeeyelashes.com/en/about",
+            "zh-TW": "https://www.yeeeyelashes.com/zh/about",
+            "x-default": "https://www.yeeeyelashes.com/en/about",
+          },
+        },
         openGraph: {
           title: "關於我們 | Yee Eyelashes 曼哈薩特",
           description: "認識我們的團隊與理念。Yee Eyelashes 位於紐約曼哈薩特，專注於高品質睫毛嫁接與半永久彩妝。",
@@ -20,8 +28,16 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
         },
       }
     : {
-        title: "About Us | YEE EYELASHES — Manhasset, NY",
-        description: "Learn about Yee Eyelashes, Manhasset's premier lash studio. We specialize in precision lash extensions and permanent makeup, tailored to each client's unique eye shape and lifestyle.",
+        title: "Lash Extensions & Lash Bar in Manhasset, NY | YEE EYELASHES",
+        description: "Yee Eyelashes is Manhasset's premier lash bar — specializing in Real Mink, Premium Cashmere, Design Style, and 3D eyelash extensions. Long lasting results, personalized for your eye shape. Serving Nassau County and Long Island.",
+        alternates: {
+          canonical: "https://www.yeeeyelashes.com/en/about",
+          languages: {
+            "en": "https://www.yeeeyelashes.com/en/about",
+            "zh-TW": "https://www.yeeeyelashes.com/zh/about",
+            "x-default": "https://www.yeeeyelashes.com/en/about",
+          },
+        },
         openGraph: {
           title: "About Yee Eyelashes | Manhasset, NY",
           description: "Manhasset's premier lash studio — precision extensions, permanent makeup, and a personalized approach for every client.",
@@ -32,6 +48,73 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
         },
       };
 }
+
+const aboutSpeakable = {
+  "@context": "https://schema.org/",
+  "@type": "WebPage",
+  "name": "About Yee Eyelashes | Manhasset, NY",
+  "speakable": {
+    "@type": "SpeakableSpecification",
+    "xPath": ["/html/head/title", "/html/head/meta[@name='description']/@content"],
+  },
+  "url": "https://www.yeeeyelashes.com/en/about",
+};
+
+const aboutBreadcrumb = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: "https://www.yeeeyelashes.com/en" },
+    { "@type": "ListItem", position: 2, name: "About", item: "https://www.yeeeyelashes.com/en/about" },
+  ],
+};
+
+const aboutPageSchema = {
+  "@context": "https://schema.org",
+  "@type": "AboutPage",
+  name: "About Yee Eyelashes",
+  description: "Yee Eyelashes is a boutique lash and permanent makeup studio located at 278 Plandome Rd, Manhasset, NY, serving clients across Nassau County and Long Island.",
+  url: "https://www.yeeeyelashes.com/en/about",
+  mainEntity: {
+    "@type": "BeautySalon",
+    name: "Yee Eyelashes",
+    url: "https://www.yeeeyelashes.com",
+    telephone: "+15169843859",
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: "278 Plandome Rd, 2nd Floor",
+      addressLocality: "Manhasset",
+      addressRegion: "NY",
+      postalCode: "11030",
+      addressCountry: "US",
+    },
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: "5",
+      reviewCount: "61",
+      bestRating: "5",
+      worstRating: "1",
+    },
+    knowsAbout: [
+      "Eyelash Extensions",
+      "3D Lashes",
+      "Real Mink Lashes",
+      "Precision Lash Artistry",
+      "Lash Refills and Care",
+      "Lash Lift",
+      "Permanent Makeup",
+      "Microblading",
+      "Ombre Powder Brows",
+    ],
+    areaServed: [
+      { "@type": "City", name: "Manhasset" },
+      { "@type": "AdministrativeArea", name: "Nassau County" },
+      { "@type": "City", name: "Great Neck" },
+      { "@type": "City", name: "Port Washington" },
+      { "@type": "City", name: "Garden City" },
+    ],
+  },
+};
 
 type Props = { params: Promise<{ lang: string }> };
 
@@ -45,12 +128,15 @@ export default async function AboutPage({ params }: Props) {
 
   return (
     <div>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutSpeakable) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutBreadcrumb) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutPageSchema) }} />
       <PageHeader
         eyebrow={zh ? "關於我們" : "About Us"}
-        title={zh ? "精工之美，源於用心" : "Crafted with Precision, Built on Care"}
+        title={zh ? "精工之美，源於用心" : "Lash Extensions & Lash Bar in Manhasset, NY"}
         subtitle={zh
           ? "每一副睫毛，都是我們對美的承諾。"
-          : "Every set is a reflection of our commitment to your beauty."}
+          : "Yee Eyelashes — where precision meets care, one lash at a time."}
       />
 
       <section className="bg-white py-20 md:py-28">
@@ -91,14 +177,14 @@ export default async function AboutPage({ params }: Props) {
                 ) : (
                   <>
                     <p>
-                      Yee Eyelashes is a boutique lash and permanent makeup studio located at 278 Plandome Rd, Manhasset, NY, serving clients across Nassau County and Long Island.
+                      Yee Eyelashes is Manhasset's premier lash bar and boutique studio, located at 278 Plandome Rd, 2nd Floor, Manhasset, NY, serving clients across Nassau County and Long Island.
                     </p>
                     <p>
                       We believe that truly exceptional lashes begin with listening. Every appointment starts with a thorough consultation where we study your eye shape, bone structure, and lifestyle before selecting a single lash. The result is a set that is uniquely yours, not just beautiful, but effortless to wear.
                     </p>
 
                     <p>
-                      Whether you're a first-time client or a longtime regular, you'll receive the same level of precision, care, and attention to detail that has made Yee Eyelashes a trusted name in Manhasset and beyond.
+                      Whether you're a first-time client or a longtime regular, you'll receive the same level of precision, care, and attention to detail that has made Yee Eyelashes a trusted name in Manhasset and beyond. Our eyelash extensions are designed for long lasting results — beautiful, comfortable, and effortless from day one.
                     </p>
                   </>
                 )}
@@ -128,9 +214,9 @@ export default async function AboutPage({ params }: Props) {
                   descZh: "精準技術與優質材料讓您的睫毛效果更持久。我們也會在每次服務後提供個人化的保養建議。",
                 },
                 {
-                  titleEn: "Trusted in Manhasset",
-                  titleZh: "曼哈薩特的信賴之選",
-                  descEn: "Clients travel from Great Neck, Port Washington, Garden City, Queens, and Manhattan to visit us. Our reputation is built one lash at a time.",
+                  titleEn: "Manhasset's Lash Bar of Choice",
+                  titleZh: "曼哈薩特的首選睫毛店",
+                  descEn: "Clients travel from Great Neck, Port Washington, Garden City, Queens, and Manhattan to visit our lash bar in Manhasset. Our reputation is built one lash at a time.",
                   descZh: "客人從大頸、波士頓港、花園城、皇后區與曼哈頓專程到訪。我們的口碑，是每一根睫毛換來的。",
                 },
               ].map((v) => (
