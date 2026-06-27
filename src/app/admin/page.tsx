@@ -1200,11 +1200,11 @@ export default function AdminPage() {
                                     </div>
                                   ))}
                                 </div>
-                                {uniqueVisits.length > 1 && (
+                                {(() => { const n = uniqueVisits.filter(v => !cancelledDates.has(v.date ?? "")).length; return n > 1 && (
                                   <span className="inline-block mt-1 text-[9px] uppercase tracking-[0.2em] px-2 py-0.5 bg-[#C9A84C]/10 text-[#C9A84C] border border-[#C9A84C]/20">
-                                    {uniqueVisits.length}x visit
+                                    {n}x visit
                                   </span>
-                                )}
+                                ); })()}
                               </td>
                               <td className="px-4 py-3 text-[13px] text-[#1C1C1C]">
                                 {c.first_name || (!c.last_name ? <span className="text-neutral-300">Unknown</span> : "")}
