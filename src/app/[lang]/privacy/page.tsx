@@ -36,7 +36,7 @@ function EnPolicy() {
           Privacy Policy
         </h1>
         <p className="text-[11px] text-neutral-300 tracking-[0.05em] mb-14 uppercase">
-          Last Updated: April 2026
+          Last Updated: June 2026
         </p>
 
         <div className="space-y-10 text-[13.5px] text-neutral-500 leading-[1.9] tracking-[0.01em]">
@@ -170,6 +170,7 @@ function EnPolicy() {
               <li><span className="text-[#1C1C1C]">Google Calendar</span> — Appointment scheduling (Google LLC)</li>
               <li><span className="text-[#1C1C1C]">Vercel</span> — Website hosting and deployment infrastructure</li>
               <li><span className="text-[#1C1C1C]">Next.js</span> — Website framework (Vercel Inc.)</li>
+              <li><span className="text-[#1C1C1C]">Twilio</span> — SMS and messaging delivery platform (Twilio Inc.). Your phone number may be transmitted to Twilio solely to deliver messages you have consented to receive. Twilio's privacy policy is available at <a href="https://www.twilio.com/en-us/legal/privacy" target="_blank" rel="noopener noreferrer" className={gold}>twilio.com/legal/privacy</a>.</li>
               <li><span className="text-[#1C1C1C]">Supabase</span> — Database and backend infrastructure (if applicable)</li>
               <li><span className="text-[#1C1C1C]">Email service providers</span> — Used to deliver booking confirmations and appointment reminders</li>
               <li><span className="text-[#1C1C1C]">Square / Stripe</span> — Payment processing (if applicable)</li>
@@ -203,12 +204,63 @@ function EnPolicy() {
           {/* 7 */}
           <section>
             <h2 className={sectionHead}>7. SMS Communications</h2>
+
+            <h3 className={subHead}>7.1 How You Opt In</h3>
             <p>
-              If you provide your phone number when booking or contacting us, you consent to receiving
-              appointment confirmations, reminders, and service-related communications via SMS or
-              phone call. Message and data rates may apply. You may opt out of SMS communications at
-              any time by replying STOP or by contacting us directly at{" "}
+              By providing your mobile phone number when submitting a booking request, contacting us, or
+              signing up for reminders, you expressly consent to receive text messages (SMS) from
+              Yee Eyelashes at the number provided. You are not required to consent to SMS as a condition
+              of purchasing any service.
+            </p>
+
+            <h3 className={subHead}>7.2 Types of Messages</h3>
+            <p>The text messages we send may include:</p>
+            <ul className={bar}>
+              <li>Appointment confirmation and booking reminders</li>
+              <li>Lash refill reminders (sent periodically based on your service schedule)</li>
+              <li>Invitations to leave a Google review following your appointment</li>
+              <li>Service-related follow-up communications</li>
+            </ul>
+            <p className="mt-3">
+              We do not send unsolicited promotional or marketing text messages. Review invitations
+              and refill reminders are considered transactional or relationship messages related to
+              services you have received.
+            </p>
+
+            <h3 className={subHead}>7.3 Message Frequency</h3>
+            <p>
+              Message frequency will vary based on your appointment schedule and service history.
+              You may receive up to a few messages per appointment cycle (e.g., booking confirmation,
+              pre-appointment reminder, post-appointment follow-up or review invitation).
+            </p>
+
+            <h3 className={subHead}>7.4 Rates & Carrier Disclaimer</h3>
+            <p>
+              Message and data rates may apply depending on your mobile carrier and plan.
+              Yee Eyelashes is not responsible for any charges incurred from your mobile carrier
+              in connection with receiving our text messages.
+            </p>
+
+            <h3 className={subHead}>7.5 How to Opt Out</h3>
+            <p>
+              You may opt out of SMS communications at any time by replying <strong>STOP</strong> to
+              any message you receive from us. After opting out, you will receive one final confirmation
+              message and no further texts will be sent. To re-subscribe, reply <strong>START</strong> or
+              contact us directly.
+            </p>
+
+            <h3 className={subHead}>7.6 Help</h3>
+            <p>
+              For assistance, reply <strong>HELP</strong> to any of our messages, or contact us at{" "}
               <a href="tel:9298062467" className={gold}>929-806-2467</a>.
+            </p>
+
+            <h3 className={subHead}>7.7 No Sharing of Phone Numbers</h3>
+            <p>
+              We will not share, sell, rent, or otherwise disclose your mobile phone number to any
+              third party for their marketing purposes. Your phone number is shared with our SMS
+              delivery provider (Twilio Inc.) solely for the purpose of transmitting messages you
+              have consented to receive, and is subject to Twilio's own privacy practices.
             </p>
           </section>
 
@@ -325,7 +377,7 @@ function ZhPolicy() {
           隱私政策
         </h1>
         <p className="text-[11px] text-neutral-300 tracking-[0.05em] mb-14 uppercase">
-          最後更新：2026 年 4 月
+          最後更新：2026 年 6 月
         </p>
 
         <div className="space-y-10 text-[13.5px] text-neutral-500 leading-[1.9] tracking-[0.01em]">
@@ -423,6 +475,7 @@ function ZhPolicy() {
               <li><span className="text-[#1C1C1C]">Google Calendar</span> — 預約排程（Google LLC）</li>
               <li><span className="text-[#1C1C1C]">Vercel</span> — 網站託管與部署基礎設施</li>
               <li><span className="text-[#1C1C1C]">Next.js</span> — 網站框架（Vercel Inc.）</li>
+              <li><span className="text-[#1C1C1C]">Twilio</span> — 簡訊發送平台（Twilio Inc.）。您的電話號碼僅會傳送至 Twilio，以發送您已同意接收的訊息，受 Twilio 自身隱私政策規範。</li>
               <li><span className="text-[#1C1C1C]">Supabase</span> — 資料庫與後端基礎設施（如適用）</li>
               <li><span className="text-[#1C1C1C]">電郵服務商</span> — 用於發送預約確認與提醒通知</li>
               <li><span className="text-[#1C1C1C]">Square / Stripe</span> — 付款處理（如適用）</li>
@@ -447,10 +500,55 @@ function ZhPolicy() {
 
           <section>
             <h2 className={sectionHead}>7. 簡訊通訊</h2>
+
+            <h3 className={subHead}>7.1 如何同意接收簡訊</h3>
             <p>
-              若您提供電話號碼，即表示您同意我們透過簡訊或電話發送預約確認、提醒及服務相關通知。
-              訊息與數據費用依您的電信方案而定。您可隨時回覆「STOP」或透過{" "}
-              <a href="tel:9298062467" className="text-[#C9A84C]">929-806-2467</a> 聯絡我們取消訂閱。
+              當您在提交預約申請、聯絡我們或登記提醒服務時提供手機號碼，即表示您明確同意接收
+              Yee Eyelashes 傳送至您號碼的文字簡訊（SMS）。同意接收簡訊並非購買任何服務的必要條件。
+            </p>
+
+            <h3 className={subHead}>7.2 訊息類型</h3>
+            <p>我們發送的簡訊可能包括：</p>
+            <ul className={bar}>
+              <li>預約確認及預約提醒</li>
+              <li>睫毛補充提醒（根據您的服務週期定期發送）</li>
+              <li>服務完成後邀請您撰寫 Google 評價的通知</li>
+              <li>與您所接受服務相關的後續跟進訊息</li>
+            </ul>
+            <p className="mt-3">
+              我們不會發送未經請求的促銷或行銷簡訊。評價邀請及補充提醒屬於與您已接受服務相關的交易或關係訊息。
+            </p>
+
+            <h3 className={subHead}>7.3 訊息頻率</h3>
+            <p>
+              訊息頻率將依您的預約排程及服務記錄而有所不同。在一個服務週期內（例如預約確認、
+              預約前提醒、服務後跟進或評價邀請），您可能收到數條訊息。
+            </p>
+
+            <h3 className={subHead}>7.4 費率與電信免責聲明</h3>
+            <p>
+              訊息及數據費用依您的電信方案而定。Yee Eyelashes 對於您因接收我們簡訊而
+              產生的任何電信費用概不負責。
+            </p>
+
+            <h3 className={subHead}>7.5 如何取消訂閱</h3>
+            <p>
+              您可隨時回覆 <strong>STOP</strong> 取消接收我們的簡訊。
+              退訂後，您將收到一則最終確認訊息，之後不會再收到任何簡訊。
+              如需重新訂閱，請回覆 <strong>START</strong> 或直接聯絡我們。
+            </p>
+
+            <h3 className={subHead}>7.6 協助</h3>
+            <p>
+              如需協助，請回覆 <strong>HELP</strong>，或透過{" "}
+              <a href="tel:9298062467" className="text-[#C9A84C]">929-806-2467</a> 聯絡我們。
+            </p>
+
+            <h3 className={subHead}>7.7 不分享手機號碼</h3>
+            <p>
+              我們不會將您的手機號碼出售、出租或以任何方式披露給任何第三方用於其行銷目的。
+              您的電話號碼僅會傳送至我們的簡訊發送服務商（Twilio Inc.），
+              用於傳遞您已同意接收的訊息，並受 Twilio 自身隱私政策規範。
             </p>
           </section>
 
