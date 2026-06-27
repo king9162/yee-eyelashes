@@ -525,7 +525,16 @@ export default function AdminPage() {
         }, new Map<string, { date: string; notes: string }>()).values()
       ).sort((a, b) => (b.date ?? "").localeCompare(a.date ?? "")); // newest → oldest
 
-      const dates = uniqueVisits.map(v => v.date).filter(Boolean).join(", ");
+      const clientNormPhone = normPhone(c.phone);
+      const csvCancelledDates = new Set(
+        bookings.filter(b =>
+          b.status === "cancelled" && (
+            (clientNormPhone && normPhone(b.phone ?? "") === clientNormPhone) ||
+            (c.email && b.email === c.email)
+          )
+        ).map(b => b.date)
+      );
+      const dates = uniqueVisits.map(v => v.date).filter(d => d && !csvCancelledDates.has(d)).join(", ");
       const notes = uniqueVisits.filter(v => !isAutoNote(v.notes)).map(v => v.notes).join(" | ");
 
       const firstName = c.first_name || (!c.last_name ? "Unknown" : "");
@@ -856,6 +865,8 @@ export default function AdminPage() {
               const reviewSmsSentAt = tracking[ck]?.["review-sms"];
               const refillSmsSentAt = tracking[ck]?.["refill-sms"];
               const clientName = `${c.first_name} ${c.last_name}`.trim() || "Unknown";
+              const mCardCancelledDates = new Set(clientBkgs.filter(b => b.status === "cancelled").map(b => b.date));
+              const actualVCount = uniqueV.filter(v => !mCardCancelledDates.has(v.date ?? "")).length;
 
               return (
                 <div key={c.id} className={`px-4 py-4 ${isDeleted ? "opacity-50" : ""}`}>
@@ -890,9 +901,9 @@ export default function AdminPage() {
                             <span className="text-[11px] text-neutral-300 tabular-nums mr-1.5">{idx+1}</span>
                             {clientName}
                           </p>
-                          {uniqueV.length > 1 && (
+                          {actualVCount > 1 && (
                             <span className="inline-block mt-1 text-[9px] uppercase tracking-[0.2em] px-2 py-0.5 bg-[#C9A84C]/10 text-[#C9A84C] border border-[#C9A84C]/20">
-                              {uniqueV.length}x visit
+                              {actualVCount}x visit
                             </span>
                           )}
                         </div>

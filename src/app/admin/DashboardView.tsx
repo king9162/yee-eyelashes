@@ -319,7 +319,11 @@ export default function DashboardView({ adminKey }: { adminKey: string }) {
         (b.email && c.email === b.email)
       )
     );
-    const dates = [...new Set(matched.map(c => c.visit_date).filter(Boolean))]
+    const dates = [...new Set(matched.map(c => c.visit_date).filter(d => {
+      if (!d) return false;
+      const k = bPhone || (b.email ?? "");
+      return !anyBookingSet.has(`${k}|${d}`) || confirmedSet.has(`${k}|${d}`);
+    }))]
       .sort((a, z) => z.localeCompare(a));
     const notes = [...new Set(matched.map(c => c.notes).filter(n => n && !isAutoNote(n)))];
     return { dates, notes };
