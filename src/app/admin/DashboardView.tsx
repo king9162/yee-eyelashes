@@ -406,10 +406,17 @@ export default function DashboardView({ adminKey }: { adminKey: string }) {
   }
 
   const DAY_QUOTES: Record<number, { label: string; quotes: [string, string][] }> = {
-    0: { label: "Sunday 🌿", quotes: [
-      ["🌿 Rest, reset, recharge.", "You've earned every bit of it."],
-      ["☕ Slow mornings.", "Beautiful weeks ahead."],
-      ["✨ New week loading.", "You've got this, Betty."],
+    0: { label: "Sunday 😴", quotes: [
+      ["😴 It's Sunday.", "Go enjoy your day. Admin can wait."],
+      ["🚫 Stop checking admin.", "Today is your day off."],
+      ["☕ No appointments.", "No stress. Just relax."],
+      ["🤍 Betty, close this page.", "We'll see you tomorrow."],
+      ["🌿 Rest is productive too.", "Enjoy your Sunday."],
+      ["😌 Today's task:", "Do absolutely nothing."],
+      ["✨ Admin will still be here tomorrow.", "Your Sunday won't."],
+      ["📱 Step away from the dashboard.", "Real life needs you today."],
+      ["💕 You've earned today.", "Now go enjoy it."],
+      ["⚠️ Unauthorized access detected.", "Employees are required to enjoy Sunday. 😆"],
     ]},
     1: { label: "Monday ☕", quotes: [
       ["💙 Blue Monday?", "Not at Yee Eyelashes."],
@@ -446,7 +453,7 @@ export default function DashboardView({ adminKey }: { adminKey: string }) {
   const now = new Date();
   const dayOfWeek = now.getDay();
   const dayData = DAY_QUOTES[dayOfWeek];
-  const todayQuote = dayData.quotes[new Date(todayStr).getDate() % 3];
+  const todayQuote = dayData.quotes[new Date(todayStr).getDate() % dayData.quotes.length];
 
   const hour = now.getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
