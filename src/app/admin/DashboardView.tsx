@@ -405,33 +405,50 @@ export default function DashboardView({ adminKey }: { adminKey: string }) {
     else groups.push({ date: b.date, appts: [b] });
   }
 
-  const QUOTES = [
-    "Beautiful lashes, beautiful days. You're doing amazing. 💛",
-    "Every client who walks out smiling is a masterpiece you created.",
-    "Small studio, big heart. Keep going, Betty.",
-    "Your craft is your superpower. Own it.",
-    "One lash at a time, you're building something special.",
-    "The best artists make it look effortless — that's you.",
-    "You don't just do lashes. You help people feel like themselves.",
-    "Consistency is the secret ingredient to every successful studio.",
-    "Great things are built by people who show up every single day.",
-    "You've got this. One appointment at a time.",
-    "Your attention to detail is what sets Yee apart.",
-    "Behind every perfect set of lashes is an artist who truly cares.",
-    "Rest when you need to. You've earned it.",
-    "The work you do matters more than you know.",
-    "Every returning client is a vote of confidence in you.",
-    "Good vibes, steady hands, and a packed schedule incoming.",
-    "You create confidence. That's no small thing.",
-    "Another day, another chance to make someone feel beautiful.",
-    "Quality over quantity — always. That's your brand.",
-    "The little things you do with love are what clients remember.",
-    "Keep creating. Keep caring. Keep being you. 🌸",
-  ];
+  const DAY_QUOTES: Record<number, { label: string; quotes: [string, string][] }> = {
+    0: { label: "Sunday 🌿", quotes: [
+      ["🌿 Rest, reset, recharge.", "You've earned every bit of it."],
+      ["☕ Slow mornings.", "Beautiful weeks ahead."],
+      ["✨ New week loading.", "You've got this, Betty."],
+    ]},
+    1: { label: "Monday ☕", quotes: [
+      ["💙 Blue Monday?", "Not at Yee Eyelashes."],
+      ["☕ Coffee first.", "Beautiful lashes second."],
+      ["✨ New week.", "New clients. New smiles."],
+    ]},
+    2: { label: "Tuesday 🌼", quotes: [
+      ["🌼 Tuesday already?", "You're doing better than you think."],
+      ["✨ One client at a time.", "One masterpiece at a time."],
+      ["💕 Tuesdays are underrated.", "Just like quiet confidence."],
+    ]},
+    3: { label: "Wednesday 🌸", quotes: [
+      ["🎉 Halfway through!", "Weekend can wait."],
+      ["✨ Wednesday check.", "You're still amazing."],
+      ["🤍 Midweek magic starts here.", "Let's make today beautiful."],
+    ]},
+    4: { label: "Thursday 🌷", quotes: [
+      ["😌 Thursday called.", "Friday is on the way."],
+      ["✨ Almost there.", "Keep those lashes flawless."],
+      ["💕 Good things take time.", "Luckily, you're patient."],
+    ]},
+    5: { label: "Friday 🎉", quotes: [
+      ["🎉 Friday vibes only.", "Let's sparkle today."],
+      ["✨ Today's goal:", "Beautiful lashes & happy clients."],
+      ["🥳 Smile.", "It's officially Friday."],
+    ]},
+    6: { label: "Saturday ☀️", quotes: [
+      ["☀️ Saturdays are for beauty.", "Let's make today gorgeous."],
+      ["💕 Fully booked?", "That's a good problem."],
+      ["✨ Another busy Saturday.", "Another beautiful success."],
+    ]},
+  };
 
-  const todayQuote = QUOTES[new Date(todayStr).getDate() % QUOTES.length];
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  const dayData = DAY_QUOTES[dayOfWeek];
+  const todayQuote = dayData.quotes[new Date(todayStr).getDate() % 3];
 
-  const hour = new Date().getHours();
+  const hour = now.getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
   return (
@@ -441,19 +458,20 @@ export default function DashboardView({ adminKey }: { adminKey: string }) {
         <p className="text-[13px] text-neutral-400 mt-0.5">{todayStr}</p>
       </div>
 
-      <div className="mb-5 px-4 py-3.5 bg-[#FDF8F0] border border-[#E8D5B0] rounded-xl">
+      <div className="mb-5 px-4 py-4 bg-[#FDF8F0] border border-[#E8D5B0] rounded-xl">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
-            <p className="text-[11px] uppercase tracking-[0.2em] text-[#C9A84C] mb-1">{greeting}, Betty</p>
-            <p className="text-[13px] text-neutral-600 leading-relaxed italic">{todayQuote}</p>
+            <p className="text-[10px] uppercase tracking-[0.25em] text-[#C9A84C] mb-2">{greeting}, Betty · {dayData.label}</p>
+            <p className="text-[15px] font-medium text-neutral-700 leading-snug">{todayQuote[0]}</p>
+            <p className="text-[14px] text-neutral-500 leading-snug mt-0.5">{todayQuote[1]}</p>
           </div>
           {weather && (
-            <div className="flex-shrink-0 text-right">
-              <p className="text-[22px] leading-none">{weatherIcon(weather.code)}</p>
-              <p className="text-[13px] font-medium text-neutral-700 mt-0.5">{weather.temp}°F</p>
+            <div className="flex-shrink-0 text-right border-l border-[#E8D5B0] pl-4">
+              <p className="text-[26px] leading-none">{weatherIcon(weather.code)}</p>
+              <p className="text-[14px] font-semibold text-neutral-700 mt-1">{weather.temp}°F</p>
               <p className="text-[11px] text-neutral-400">{weatherDesc(weather.code)}</p>
               {weather.rainChance >= 40 && (
-                <p className="text-[11px] text-blue-500 mt-0.5">☂️ Bring an umbrella ({weather.rainChance}%)</p>
+                <p className="text-[11px] text-blue-500 mt-1 font-medium">☂️ Bring an umbrella</p>
               )}
             </div>
           )}
