@@ -339,7 +339,7 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
             <div className="bg-[#f0f0f0] rounded-2xl p-3 space-y-1">
               <div className="bg-[#e5e5ea] rounded-2xl rounded-tl-sm px-3 py-2 max-w-[85%]">
                 <p className="text-[10px] text-[#1C1C1C] leading-relaxed">
-                  Hi <span className="font-medium">[Name]</span>! It&apos;s been 2 weeks since your last lash appointment at Yee Eyelashes — perfect time for a refill! Book now: square.site/yee 📍 278 Plandome Rd, Manhasset · 929-806-2467
+                  Hi <span className="font-medium">[Name]</span>! It&apos;s been 2 weeks since your last lash appointment at Yee Eyelashes — perfect time for a refill! Book now: square.site/yee 📍 278 Plandome Rd, Manhasset · 516-984-3859
                 </p>
               </div>
               <p className="text-[9px] text-neutral-400 pl-1">From: (833) 634-5378</p>
@@ -358,7 +358,7 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
             <div className="bg-[#f0f0f0] rounded-2xl p-3 space-y-1">
               <div className="bg-[#e5e5ea] rounded-2xl rounded-tl-sm px-3 py-2 max-w-[85%]">
                 <p className="text-[10px] text-[#1C1C1C] leading-relaxed">
-                  Hi <span className="font-medium">[Name]</span>! Thank you for your visit at Yee Eyelashes 🌸 We&apos;d love your feedback — please leave us a Google review: [link] 📍 278 Plandome Rd, Manhasset · 929-806-2467
+                  Hi <span className="font-medium">[Name]</span>! Thank you for your visit at Yee Eyelashes 🌸 We&apos;d love your feedback — please leave us a Google review: [link] 📍 278 Plandome Rd, Manhasset · 516-984-3859
                 </p>
               </div>
               <p className="text-[9px] text-neutral-400 pl-1">From: (833) 634-5378</p>
@@ -408,7 +408,7 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
             <div className="bg-[#f0f0f0] rounded-2xl p-3 space-y-1">
               <div className="bg-[#e5e5ea] rounded-2xl rounded-tl-sm px-3 py-2 max-w-[85%]">
                 <p className="text-[10px] text-[#1C1C1C] leading-relaxed">
-                  🎂 Happy Birthday, <span className="font-medium">[Name]</span>! Celebrate with gorgeous lashes — enjoy 20% off any service this month at Yee Eyelashes 🎁 Book: square.site/yee 📍 278 Plandome Rd, Manhasset · 929-806-2467
+                  🎂 Happy Birthday, <span className="font-medium">[Name]</span>! Celebrate with gorgeous lashes — enjoy 20% off any service this month at Yee Eyelashes 🎁 Book: square.site/yee 📍 278 Plandome Rd, Manhasset · 516-984-3859
                 </p>
               </div>
               <p className="text-[9px] text-neutral-400 pl-1">From: (833) 634-5378</p>
