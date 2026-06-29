@@ -1,6 +1,36 @@
 "use client";
 import { useState, useEffect } from "react";
 
+type Weather = {
+  temp: number;
+  code: number;
+  rainChance: number;
+};
+
+function weatherIcon(code: number): string {
+  if (code === 0) return "☀️";
+  if (code <= 2) return "⛅";
+  if (code === 3) return "☁️";
+  if (code <= 48) return "🌫️";
+  if (code <= 55) return "🌦️";
+  if (code <= 65) return "🌧️";
+  if (code <= 75) return "❄️";
+  if (code <= 82) return "🌧️";
+  return "⛈️";
+}
+
+function weatherDesc(code: number): string {
+  if (code === 0) return "Clear skies";
+  if (code <= 2) return "Partly cloudy";
+  if (code === 3) return "Overcast";
+  if (code <= 48) return "Foggy";
+  if (code <= 55) return "Light drizzle";
+  if (code <= 65) return "Rainy";
+  if (code <= 75) return "Snowing";
+  if (code <= 82) return "Rain showers";
+  return "Thunderstorms";
+}
+
 type DashBooking = {
   id: string; date: string; status: string; name: string;
   service_label: string; time: string; phone: string; email: string;
@@ -49,6 +79,7 @@ export default function DashboardView({ adminKey }: { adminKey: string }) {
   const [clients,     setClients]     = useState<DashClient[]>([]);
   const [reviews,     setReviews]     = useState<DashReview[]>([]);
   const [loading,     setLoading]     = useState(true);
+  const [weather,     setWeather]     = useState<Weather | null>(null);
   const [cancelling,  setCancelling]  = useState<string | null>(null);
   const [showAdd,     setShowAdd]     = useState(false);
   const [addForm,     setAddForm]     = useState(EMPTY_ADD);
@@ -71,6 +102,14 @@ export default function DashboardView({ adminKey }: { adminKey: string }) {
   }
 
   useEffect(() => {
+    fetch("https://api.open-meteo.com/v1/forecast?latitude=40.7957&longitude=-73.6957&current=temperature_2m,precipitation_probability,weathercode&temperature_unit=fahrenheit&timezone=America/New_York")
+      .then(r => r.json())
+      .then(d => {
+        const c = d?.current;
+        if (c) setWeather({ temp: Math.round(c.temperature_2m), code: c.weathercode, rainChance: c.precipitation_probability ?? 0 });
+      })
+      .catch(() => {});
+
     Promise.all([
       fetch("/api/bookings", { headers: h }).then(r => r.json()),
       fetch("/api/clients",  { headers: h }).then(r => r.json()),
@@ -366,11 +405,59 @@ export default function DashboardView({ adminKey }: { adminKey: string }) {
     else groups.push({ date: b.date, appts: [b] });
   }
 
+  const QUOTES = [
+    "Beautiful lashes, beautiful days. You're doing amazing. 💛",
+    "Every client who walks out smiling is a masterpiece you created.",
+    "Small studio, big heart. Keep going, Betty.",
+    "Your craft is your superpower. Own it.",
+    "One lash at a time, you're building something special.",
+    "The best artists make it look effortless — that's you.",
+    "You don't just do lashes. You help people feel like themselves.",
+    "Consistency is the secret ingredient to every successful studio.",
+    "Great things are built by people who show up every single day.",
+    "You've got this. One appointment at a time.",
+    "Your attention to detail is what sets Yee apart.",
+    "Behind every perfect set of lashes is an artist who truly cares.",
+    "Rest when you need to. You've earned it.",
+    "The work you do matters more than you know.",
+    "Every returning client is a vote of confidence in you.",
+    "Good vibes, steady hands, and a packed schedule incoming.",
+    "You create confidence. That's no small thing.",
+    "Another day, another chance to make someone feel beautiful.",
+    "Quality over quantity — always. That's your brand.",
+    "The little things you do with love are what clients remember.",
+    "Keep creating. Keep caring. Keep being you. 🌸",
+  ];
+
+  const todayQuote = QUOTES[new Date(todayStr).getDate() % QUOTES.length];
+
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+
   return (
     <div className="flex-1 overflow-auto p-4 sm:p-6 bg-neutral-50">
       <div className="mb-5">
         <h2 className="text-[22px] font-bold text-[#1C1C1C]">Dashboard</h2>
         <p className="text-[13px] text-neutral-400 mt-0.5">{todayStr}</p>
+      </div>
+
+      <div className="mb-5 px-4 py-3.5 bg-[#FDF8F0] border border-[#E8D5B0] rounded-xl">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <p className="text-[11px] uppercase tracking-[0.2em] text-[#C9A84C] mb-1">{greeting}, Betty</p>
+            <p className="text-[13px] text-neutral-600 leading-relaxed italic">{todayQuote}</p>
+          </div>
+          {weather && (
+            <div className="flex-shrink-0 text-right">
+              <p className="text-[22px] leading-none">{weatherIcon(weather.code)}</p>
+              <p className="text-[13px] font-medium text-neutral-700 mt-0.5">{weather.temp}°F</p>
+              <p className="text-[11px] text-neutral-400">{weatherDesc(weather.code)}</p>
+              {weather.rainChance >= 40 && (
+                <p className="text-[11px] text-blue-500 mt-0.5">☂️ Bring an umbrella ({weather.rainChance}%)</p>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
