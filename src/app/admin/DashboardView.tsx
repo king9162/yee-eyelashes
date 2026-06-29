@@ -473,16 +473,11 @@ export default function DashboardView({ adminKey }: { adminKey: string }) {
     <div className="flex-1 overflow-auto p-4 sm:p-6 bg-neutral-50">
 
       {showPopup && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-center sm:p-4" style={{ backgroundColor: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)" }}>
-          <div className="animate-envelope-open relative w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)" }}>
+          <div className="animate-envelope-open relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
 
             {/* Gold top bar */}
             <div className="h-1.5 w-full bg-gradient-to-r from-[#C9A84C] to-[#e8c97a]" />
-
-            {/* Mobile drag handle */}
-            <div className="flex justify-center pt-3 pb-1 sm:hidden">
-              <div className="w-10 h-1 rounded-full bg-neutral-200" />
-            </div>
 
             <div className="animate-card-content px-5 sm:px-7 pt-4 sm:pt-6 pb-8 sm:pb-7">
               {/* Header */}
