@@ -474,42 +474,42 @@ export default function DashboardView({ adminKey }: { adminKey: string }) {
 
       {showPopup && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(0,0,0,0.35)", backdropFilter: "blur(4px)" }}>
-          <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden">
+          <div className="animate-envelope-open relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
 
             {/* Gold top bar */}
-            <div className="h-1 w-full bg-gradient-to-r from-[#C9A84C] to-[#e8c97a]" />
+            <div className="h-1.5 w-full bg-gradient-to-r from-[#C9A84C] to-[#e8c97a]" />
 
-            <div className="px-6 pt-5 pb-6">
+            <div className="px-7 pt-6 pb-7">
               {/* Header */}
-              <div className="flex items-start justify-between mb-4">
+              <div className="flex items-start justify-between mb-5">
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.3em] text-[#C9A84C]">{greeting}, Betty</p>
-                  <p className="text-[12px] text-neutral-400 mt-0.5">{dayData.label} · {todayStr}</p>
+                  <p className="text-[15px] font-semibold text-[#C9A84C]">{greeting}, Betty</p>
+                  <p className="text-[14px] text-neutral-400 mt-0.5">{dayData.label} · {todayStr}</p>
                 </div>
-                <button onClick={dismissPopup} className="text-neutral-300 hover:text-neutral-500 transition-colors text-lg leading-none mt-0.5">✕</button>
+                <button onClick={dismissPopup} className="text-neutral-300 hover:text-neutral-500 transition-colors text-xl leading-none mt-0.5">✕</button>
               </div>
 
               {/* Quote */}
-              <div className="mb-5">
-                <p className="text-[20px] font-semibold text-neutral-800 leading-snug">{todayQuote[0]}</p>
-                <p className="text-[17px] text-neutral-500 leading-snug mt-1">{todayQuote[1]}</p>
+              <div className="mb-6">
+                <p className="text-[22px] font-bold text-neutral-800 leading-snug whitespace-nowrap">{todayQuote[0]}</p>
+                <p className="text-[20px] font-bold text-neutral-600 leading-snug mt-1 whitespace-nowrap">{todayQuote[1]}</p>
               </div>
 
               {/* Weather strip */}
               {weather && (
-                <div className="bg-neutral-50 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
-                  <p className="text-[28px] leading-none">{weatherIcon(weather.code)}</p>
+                <div className="bg-neutral-50 rounded-xl px-4 py-3.5 mb-6 flex items-center gap-3">
+                  <p className="text-[32px] leading-none">{weatherIcon(weather.code)}</p>
                   <div className="flex-1">
-                    <p className="text-[14px] font-semibold text-neutral-700">{weather.temp}°F &nbsp;·&nbsp; {weatherDesc(weather.code)}</p>
+                    <p className="text-[15px] font-semibold text-neutral-700">{weather.temp}°F &nbsp;·&nbsp; {weatherDesc(weather.code)}</p>
                     <div className="flex flex-col gap-0.5 mt-1">
                       {weather.rainChance >= 40 && (
-                        <p className="text-[12px] text-blue-500 font-medium">☂️ Don&apos;t forget your umbrella! ({weather.rainChance}%)</p>
+                        <p className="text-[13px] text-blue-500 font-medium">☂️ Don&apos;t forget your umbrella! ({weather.rainChance}%)</p>
                       )}
                       {weather.temp >= 85 && (
-                        <p className="text-[12px] text-orange-400 font-medium">💧 It&apos;s hot today — stay hydrated!</p>
+                        <p className="text-[13px] text-orange-400 font-medium">💧 It&apos;s hot today — stay hydrated!</p>
                       )}
                       {weather.rainChance < 40 && weather.temp < 85 && (
-                        <p className="text-[12px] text-neutral-400">Looks good out there today.</p>
+                        <p className="text-[13px] text-neutral-400">Looks good out there today.</p>
                       )}
                     </div>
                   </div>
@@ -519,7 +519,7 @@ export default function DashboardView({ adminKey }: { adminKey: string }) {
               {/* CTA button */}
               <button
                 onClick={dismissPopup}
-                className="w-full py-2.5 rounded-xl bg-[#C9A84C] text-white text-[13px] font-medium tracking-wide hover:bg-[#b8963e] transition-colors"
+                className="w-full py-3 rounded-xl bg-[#C9A84C] text-white text-[14px] font-semibold tracking-wide hover:bg-[#b8963e] transition-colors"
               >
                 Let&apos;s go ✨
               </button>

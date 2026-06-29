@@ -61,6 +61,18 @@ a { text-decoration: none; }
   color: #1C1C1C;
 }
 
+/* ── Envelope open ───────────────────── */
+@keyframes envelope-open {
+  0%   { transform: perspective(1000px) rotateX(-90deg); opacity: 0; }
+  55%  { transform: perspective(1000px) rotateX(7deg);   opacity: 1; }
+  75%  { transform: perspective(1000px) rotateX(-3deg);  opacity: 1; }
+  100% { transform: perspective(1000px) rotateX(0deg);   opacity: 1; }
+}
+.animate-envelope-open {
+  animation: envelope-open 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  transform-origin: top center;
+}
+
 /* ── Marquee ─────────────────────────── */
 @keyframes marquee {
   0%   { transform: translateX(0); }
