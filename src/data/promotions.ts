@@ -31,6 +31,16 @@ export const promotions: Promotion[] = [
     active: true,
   },
   {
+    id: "birthday-month",
+    title: "Birthday Month — 20% Off",
+    titleZh: "生日月份 享 20% 折扣",
+    description: "Celebrate your birthday with beautiful lashes! Enjoy 20% off any service during your birthday month — because you deserve to look stunning on your special day.",
+    descriptionZh: "用美麗的睫毛慶祝你的生日！生日當月所有服務享 20% 折扣，讓你在特別的日子光彩照人。",
+    note: "Valid during your birthday month. Mention your birthday when booking. No code required.",
+    noteZh: "生日當月有效。預約時請說明生日月份，無需折扣碼。",
+    active: true,
+  },
+  {
     id: "three-times-package",
     title: "Buy More, Save More — Three Times Package",
     titleZh: "買越多，省越多 — 三次套裝",

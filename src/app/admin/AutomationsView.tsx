@@ -11,14 +11,18 @@ type AutomationRow = {
 };
 
 const AUTOMATIONS: AutomationRow[] = [
-  { id: "refill-email", channel: "email", name: "Refill Reminder",     defaultOn: true,
+  { id: "refill-email",   channel: "email", name: "Refill Reminder",     defaultOn: true,
     description: "Win back customers who haven't booked in the last 2 weeks" },
-  { id: "refill-sms",   channel: "sms",   name: "Refill Reminder SMS", defaultOn: false,
+  { id: "refill-sms",     channel: "sms",   name: "Refill Reminder SMS", defaultOn: false,
     description: "Send a text reminder to clients who haven't rebooked in a while" },
-  { id: "review-email", channel: "email", name: "Google Reviews",      defaultOn: true,
+  { id: "review-email",   channel: "email", name: "Google Reviews",      defaultOn: true,
     description: "Ask customers for a Google review the day after their appointment" },
-  { id: "review-sms",   channel: "sms",   name: "Google Reviews SMS",  defaultOn: false,
+  { id: "review-sms",     channel: "sms",   name: "Google Reviews SMS",  defaultOn: false,
     description: "Send a text asking for a Google review the day after their appointment" },
+  { id: "birthday-email", channel: "email", name: "Birthday Wish",       defaultOn: true,
+    description: "Send a birthday email with 20% off discount on the client's birthday" },
+  { id: "birthday-sms",   channel: "sms",   name: "Birthday Wish SMS",   defaultOn: false,
+    description: "Send a birthday text with 20% off discount on the client's birthday" },
 ];
 
 type ActionEntry = {
@@ -172,10 +176,12 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
     .sort((a, b) => b.created_at.localeCompare(a.created_at));
 
   const TYPE_LABELS: Record<string, string> = {
-    "review-email": "Review Email",
-    "review-sms":   "Review SMS",
-    "refill-email": "Refill Email",
-    "refill-sms":   "Refill SMS",
+    "review-email":   "Review Email",
+    "review-sms":     "Review SMS",
+    "refill-email":   "Refill Email",
+    "refill-sms":     "Refill SMS",
+    "birthday-email": "Birthday Email",
+    "birthday-sms":   "Birthday SMS",
   };
 
   return (
@@ -358,6 +364,56 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
               <p className="text-[9px] text-neutral-400 pl-1">From: (833) 634-5378</p>
             </div>
             <p className="text-[11px] text-neutral-400 mt-3">Sent 1 day after appointment</p>
+          </div>
+        </div>
+
+        {/* ── Birthday Email ── */}
+        <div className="bg-white border border-neutral-200 rounded-xl overflow-hidden">
+          <div className="px-5 py-3 border-b border-neutral-100 flex items-center gap-2">
+            <span className="text-[9px] uppercase tracking-[0.15em] bg-pink-50 text-pink-500 border border-pink-200 px-2 py-0.5 rounded-full">✉ Email</span>
+            <span className="text-[13px] font-semibold text-[#1C1C1C]">Birthday Wish</span>
+          </div>
+          <div className="p-4">
+            <div className="bg-[#f8f5ef] rounded-lg p-3 border border-neutral-100">
+              <div className="bg-white rounded border border-neutral-100 overflow-hidden">
+                <div className="h-[3px] bg-gradient-to-r from-[#C9A84C] to-[#e8c97a]" />
+                <div className="px-4 py-3 text-center border-b border-neutral-50">
+                  <p className="text-[7px] tracking-[0.35em] uppercase text-[#C9A84C]">Yee Eyelashes</p>
+                  <p className="text-[14px] font-light text-[#1C1C1C] mt-0.5">🎂 Happy Birthday, [Name]!</p>
+                </div>
+                <div className="px-4 py-3 space-y-2.5">
+                  <p className="text-[10px] text-neutral-500 leading-relaxed">Wishing you the most beautiful birthday! 🎉 Enjoy <span className="font-medium text-[#1C1C1C]">20% off any service</span> during your birthday month.</p>
+                  <div className="bg-[#fef9ec] border border-[#f0dfa0] rounded px-3 py-2 text-center">
+                    <p className="text-[9px] font-semibold text-[#C9A84C] uppercase tracking-[0.2em]">Birthday Gift</p>
+                    <p className="text-[18px] font-bold text-[#1C1C1C]">20% OFF</p>
+                    <p className="text-[8px] text-neutral-400">Valid all month · No code needed</p>
+                  </div>
+                  <div className="bg-[#1c1c1c] text-center py-2">
+                    <span className="text-white text-[8px] tracking-[0.25em] uppercase">Book Your Birthday Lashes ✨</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p className="text-[11px] text-neutral-400 mt-3">Sent on client&apos;s birthday (manual or auto)</p>
+          </div>
+        </div>
+
+        {/* ── Birthday SMS ── */}
+        <div className="bg-white border border-neutral-200 rounded-xl overflow-hidden">
+          <div className="px-5 py-3 border-b border-neutral-100 flex items-center gap-2">
+            <span className="text-[9px] uppercase tracking-[0.15em] bg-pink-50 text-pink-500 border border-pink-200 px-2 py-0.5 rounded-full">💬 SMS</span>
+            <span className="text-[13px] font-semibold text-[#1C1C1C]">Birthday Wish SMS</span>
+          </div>
+          <div className="p-4">
+            <div className="bg-[#f0f0f0] rounded-2xl p-3 space-y-1">
+              <div className="bg-[#e5e5ea] rounded-2xl rounded-tl-sm px-3 py-2 max-w-[85%]">
+                <p className="text-[10px] text-[#1C1C1C] leading-relaxed">
+                  🎂 Happy Birthday, <span className="font-medium">[Name]</span>! Celebrate with gorgeous lashes — enjoy 20% off any service this month at Yee Eyelashes 🎁 Book: square.site/yee 📍 278 Plandome Rd, Manhasset · 929-806-2467
+                </p>
+              </div>
+              <p className="text-[9px] text-neutral-400 pl-1">From: (833) 634-5378</p>
+            </div>
+            <p className="text-[11px] text-neutral-400 mt-3">Sent on client&apos;s birthday (manual or auto)</p>
           </div>
         </div>
 

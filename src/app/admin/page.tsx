@@ -278,6 +278,34 @@ export default function AdminPage() {
     } else { alert("Failed to send SMS. Check console."); }
   }
 
+  async function sendBirthdayEmail(c: Client, ck: string) {
+    if (!c.email) { alert("No email on file for this client."); return; }
+    const adminKey = sessionStorage.getItem("admin_key") ?? "";
+    const name = `${c.first_name} ${c.last_name}`.trim() || c.first_name;
+    const res = await fetch("/api/admin/send-birthday-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminKey}` },
+      body: JSON.stringify({ name, email: c.email }),
+    });
+    if (res.ok) {
+      trackMark(ck, "birthday-email", name);
+    } else { alert("Failed to send birthday email. Check console."); }
+  }
+
+  async function sendBirthdaySMS(c: Client, ck: string) {
+    if (!c.phone) { alert("No phone on file for this client."); return; }
+    const adminKey = sessionStorage.getItem("admin_key") ?? "";
+    const name = `${c.first_name} ${c.last_name}`.trim() || c.first_name;
+    const res = await fetch("/api/admin/send-birthday-sms", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminKey}` },
+      body: JSON.stringify({ name, phone: c.phone }),
+    });
+    if (res.ok) {
+      trackMark(ck, "birthday-sms", name);
+    } else { alert("Failed to send birthday SMS. Check console."); }
+  }
+
   const fetchClients = useCallback(async (secret: string) => {
     const [clientRes, bookingRes] = await Promise.all([
       fetch("/api/clients",  { headers: { Authorization: `Bearer ${secret}` } }),
@@ -880,8 +908,10 @@ export default function AdminPage() {
               const dbRefill = clientBkgs.map(b => b.refill_sent_at).filter(Boolean).sort().at(-1);
               const reviewAlreadySent = !!dbReview || !!reviewSentAt;
               const refillAlreadySent  = !!dbRefill  || !!refillSentAt;
-              const reviewSmsSentAt = tracking[ck]?.["review-sms"];
-              const refillSmsSentAt = tracking[ck]?.["refill-sms"];
+              const reviewSmsSentAt   = tracking[ck]?.["review-sms"];
+              const refillSmsSentAt   = tracking[ck]?.["refill-sms"];
+              const birthdayEmailSentAt = tracking[ck]?.["birthday-email"];
+              const birthdaySmsSentAt   = tracking[ck]?.["birthday-sms"];
               const clientName = `${c.first_name} ${c.last_name}`.trim() || "Unknown";
               const mCardCancelledDates = new Set(clientBkgs.filter(b => b.status === "cancelled").map(b => b.date));
               const actualVCount = uniqueV.filter(v => !mCardCancelledDates.has(v.date ?? "")).length;
@@ -1029,6 +1059,26 @@ export default function AdminPage() {
                                 : "bg-neutral-50 border-neutral-200 text-neutral-500 active:bg-neutral-100"
                             }`}>
                             {refillSmsSentAt ? `✓ ${refillSmsSentAt}` : "💬 Refill SMS"}
+                          </button>
+                          <button
+                            onClick={() => sendBirthdayEmail(c, ck)}
+                            disabled={!c.email || !!birthdayEmailSentAt || isDeleted}
+                            className={`py-2 px-1 text-[10px] font-semibold rounded-xl border transition-all disabled:opacity-30 ${
+                              birthdayEmailSentAt
+                                ? "bg-pink-50 border-pink-200 text-pink-600"
+                                : "bg-neutral-50 border-neutral-200 text-neutral-500 active:bg-neutral-100"
+                            }`}>
+                            {birthdayEmailSentAt ? `✓ ${birthdayEmailSentAt}` : "🎂 B-day Email"}
+                          </button>
+                          <button
+                            onClick={() => sendBirthdaySMS(c, ck)}
+                            disabled={!c.phone || !!birthdaySmsSentAt || isDeleted}
+                            className={`py-2 px-1 text-[10px] font-semibold rounded-xl border transition-all disabled:opacity-30 ${
+                              birthdaySmsSentAt
+                                ? "bg-pink-50 border-pink-200 text-pink-600"
+                                : "bg-neutral-50 border-neutral-200 text-neutral-500 active:bg-neutral-100"
+                            }`}>
+                            {birthdaySmsSentAt ? `✓ ${birthdaySmsSentAt}` : "🎂 B-day SMS"}
                           </button>
                         </div>
                       </div>

@@ -476,6 +476,64 @@ export async function sendRefillReminderEmail(data: {
   if (error) throw new Error(`Resend refill reminder error: ${JSON.stringify(error)}`);
 }
 
+export async function sendBirthdayEmail(data: { name: string; email: string }) {
+  const bookUrl = `${BASE}/en/booking`;
+  const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f8f5ef;font-family:Georgia,serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f5ef;padding:40px 20px;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;max-width:560px;width:100%;">
+        <tr><td style="background:linear-gradient(90deg,#C9A84C,#e8c97a);height:4px;"></td></tr>
+        <tr><td style="padding:48px 48px 32px;text-align:center;border-bottom:1px solid #f0ece4;">
+          <p style="margin:0 0 8px;font-size:10px;letter-spacing:0.5em;text-transform:uppercase;color:#C9A84C;">Yee Eyelashes</p>
+          <h1 style="margin:0;font-size:28px;font-weight:300;color:#1c1c1c;letter-spacing:-0.01em;">🎂 Happy Birthday, ${data.name}!</h1>
+        </td></tr>
+        <tr><td style="padding:40px 48px;">
+          <p style="margin:0 0 24px;font-size:14px;color:#777;line-height:1.9;">
+            Wishing you the most beautiful birthday! 🎉 As our way of celebrating with you, enjoy <strong style="color:#1c1c1c;">20% off any service</strong> during your birthday month — because you deserve to feel gorgeous on your special day.
+          </p>
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#fef9ec;border:1px solid #f0dfa0;border-radius:8px;margin-bottom:28px;">
+            <tr><td style="padding:24px 28px;text-align:center;">
+              <p style="margin:0 0 6px;font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:#C9A84C;">Birthday Gift</p>
+              <p style="margin:0;font-size:32px;font-weight:700;color:#1c1c1c;">20% OFF</p>
+              <p style="margin:6px 0 0;font-size:12px;color:#999;">Valid all month long · No code needed</p>
+            </td></tr>
+          </table>
+          <table cellpadding="0" cellspacing="0" style="margin:0 auto 28px;">
+            <tr><td style="background:#1c1c1c;text-align:center;">
+              <a href="${bookUrl}" style="display:inline-block;padding:14px 40px;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:#ffffff;text-decoration:none;">
+                Book Your Birthday Lashes ✨
+              </a>
+            </td></tr>
+          </table>
+          <p style="font-size:13px;color:#999;line-height:1.8;">
+            📍 278 Plandome Rd, 2F, Manhasset, NY 11030<br/>
+            📞 <a href="tel:5169843859" style="color:#C9A84C;text-decoration:none;">(516) 984-3859</a><br/>
+            📷 <a href="https://www.instagram.com/yee_lashesny" style="color:#C9A84C;text-decoration:none;">@yee_lashesny</a>
+          </p>
+        </td></tr>
+        <tr><td style="padding:24px 48px;background:#1c1c1c;text-align:center;">
+          <p style="margin:0;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:#555;">
+            © ${new Date().getFullYear()} Yee Eyelashes · Manhasset, NY
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  const { error } = await getResend().emails.send({
+    from:    `Yee Eyelashes <${FROM}>`,
+    to:      data.email,
+    subject: `🎂 Happy Birthday, ${data.name}! A gift from Yee Eyelashes 🎁`,
+    html,
+  });
+  if (error) throw new Error(`Resend birthday email error: ${JSON.stringify(error)}`);
+}
+
 function row(label: string, value: string) {
   return `
     <tr>
