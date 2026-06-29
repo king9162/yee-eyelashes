@@ -1345,10 +1345,12 @@ export default function AdminPage() {
 
                                 const name = `${c.first_name} ${c.last_name}`.trim() || c.first_name;
 
-                                const reviewAlreadySent  = !!dbReviewSent || !!tracking[ck]?.["review-email"];
-                                const refillAlreadySent  = !!dbRefillSent  || !!tracking[ck]?.["refill-email"];
+                                const reviewAlreadySent    = !!dbReviewSent || !!tracking[ck]?.["review-email"];
+                                const refillAlreadySent    = !!dbRefillSent  || !!tracking[ck]?.["refill-email"];
                                 const reviewSmsAlreadySent = !!tracking[ck]?.["review-sms"];
                                 const refillSmsAlreadySent = !!tracking[ck]?.["refill-sms"];
+                                const bdayEmailSent        = !!tracking[ck]?.["birthday-email"];
+                                const bdaySmsSent          = !!tracking[ck]?.["birthday-sms"];
                                 const groups = [
                                   {
                                     label: "Review",
@@ -1364,12 +1366,21 @@ export default function AdminPage() {
                                       { key: "refill-sms"   as const, icon: "💬", label: "SMS",   canSend: !!c.phone && !refillSmsAlreadySent && !isDeleted, onSend: () => sendRefillSMS(c, ck),   autoSent: undefined },
                                     ],
                                   },
+                                  {
+                                    label: "Birthday 🎂",
+                                    items: [
+                                      { key: "birthday-email" as const, icon: "✉", label: "Email", canSend: !!c.email && !bdayEmailSent && !isDeleted, onSend: () => sendBirthdayEmail(c, ck), autoSent: undefined },
+                                      { key: "birthday-sms"   as const, icon: "💬", label: "SMS",   canSend: !!c.phone && !bdaySmsSent  && !isDeleted, onSend: () => sendBirthdaySMS(c, ck),   autoSent: undefined },
+                                    ],
+                                  },
                                 ];
                                 const doneCount =
-                                  (!!tracking[ck]?.["review-email"] || !!dbReviewSent ? 1 : 0) +
-                                  (!!tracking[ck]?.["review-sms"]                     ? 1 : 0) +
-                                  (!!tracking[ck]?.["refill-email"] || !!dbRefillSent ? 1 : 0) +
-                                  (!!tracking[ck]?.["refill-sms"]                     ? 1 : 0);
+                                  (!!tracking[ck]?.["review-email"]   || !!dbReviewSent ? 1 : 0) +
+                                  (!!tracking[ck]?.["review-sms"]                       ? 1 : 0) +
+                                  (!!tracking[ck]?.["refill-email"]   || !!dbRefillSent ? 1 : 0) +
+                                  (!!tracking[ck]?.["refill-sms"]                       ? 1 : 0) +
+                                  (!!tracking[ck]?.["birthday-email"]                   ? 1 : 0) +
+                                  (!!tracking[ck]?.["birthday-sms"]                     ? 1 : 0);
 
                                 return (
                                   <td className="px-3 py-3 text-center relative">
@@ -1378,13 +1389,13 @@ export default function AdminPage() {
                                       onMouseDown={e => e.preventDefault()}
                                       onClick={() => setOpenDropdown(openDropdown === dropId ? null : dropId)}
                                       className={`text-[12px] font-semibold px-3 py-2 border-2 rounded-xl transition-all whitespace-nowrap
-                                        ${doneCount === 4
+                                        ${doneCount === 6
                                           ? "border-green-400 text-green-700 bg-green-50"
                                           : doneCount > 0
                                             ? "border-[#C9A84C] text-[#C9A84C] bg-[#C9A84C]/5 hover:bg-[#C9A84C]/10"
                                             : "border-[#1C1C1C] text-[#1C1C1C] bg-white hover:bg-[#1C1C1C] hover:text-white"
                                         }`}>
-                                      {doneCount > 0 ? `✓ ${doneCount}/4 ▾` : "Actions ▾"}
+                                      {doneCount > 0 ? `✓ ${doneCount}/6 ▾` : "Actions ▾"}
                                     </button>
 
                                     {openDropdown === dropId && (
