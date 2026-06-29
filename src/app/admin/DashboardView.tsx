@@ -80,6 +80,7 @@ export default function DashboardView({ adminKey }: { adminKey: string }) {
   const [reviews,     setReviews]     = useState<DashReview[]>([]);
   const [loading,     setLoading]     = useState(true);
   const [weather,     setWeather]     = useState<Weather | null>(null);
+  const [showPopup,   setShowPopup]   = useState(false);
   const [cancelling,  setCancelling]  = useState<string | null>(null);
   const [showAdd,     setShowAdd]     = useState(false);
   const [addForm,     setAddForm]     = useState(EMPTY_ADD);
@@ -102,6 +103,10 @@ export default function DashboardView({ adminKey }: { adminKey: string }) {
   }
 
   useEffect(() => {
+    const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+    const key = `betty-popup-${today}`;
+    if (!localStorage.getItem(key)) setShowPopup(true);
+
     fetch("https://api.open-meteo.com/v1/forecast?latitude=40.7957&longitude=-73.6957&current=temperature_2m,precipitation_probability,weathercode&temperature_unit=fahrenheit&timezone=America/New_York")
       .then(r => r.json())
       .then(d => {
@@ -458,31 +463,74 @@ export default function DashboardView({ adminKey }: { adminKey: string }) {
   const hour = now.getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
+  function dismissPopup() {
+    const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+    localStorage.setItem(`betty-popup-${today}`, "1");
+    setShowPopup(false);
+  }
+
   return (
     <div className="flex-1 overflow-auto p-4 sm:p-6 bg-neutral-50">
+
+      {showPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(0,0,0,0.35)", backdropFilter: "blur(4px)" }}>
+          <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden">
+
+            {/* Gold top bar */}
+            <div className="h-1 w-full bg-gradient-to-r from-[#C9A84C] to-[#e8c97a]" />
+
+            <div className="px-6 pt-5 pb-6">
+              {/* Header */}
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.3em] text-[#C9A84C]">{greeting}, Betty</p>
+                  <p className="text-[12px] text-neutral-400 mt-0.5">{dayData.label} · {todayStr}</p>
+                </div>
+                <button onClick={dismissPopup} className="text-neutral-300 hover:text-neutral-500 transition-colors text-lg leading-none mt-0.5">✕</button>
+              </div>
+
+              {/* Quote */}
+              <div className="mb-5">
+                <p className="text-[20px] font-semibold text-neutral-800 leading-snug">{todayQuote[0]}</p>
+                <p className="text-[17px] text-neutral-500 leading-snug mt-1">{todayQuote[1]}</p>
+              </div>
+
+              {/* Weather strip */}
+              {weather && (
+                <div className="bg-neutral-50 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
+                  <p className="text-[28px] leading-none">{weatherIcon(weather.code)}</p>
+                  <div className="flex-1">
+                    <p className="text-[14px] font-semibold text-neutral-700">{weather.temp}°F &nbsp;·&nbsp; {weatherDesc(weather.code)}</p>
+                    <div className="flex flex-col gap-0.5 mt-1">
+                      {weather.rainChance >= 40 && (
+                        <p className="text-[12px] text-blue-500 font-medium">☂️ Don&apos;t forget your umbrella! ({weather.rainChance}%)</p>
+                      )}
+                      {weather.temp >= 85 && (
+                        <p className="text-[12px] text-orange-400 font-medium">💧 It&apos;s hot today — stay hydrated!</p>
+                      )}
+                      {weather.rainChance < 40 && weather.temp < 85 && (
+                        <p className="text-[12px] text-neutral-400">Looks good out there today.</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* CTA button */}
+              <button
+                onClick={dismissPopup}
+                className="w-full py-2.5 rounded-xl bg-[#C9A84C] text-white text-[13px] font-medium tracking-wide hover:bg-[#b8963e] transition-colors"
+              >
+                Let&apos;s go ✨
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="mb-5">
         <h2 className="text-[22px] font-bold text-[#1C1C1C]">Dashboard</h2>
         <p className="text-[13px] text-neutral-400 mt-0.5">{todayStr}</p>
-      </div>
-
-      <div className="mb-5 px-4 py-4 bg-[#FDF8F0] border border-[#E8D5B0] rounded-xl">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1">
-            <p className="text-[10px] uppercase tracking-[0.25em] text-[#C9A84C] mb-2">{greeting}, Betty · {dayData.label}</p>
-            <p className="text-[15px] font-medium text-neutral-700 leading-snug">{todayQuote[0]}</p>
-            <p className="text-[14px] text-neutral-500 leading-snug mt-0.5">{todayQuote[1]}</p>
-          </div>
-          {weather && (
-            <div className="flex-shrink-0 text-right border-l border-[#E8D5B0] pl-4">
-              <p className="text-[26px] leading-none">{weatherIcon(weather.code)}</p>
-              <p className="text-[14px] font-semibold text-neutral-700 mt-1">{weather.temp}°F</p>
-              <p className="text-[11px] text-neutral-400">{weatherDesc(weather.code)}</p>
-              {weather.rainChance >= 40 && (
-                <p className="text-[11px] text-blue-500 mt-1 font-medium">☂️ Bring an umbrella</p>
-              )}
-            </div>
-          )}
-        </div>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
