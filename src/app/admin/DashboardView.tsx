@@ -412,46 +412,46 @@ export default function DashboardView({ adminKey }: { adminKey: string }) {
 
   const DAY_QUOTES: Record<number, { label: string; quotes: [string, string][] }> = {
     0: { label: "Sunday 😴", quotes: [
-      ["😴 It's Sunday.", "Go enjoy your day. Admin can wait."],
-      ["🚫 Stop checking admin.", "Today is your day off."],
-      ["☕ No appointments.", "No stress. Just relax."],
-      ["🤍 Betty, close this page.", "We'll see you tomorrow."],
-      ["🌿 Rest is productive too.", "Enjoy your Sunday."],
-      ["😌 Today's task:", "Do absolutely nothing."],
-      ["✨ Admin will still be here tomorrow.", "Your Sunday won't."],
-      ["📱 Step away from the dashboard.", "Real life needs you today."],
-      ["💕 You've earned today.", "Now go enjoy it."],
-      ["⚠️ Unauthorized access detected.", "Employees are required to enjoy Sunday. 😆"],
+      ["😴 It's Sunday.", "🌅 Go enjoy your day. Admin can wait."],
+      ["🚫 Stop checking admin.", "🎉 Today is your day off."],
+      ["☕ No appointments.", "😌 No stress. Just relax."],
+      ["🤍 Betty, close this page.", "👋 We'll see you tomorrow."],
+      ["🌿 Rest is productive too.", "☀️ Enjoy your Sunday."],
+      ["😌 Today's task:", "🛋️ Do absolutely nothing."],
+      ["✨ Admin will still be here tomorrow.", "🌙 Your Sunday won't."],
+      ["📱 Step away from the dashboard.", "🌸 Real life needs you today."],
+      ["💕 You've earned today.", "🎊 Now go enjoy it."],
+      ["⚠️ Unauthorized access detected.", "😆 Employees are required to enjoy Sunday."],
     ]},
     1: { label: "Monday ☕", quotes: [
-      ["💙 Blue Monday?", "Not at Yee Eyelashes."],
-      ["☕ Coffee first.", "Beautiful lashes second."],
-      ["✨ New week.", "New clients. New smiles."],
+      ["💙 Blue Monday?", "✨ Not at Yee Eyelashes."],
+      ["☕ Coffee first.", "💅 Beautiful lashes second."],
+      ["✨ New week.", "😊 New clients. New smiles."],
     ]},
     2: { label: "Tuesday 🌼", quotes: [
-      ["🌼 Tuesday already?", "You're doing better than you think."],
-      ["✨ One client at a time.", "One masterpiece at a time."],
-      ["💕 Tuesdays are underrated.", "Just like quiet confidence."],
+      ["🌼 Tuesday already?", "💪 You're doing better than you think."],
+      ["✨ One client at a time.", "🎨 One masterpiece at a time."],
+      ["💕 Tuesdays are underrated.", "😌 Just like quiet confidence."],
     ]},
     3: { label: "Wednesday 🌸", quotes: [
-      ["🎉 Halfway through!", "Weekend can wait."],
-      ["✨ Wednesday check.", "You're still amazing."],
-      ["🤍 Midweek magic starts here.", "Let's make today beautiful."],
+      ["🎉 Halfway through!", "😎 Weekend can wait."],
+      ["✨ Wednesday check.", "🌟 You're still amazing."],
+      ["🤍 Midweek magic starts here.", "🌸 Let's make today beautiful."],
     ]},
     4: { label: "Thursday 🌷", quotes: [
-      ["😌 Thursday called.", "Friday is on the way."],
-      ["✨ Almost there.", "Keep those lashes flawless."],
-      ["💕 Good things take time.", "Luckily, you're patient."],
+      ["😌 Thursday called.", "🎊 Friday is on the way."],
+      ["✨ Almost there.", "💅 Keep those lashes flawless."],
+      ["💕 Good things take time.", "🌱 Luckily, you're patient."],
     ]},
     5: { label: "Friday 🎉", quotes: [
-      ["🎉 Friday vibes only.", "Let's sparkle today."],
-      ["✨ Today's goal:", "Beautiful lashes & happy clients."],
-      ["🥳 Smile.", "It's officially Friday."],
+      ["🎉 Friday vibes only.", "💫 Let's sparkle today."],
+      ["✨ Today's goal:", "💅 Beautiful lashes & happy clients."],
+      ["🥳 Smile.", "🎊 It's officially Friday."],
     ]},
     6: { label: "Saturday ☀️", quotes: [
-      ["☀️ Saturdays are for beauty.", "Let's make today gorgeous."],
-      ["💕 Fully booked?", "That's a good problem."],
-      ["✨ Another busy Saturday.", "Another beautiful success."],
+      ["☀️ Saturdays are for beauty.", "💄 Let's make today gorgeous."],
+      ["💕 Fully booked?", "🎉 That's a good problem."],
+      ["✨ Another busy Saturday.", "🏆 Another beautiful success."],
     ]},
   };
 
@@ -479,7 +479,7 @@ export default function DashboardView({ adminKey }: { adminKey: string }) {
             {/* Gold top bar */}
             <div className="h-1.5 w-full bg-gradient-to-r from-[#C9A84C] to-[#e8c97a]" />
 
-            <div className="px-7 pt-6 pb-7">
+            <div className="animate-card-content px-7 pt-6 pb-7">
               {/* Header */}
               <div className="flex items-start justify-between mb-5">
                 <div>

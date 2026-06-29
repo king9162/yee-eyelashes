@@ -61,16 +61,25 @@ a { text-decoration: none; }
   color: #1C1C1C;
 }
 
-/* ── Envelope open ───────────────────── */
+/* ── Luxury card open ────────────────── */
 @keyframes envelope-open {
-  0%   { transform: perspective(1000px) rotateX(-90deg); opacity: 0; }
-  55%  { transform: perspective(1000px) rotateX(7deg);   opacity: 1; }
-  75%  { transform: perspective(1000px) rotateX(-3deg);  opacity: 1; }
-  100% { transform: perspective(1000px) rotateX(0deg);   opacity: 1; }
+  0%   { transform: perspective(900px) rotateX(-100deg) scaleY(0.6); opacity: 0; }
+  45%  { opacity: 1; }
+  65%  { transform: perspective(900px) rotateX(10deg)   scaleY(1.03); }
+  80%  { transform: perspective(900px) rotateX(-5deg)   scaleY(0.98); }
+  90%  { transform: perspective(900px) rotateX(2deg)    scaleY(1.01); }
+  100% { transform: perspective(900px) rotateX(0deg)    scaleY(1);    opacity: 1; }
+}
+@keyframes card-content-reveal {
+  0%, 25% { opacity: 0; transform: translateY(10px); }
+  100%    { opacity: 1; transform: translateY(0); }
 }
 .animate-envelope-open {
-  animation: envelope-open 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: envelope-open 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   transform-origin: top center;
+}
+.animate-card-content {
+  animation: card-content-reveal 0.45s ease-out 0.35s both;
 }
 
 /* ── Marquee ─────────────────────────── */
