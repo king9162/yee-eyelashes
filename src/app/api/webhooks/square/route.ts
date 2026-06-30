@@ -214,6 +214,19 @@ export async function POST(req: NextRequest) {
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.ADMIN_SECRET_KEY}` },
             body: JSON.stringify([{ ts: new Date().toISOString(), type: "booking", name: fullName, sub: `${visitDate} ${bookingTime} · ${serviceLabel}` }]),
           }).catch(() => {/* non-fatal */});
+
+          // Notify Betty — only for Square-app bookings (website bookings already notified in /api/bookings)
+          try {
+            await sendBettyNotification({
+              name:         fullName,
+              email:        email || "—",
+              phone:        phone || "—",
+              service:      "square",
+              serviceLabel: serviceLabel || `Square Appointment (${durationMin} min)`,
+              date:         visitDate,
+              time:         bookingTime,
+            });
+          } catch (err) { console.error("Betty notify error (non-fatal):", err); }
         }
       } else if (eventType === "booking.updated" && squareBookingId) {
         await db.from("bookings").update({
@@ -224,20 +237,6 @@ export async function POST(req: NextRequest) {
         }).eq("square_booking_id", squareBookingId);
       }
 
-      // Notify owner of new booking
-      if (eventType === "booking.created" && (firstName || lastName)) {
-        try {
-          await sendBettyNotification({
-            name:         `${firstName} ${lastName}`.trim(),
-            email:        email || "—",
-            phone:        phone || "—",
-            service:      "square",
-            serviceLabel: serviceLabel || `Square Appointment (${durationMin} min)`,
-            date:         visitDate,
-            time:         booking.start_at ? new Date(booking.start_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "America/New_York" }) : "—",
-          });
-        } catch (err) { console.error("Betty notify error (non-fatal):", err); }
-      }
     } catch (err) {
       console.error("booking.created sync error:", err);
     }
