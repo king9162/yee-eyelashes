@@ -282,7 +282,8 @@ export default function DashboardView({ adminKey }: { adminKey: string }) {
 
   const todayAppts  = bookings.filter(b => b.date === todayStr && b.status !== "cancelled");
   const weekAppts   = bookings.filter(b => b.date >= weekStartStr && b.date <= weekEndStr && b.status !== "cancelled");
-  const monthVisits = bookings.filter(b => b.date >= monthStart && b.date <= todayStr && b.status !== "cancelled");
+  const monthEnd    = `${yr}-${mo}-${new Date(parseInt(yr), parseInt(mo), 0).getDate().toString().padStart(2, "0")}`;
+  const monthVisits = bookings.filter(b => b.date >= monthStart && b.date <= monthEnd && b.status !== "cancelled");
 
   // Build confirmed booking set: "normPhone|date" or "email|date" for non-cancelled bookings
   const confirmedSet = new Set<string>();
