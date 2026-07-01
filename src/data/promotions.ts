@@ -11,16 +11,6 @@ export type Promotion = {
 
 export const promotions: Promotion[] = [
   {
-    id: "birthday-month",
-    title: "Birthday Month — 20% Off",
-    titleZh: "生日月份 享 20% 折扣",
-    description: "Celebrate your birthday with beautiful lashes! Enjoy 20% off any service during your birthday month — because you deserve to look stunning on your special day.",
-    descriptionZh: "用美麗的睫毛慶祝你的生日！生日當月所有服務享 20% 折扣，讓你在特別的日子光彩照人。",
-    note: "Valid during your birthday month. Mention your birthday when booking. No code required.",
-    noteZh: "生日當月有效。預約時請說明生日月份，無需折扣碼。",
-    active: true,
-  },
-  {
     id: "mothers-day",
     title: "Mother's Day Special — 50% Off",
     titleZh: "母親節特別優惠 — 半價",
@@ -48,6 +38,16 @@ export const promotions: Promotion[] = [
     descriptionZh: "預購三次套裝，比單次到訪更划算。適用於 Real Mink 及 Premium Cashmere 系列。Real Mink 低至 $150 · Premium Cashmere 低至 $200。",
     note: "Sessions can be used for new sets or refills. Ask us in-studio for details.",
     noteZh: "套裝次數可用於全新嫁接或補睫，到店諮詢詳情。",
+    active: true,
+  },
+  {
+    id: "birthday-month",
+    title: "Birthday Month — 20% Off",
+    titleZh: "生日月份 享 20% 折扣",
+    description: "Celebrate your birthday with beautiful lashes! Enjoy 20% off any service during your birthday month — because you deserve to look stunning on your special day.",
+    descriptionZh: "用美麗的睫毛慶祝你的生日！生日當月所有服務享 20% 折扣，讓你在特別的日子光彩照人。",
+    note: "Valid during your birthday month. Mention your birthday when booking. No code required.",
+    noteZh: "生日當月有效。預約時請說明生日月份，無需折扣碼。",
     active: true,
   },
 ];
