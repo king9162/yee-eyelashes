@@ -197,7 +197,7 @@ function EnPolicy() {
             <p className="mt-4">
               We will not send unsolicited promotional or marketing emails without your prior consent.
               You may opt out of non-essential email communications at any time by contacting us at{" "}
-              <a href="tel:9298062467" className={gold}>929-806-2467</a> or through our website contact form.
+              <a href="tel:5169843859" className={gold}>516-984-3859</a> or through our website contact form.
             </p>
           </section>
 
@@ -207,10 +207,13 @@ function EnPolicy() {
 
             <h3 className={subHead}>7.1 How You Opt In</h3>
             <p>
-              By providing your mobile phone number when submitting a booking request, contacting us, or
-              signing up for reminders, you expressly consent to receive text messages (SMS) from
-              Yee Eyelashes at the number provided. You are not required to consent to SMS as a condition
-              of purchasing any service.
+              Customers provide their mobile phone number when booking an appointment through our
+              Square Appointments booking page at{" "}
+              <a href="https://square.site/yee" target="_blank" rel="noopener noreferrer" className={gold}>square.site/yee</a>,
+              or when contacting us directly by phone or email. By providing their phone number,
+              customers consent to receive service-related SMS messages from Yee Eyelashes, including
+              appointment reminders, lash refill reminders, and requests for Google reviews.
+              Consent is not a condition of purchase. Customers may opt out at any time by replying STOP.
             </p>
 
             <h3 className={subHead}>7.2 Types of Messages</h3>
@@ -252,7 +255,7 @@ function EnPolicy() {
             <h3 className={subHead}>7.6 Help</h3>
             <p>
               For assistance, reply <strong>HELP</strong> to any of our messages, or contact us at{" "}
-              <a href="tel:9298062467" className={gold}>929-806-2467</a>.
+              <a href="tel:5169843859" className={gold}>516-984-3859</a>.
             </p>
 
             <h3 className={subHead}>7.7 No Sharing of Phone Numbers</h3>
@@ -316,7 +319,7 @@ function EnPolicy() {
             </ul>
             <p className="mt-4">
               To exercise any of the above rights, please contact us at{" "}
-              <a href="tel:9298062467" className={gold}>929-806-2467</a> or visit us at
+              <a href="tel:5169843859" className={gold}>516-984-3859</a> or visit us at
               278 Plandome Rd, 2nd Floor, Manhasset, NY 11030.
               We will respond to all valid requests within a reasonable timeframe.
             </p>
@@ -355,7 +358,7 @@ function EnPolicy() {
             <div className="mt-5 pl-5 border-l border-[#C9A84C]/30 space-y-1.5">
               <p className="text-[#1C1C1C] font-medium">Yee Eyelashes</p>
               <p>278 Plandome Rd, 2nd Floor, Manhasset, NY 11030</p>
-              <p><a href="tel:9298062467" className={gold}>929-806-2467</a></p>
+              <p><a href="tel:5169843859" className={gold}>516-984-3859</a></p>
             </div>
           </section>
 
@@ -494,7 +497,7 @@ function ZhPolicy() {
             </ul>
             <p className="mt-4">
               未經您明確同意，我們不會發送非必要的促銷或行銷郵件。
-              您可隨時透過 <a href="tel:9298062467" className="text-[#C9A84C]">929-806-2467</a> 聯絡我們取消訂閱。
+              您可隨時透過 <a href="tel:5169843859" className="text-[#C9A84C]">516-984-3859</a> 聯絡我們取消訂閱。
             </p>
           </section>
 
@@ -503,8 +506,12 @@ function ZhPolicy() {
 
             <h3 className={subHead}>7.1 如何同意接收簡訊</h3>
             <p>
-              當您在提交預約申請、聯絡我們或登記提醒服務時提供手機號碼，即表示您明確同意接收
-              Yee Eyelashes 傳送至您號碼的文字簡訊（SMS）。同意接收簡訊並非購買任何服務的必要條件。
+              客戶在透過我們的 Square Appointments 預約頁面（
+              <a href="https://square.site/yee" target="_blank" rel="noopener noreferrer" className="text-[#C9A84C] hover:underline">square.site/yee</a>
+              ）預約，或直接以電話或電郵聯絡我們時，會提供手機號碼。
+              提供手機號碼即表示客戶同意接收來自 Yee Eyelashes 的服務相關簡訊，
+              包括預約提醒、睫毛補充提醒，以及邀請撰寫 Google 評價等。
+              同意接收簡訊並非購買任何服務的必要條件。客戶可隨時回覆 STOP 取消訂閱。
             </p>
 
             <h3 className={subHead}>7.2 訊息類型</h3>
@@ -541,7 +548,7 @@ function ZhPolicy() {
             <h3 className={subHead}>7.6 協助</h3>
             <p>
               如需協助，請回覆 <strong>HELP</strong>，或透過{" "}
-              <a href="tel:9298062467" className="text-[#C9A84C]">929-806-2467</a> 聯絡我們。
+              <a href="tel:5169843859" className="text-[#C9A84C]">516-984-3859</a> 聯絡我們。
             </p>
 
             <h3 className={subHead}>7.7 不分享手機號碼</h3>
@@ -593,7 +600,7 @@ function ZhPolicy() {
               <li>隨時撤回對非必要電郵通訊的同意</li>
             </ul>
             <p className="mt-4">
-              如需行使上述任何權利，請透過 <a href="tel:9298062467" className="text-[#C9A84C]">929-806-2467</a> 聯絡我們，
+              如需行使上述任何權利，請透過 <a href="tel:5169843859" className="text-[#C9A84C]">516-984-3859</a> 聯絡我們，
               或親臨 278 Plandome Rd, 2nd Floor, Manhasset, NY 11030。我們將在合理時間內回應所有有效請求。
             </p>
           </section>
@@ -621,7 +628,7 @@ function ZhPolicy() {
             <div className="mt-5 pl-5 border-l border-[#C9A84C]/30 space-y-1.5">
               <p className="text-[#1C1C1C] font-medium">Yee Eyelashes</p>
               <p>278 Plandome Rd, 2nd Floor, Manhasset, NY 11030</p>
-              <p><a href="tel:9298062467" className="text-[#C9A84C] hover:underline">929-806-2467</a></p>
+              <p><a href="tel:5169843859" className="text-[#C9A84C] hover:underline">516-984-3859</a></p>
             </div>
           </section>
 
