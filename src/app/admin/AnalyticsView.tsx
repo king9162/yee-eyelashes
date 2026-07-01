@@ -368,10 +368,6 @@ export default function AnalyticsView({ adminKey }: { adminKey: string }) {
                 const prevConfSamePeriod = prevMkLocal ? bookings.filter(b => {
                   if (b.status === "cancelled") return false;
                   if (!b.date.startsWith(prevMkLocal)) return false;
-                  if (isCurrent) {
-                    const day = parseInt(b.date.split("-")[2]);
-                    return day <= todayDay;
-                  }
                   return true;
                 }).length : null;
                 return (
