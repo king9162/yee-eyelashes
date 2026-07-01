@@ -82,10 +82,12 @@ export default function AnalyticsView({ adminKey }: { adminKey: string }) {
   }
   const curMk  = months[months.length - 1];
   const prevMk = months.length >= 2 ? months[months.length - 2] : months[0];
+  const [curYrStr, curMoStr] = curMk.split("-");
+  const curMonthEnd = `${curYrStr}-${curMoStr}-${new Date(parseInt(curYrStr), parseInt(curMoStr), 0).getDate().toString().padStart(2, "0")}`;
 
-  // For each month, the end date caps at today for current month, else end of month
+  // For each month, the end date is the last day of that month
   function mkEnd(mk: string) {
-    return mk === curMk ? todayStr : `${mk}-31`;
+    return mk === curMk ? curMonthEnd : `${mk}-31`;
   }
 
   // bookings per month — same logic as Dashboard
@@ -138,7 +140,7 @@ export default function AnalyticsView({ adminKey }: { adminKey: string }) {
 
   for (const mk of months) {
     const mStart = `${mk}-01`;
-    const mEnd   = mk === curMk ? todayStr : `${mk}-31`;
+    const mEnd   = mk === curMk ? curMonthEnd : `${mk}-31`;
     returningByMonth[mk] = [...visitDatesMap.values()].filter(s =>
       s.size > 1 && [...s].some(d => d >= mStart && d <= mEnd)
     ).length;
