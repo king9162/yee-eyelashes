@@ -11,7 +11,7 @@ type Props = {
 
 export default function ContactSection({ lang }: Props) {
   const t = getTranslations(lang);
-  const [formData, setFormData] = useState({ name: "", email: "", message: "", website: "" });
+  const [formData, setFormData] = useState({ name: "", email: "", phone: "", message: "", website: "" });
   const [submitted, setSubmitted] = useState(false);
   const [loading,   setLoading]   = useState(false);
   const [error,     setError]     = useState("");
@@ -204,6 +204,23 @@ export default function ContactSection({ lang }: Props) {
                     className="w-full border-b border-neutral-200 py-3 text-sm text-neutral-800 focus:outline-none focus:border-[#C9A84C] transition-colors bg-transparent placeholder:text-neutral-300"
                     placeholder={t.contact.form.email}
                   />
+                </div>
+                <div>
+                  <label className="block text-[10px] uppercase tracking-[0.25em] text-neutral-400 mb-2.5">
+                    {lang === "zh" ? "電話號碼（選填）" : "Phone Number (Optional)"}
+                  </label>
+                  <input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    className="w-full border-b border-neutral-200 py-3 text-sm text-neutral-800 focus:outline-none focus:border-[#C9A84C] transition-colors bg-transparent placeholder:text-neutral-300"
+                    placeholder={lang === "zh" ? "電話號碼" : "Phone number"}
+                  />
+                  <p className="text-[10.5px] text-neutral-400 mt-2 leading-relaxed">
+                    {lang === "zh"
+                      ? "提供電話號碼即表示您同意接收 Yee Eyelashes 的服務相關簡訊，包括預約提醒及服務更新。回覆 STOP 可隨時取消。"
+                      : "By providing your phone number, you consent to receive SMS messages from Yee Eyelashes, including appointment reminders and service updates. Reply STOP to opt out at any time."}
+                  </p>
                 </div>
                 <div>
                   <label className="block text-[10px] uppercase tracking-[0.25em] text-neutral-400 mb-2.5">
