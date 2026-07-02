@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
   const e164 = digits.startsWith("1") ? `+${digits}` : `+1${digits}`;
 
   const bookUrl = "https://square.site/yee";
-  const text = `🎂 Happy Birthday, ${name}! Celebrate with gorgeous lashes — enjoy 20% off any service this month at Yee Eyelashes 🎁 Book: ${bookUrl} 📍 278 Plandome Rd, Manhasset · 516-984-3859`;
+  const text = `🎂 Happy Birthday, ${name}! Celebrate with gorgeous lashes, enjoy 20% off any service this month at Yee Eyelashes 🎁 Book: ${bookUrl} 📍 278 Plandome Rd, Manhasset · 516-984-3859`;
 
   try {
     await sendSMS(e164, text);

@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
   const e164 = digits.startsWith("1") ? `+${digits}` : `+1${digits}`;
 
   const reviewUrl = process.env.GOOGLE_REVIEW_URL ?? "https://g.page/r/CWoWnxubhGRzEAE/review";
-  const text = `Hi ${name}! 🌟 Thank you for visiting Yee Eyelashes! We'd love your feedback — it only takes 30 seconds:\n${reviewUrl}\nThank you! 💛`;
+  const text = `Hi ${name}! 🌟 Thank you for visiting Yee Eyelashes! We'd love your feedback. It only takes 30 seconds:\n${reviewUrl}\nThank you! 💛`;
 
   try {
     await sendSMS(e164, text);

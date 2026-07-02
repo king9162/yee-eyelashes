@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
 
   const reviewLink = process.env.GOOGLE_REVIEW_URL ?? "https://g.page/yee-eyelashes";
   const smsText = (name: string) =>
-    `Hi ${name}! Thank you for your visit at Yee Eyelashes 🌸 We'd love your feedback — please leave us a Google review: ${reviewLink}  📍 278 Plandome Rd, Manhasset · 516-984-3859`;
+    `Hi ${name}! Thank you for your visit at Yee Eyelashes 🌸 We'd love your feedback. Please leave us a Google review: ${reviewLink}  📍 278 Plandome Rd, Manhasset · 516-984-3859`;
 
   const results = await Promise.allSettled(
     eligible.map(async (b) => {

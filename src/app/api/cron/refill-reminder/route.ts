@@ -80,7 +80,7 @@ export async function GET(req: NextRequest) {
 
   const results = await Promise.allSettled(
     eligible.map(async (b) => {
-      const smsText = `Hi ${b.name}! It's been 2 weeks since your last lash appointment at Yee Eyelashes — perfect time for a refill! Book now: https://square.site/appointments/buyer/widget/qe4tfv3078b5gx/LYH1D5CHJ3Q63  📍 278 Plandome Rd, Manhasset · 516-984-3859`;
+      const smsText = `Hi ${b.name}! It's been 2 weeks since your last lash appointment at Yee Eyelashes! Perfect time for a refill. Book now: https://square.site/appointments/buyer/widget/qe4tfv3078b5gx/LYH1D5CHJ3Q63  📍 278 Plandome Rd, Manhasset · 516-984-3859`;
 
       await Promise.all([
         emailOn

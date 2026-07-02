@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
   const digits = phone.replace(/\D/g, "");
   const e164 = digits.startsWith("1") ? `+${digits}` : `+1${digits}`;
 
-  const text = `Hi ${name}! It's been 2 weeks since your last lash appointment at Yee Eyelashes — perfect time for a refill! Book now: https://square.site/appointments/buyer/widget/qe4tfv3078b5gx/LYH1D5CHJ3Q63  📍 278 Plandome Rd, Manhasset · 516-984-3859`;
+  const text = `Hi ${name}! It's been 2 weeks since your last lash appointment at Yee Eyelashes! Perfect time for a refill. Book now: https://square.site/appointments/buyer/widget/qe4tfv3078b5gx/LYH1D5CHJ3Q63  📍 278 Plandome Rd, Manhasset · 516-984-3859`;
 
   try {
     await sendSMS(e164, text);

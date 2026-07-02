@@ -339,7 +339,7 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
             <div className="bg-[#f0f0f0] rounded-2xl p-3 space-y-1">
               <div className="bg-[#e5e5ea] rounded-2xl rounded-tl-sm px-3 py-2 max-w-[85%]">
                 <p className="text-[10px] text-[#1C1C1C] leading-relaxed">
-                  Hi <span className="font-medium">[Name]</span>! It&apos;s been 2 weeks since your last lash appointment at Yee Eyelashes — perfect time for a refill! Book now: square.site/yee 📍 278 Plandome Rd, Manhasset · 516-984-3859
+                  Hi <span className="font-medium">[Name]</span>! It&apos;s been 2 weeks since your last lash appointment at Yee Eyelashes! Perfect time for a refill. Book now: square.site/yee 📍 278 Plandome Rd, Manhasset · 516-984-3859
                 </p>
               </div>
               <p className="text-[9px] text-neutral-400 pl-1">From: (833) 634-5378</p>
@@ -358,7 +358,7 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
             <div className="bg-[#f0f0f0] rounded-2xl p-3 space-y-1">
               <div className="bg-[#e5e5ea] rounded-2xl rounded-tl-sm px-3 py-2 max-w-[85%]">
                 <p className="text-[10px] text-[#1C1C1C] leading-relaxed">
-                  Hi <span className="font-medium">[Name]</span>! Thank you for your visit at Yee Eyelashes 🌸 We&apos;d love your feedback — please leave us a Google review: [link] 📍 278 Plandome Rd, Manhasset · 516-984-3859
+                  Hi <span className="font-medium">[Name]</span>! Thank you for your visit at Yee Eyelashes 🌸 We&apos;d love your feedback. Please leave us a Google review: [link] 📍 278 Plandome Rd, Manhasset · 516-984-3859
                 </p>
               </div>
               <p className="text-[9px] text-neutral-400 pl-1">From: (833) 634-5378</p>
@@ -408,7 +408,7 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
             <div className="bg-[#f0f0f0] rounded-2xl p-3 space-y-1">
               <div className="bg-[#e5e5ea] rounded-2xl rounded-tl-sm px-3 py-2 max-w-[85%]">
                 <p className="text-[10px] text-[#1C1C1C] leading-relaxed">
-                  🎂 Happy Birthday, <span className="font-medium">[Name]</span>! Celebrate with gorgeous lashes — enjoy 20% off any service this month at Yee Eyelashes 🎁 Book: square.site/yee 📍 278 Plandome Rd, Manhasset · 516-984-3859
+                  🎂 Happy Birthday, <span className="font-medium">[Name]</span>! Celebrate with gorgeous lashes, enjoy 20% off any service this month at Yee Eyelashes 🎁 Book: square.site/yee 📍 278 Plandome Rd, Manhasset · 516-984-3859
                 </p>
               </div>
               <p className="text-[9px] text-neutral-400 pl-1">From: (833) 634-5378</p>
@@ -422,9 +422,25 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
       {/* ── Send History ── */}
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-[18px] font-bold text-[#1C1C1C]">Send History</h3>
-        <button onClick={() => setShowLog(p => !p)} className="text-[12px] text-neutral-400 hover:text-[#1C1C1C] transition-colors">
-          {showLog ? "Hide" : "Show"} ({combinedHistory.length})
-        </button>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={async () => {
+              if (!confirm("Clear all auto-sent records? The cron will be able to resend to all clients.")) return;
+              const res = await fetch("/api/admin/reset-sms-sent", {
+                method: "POST",
+                headers: { Authorization: `Bearer ${adminKey}` },
+              });
+              if (res.ok) {
+                setBookingsWithSends([]);
+              }
+            }}
+            className="text-[12px] text-red-400 hover:text-red-600 transition-colors">
+            Reset Auto-Sent
+          </button>
+          <button onClick={() => setShowLog(p => !p)} className="text-[12px] text-neutral-400 hover:text-[#1C1C1C] transition-colors">
+            {showLog ? "Hide" : "Show"} ({combinedHistory.length})
+          </button>
+        </div>
       </div>
       {showLog && (
         <div className="bg-white border border-neutral-200 rounded-xl overflow-hidden">
