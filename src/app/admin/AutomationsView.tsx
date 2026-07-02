@@ -408,7 +408,7 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
             <div className="bg-[#f0f0f0] rounded-2xl p-3 space-y-1">
               <div className="bg-[#e5e5ea] rounded-2xl rounded-tl-sm px-3 py-2 max-w-[85%]">
                 <p className="text-[10px] text-[#1C1C1C] leading-relaxed">
-                  🎂 Happy Birthday, <span className="font-medium">[Name]</span>! Celebrate with gorgeous lashes, enjoy 20% off any service this month at Yee Eyelashes 🎁 Book: square.site/yee 📍 278 Plandome Rd, Manhasset · 516-984-3859
+                  🎂 Happy Birthday, <span className="font-medium">[Name]</span>! Celebrate with gorgeous lashes, enjoy 20% off any service this month at Yee Eyelashes 🎁 Book: square.site/appointments/... 📍 278 Plandome Rd, Manhasset · 516-984-3859
                 </p>
               </div>
               <p className="text-[9px] text-neutral-400 pl-1">From: (833) 634-5378</p>

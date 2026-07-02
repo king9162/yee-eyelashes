@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
   const digits = phone.replace(/\D/g, "");
   const e164 = digits.startsWith("1") ? `+${digits}` : `+1${digits}`;
 
-  const bookUrl = "https://square.site/yee";
+  const bookUrl = "https://square.site/appointments/buyer/widget/qe4tfv3078b5gx/LYH1D5CHJ3Q63";
   const text = `🎂 Happy Birthday, ${name}! Celebrate with gorgeous lashes, enjoy 20% off any service this month at Yee Eyelashes 🎁 Book: ${bookUrl} 📍 278 Plandome Rd, Manhasset · 516-984-3859`;
 
   try {
