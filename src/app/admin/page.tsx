@@ -912,6 +912,7 @@ export default function AdminPage() {
               const refillSmsSentAt   = tracking[ck]?.["refill-sms"];
               const birthdayEmailSentAt = tracking[ck]?.["birthday-email"];
               const birthdaySmsSentAt   = tracking[ck]?.["birthday-sms"];
+              const noReview            = !!tracking[ck]?.["no-review"];
               const clientName = `${c.first_name} ${c.last_name}`.trim() || "Unknown";
               const mCardCancelledDates = new Set(clientBkgs.filter(b => b.status === "cancelled").map(b => b.date));
               const actualVCount = uniqueV.filter(v => !mCardCancelledDates.has(v.date ?? "")).length;
@@ -1006,6 +1007,15 @@ export default function AdminPage() {
 
                       {/* Actions: ★ Given + 2×2 send grid */}
                       <div className="space-y-2">
+                        <button
+                          onClick={() => noReview ? trackClear(ck, "no-review") : trackMark(ck, "no-review", "", "opted-out")}
+                          className={`w-full py-2 px-1 text-[10px] font-semibold rounded-xl border transition-all ${
+                            noReview
+                              ? "bg-red-50 border-red-300 text-red-600"
+                              : "bg-neutral-50 border-neutral-200 text-neutral-400"
+                          }`}>
+                          {noReview ? "🚫 No Auto Review (tap to undo)" : "🚫 No Auto Review"}
+                        </button>
                         <button
                           onClick={() => reviewGiven ? trackClear(ck, "review-given") : trackMark(ck, "review-given")}
                           className={`w-full py-2 px-1 text-[10px] font-semibold rounded-xl border transition-all ${
@@ -1355,9 +1365,19 @@ export default function AdminPage() {
                                 const refillSmsAlreadySent = !!tracking[ck]?.["refill-sms"];
                                 const bdayEmailSent        = !!tracking[ck]?.["birthday-email"];
                                 const bdaySmsSent          = !!tracking[ck]?.["birthday-sms"];
+                                const noReviewFlag         = !!tracking[ck]?.["no-review"];
                                 const groups = [
                                   {
                                     label: "Review",
+                                    extra: (
+                                      <div className="mx-3 mb-2">
+                                        <button
+                                          onClick={() => noReviewFlag ? trackClear(ck, "no-review") : trackMark(ck, "no-review", "", "opted-out")}
+                                          className={`w-full text-[10px] font-semibold px-3 py-1.5 rounded-lg border transition-all ${noReviewFlag ? "bg-red-50 border-red-300 text-red-600" : "bg-neutral-50 border-neutral-200 text-neutral-400 hover:border-red-300 hover:text-red-500"}`}>
+                                          {noReviewFlag ? "🚫 No Auto Review — click to undo" : "🚫 No Auto Review"}
+                                        </button>
+                                      </div>
+                                    ),
                                     items: [
                                       { key: "review-email" as const, icon: "✉", label: "Email", canSend: !!c.email && !reviewAlreadySent && !isDeleted, onSend: () => sendReviewEmail(c, ck), autoSent: dbReviewSent ? fmtSent(dbReviewSent) : undefined },
                                       { key: "review-sms"   as const, icon: "💬", label: "SMS",   canSend: !!c.phone && !reviewSmsAlreadySent && !dbReviewSent && !isDeleted, onSend: () => sendReviewSMS(c, ck),   autoSent: dbReviewSent ? fmtSent(dbReviewSent) : undefined },
@@ -1412,6 +1432,7 @@ export default function AdminPage() {
                                             <div className="px-4 pt-3 pb-1">
                                               <span className="text-[13px] font-bold text-[#1C1C1C]">{group.label}</span>
                                             </div>
+                                            {"extra" in group && group.extra}
                                             {group.items.map(item => {
                                               const manualSent = tracking[ck]?.[item.key];
                                               const isAuto     = !manualSent && !!item.autoSent;

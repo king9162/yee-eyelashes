@@ -35,9 +35,29 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  const eligible = (bookings ?? []).filter(b =>
-    (emailOn && b.email) || (smsOn && b.phone)
-  );
+  // Exclude clients who opted out of auto review
+  const { data: noReviewActions } = await db
+    .from("client_actions")
+    .select("client_id")
+    .eq("action_type", "no-review");
+  const noReviewClientIds = new Set((noReviewActions ?? []).map(a => a.client_id));
+
+  let noReviewPhones = new Set<string>();
+  if (noReviewClientIds.size > 0) {
+    const { data: noReviewClients } = await db
+      .from("clients")
+      .select("phone")
+      .in("id", [...noReviewClientIds]);
+    noReviewPhones = new Set(
+      (noReviewClients ?? []).map(c => c.phone?.replace(/\D/g, "").slice(-10)).filter(Boolean)
+    );
+  }
+
+  const eligible = (bookings ?? []).filter(b => {
+    const phone10 = b.phone?.replace(/\D/g, "").slice(-10);
+    if (phone10 && noReviewPhones.has(phone10)) return false;
+    return (emailOn && b.email) || (smsOn && b.phone);
+  });
 
   const reviewLink = process.env.GOOGLE_REVIEW_URL ?? "https://g.page/yee-eyelashes";
   const smsText = (name: string) =>
