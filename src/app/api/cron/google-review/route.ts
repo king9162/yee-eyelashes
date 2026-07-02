@@ -20,10 +20,8 @@ export async function GET(req: NextRequest) {
   const smsOn   = smsSetting?.value === "true";
   if (!emailOn && !smsOn) return NextResponse.json({ skipped: true, reason: "disabled" });
 
-  // Find bookings from yesterday (cron runs at midnight UTC = 8 PM EDT)
-  const target = new Date();
-  target.setDate(target.getDate() - 1);
-  const targetDate = target.toISOString().split("T")[0];
+  // Find bookings from today in NY time (cron runs at 00:30 UTC = 8:30 PM EDT)
+  const targetDate = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
 
   const { data: bookings, error } = await db
     .from("bookings")
@@ -43,7 +41,7 @@ export async function GET(req: NextRequest) {
 
   const reviewLink = process.env.GOOGLE_REVIEW_URL ?? "https://g.page/yee-eyelashes";
   const smsText = (name: string) =>
-    `Hi ${name}! Thank you for your visit at Yee Eyelashes 🌸 We'd love your feedback — please leave us a Google review: ${reviewLink}  📍 278 Plandome Rd, Manhasset · 929-806-2467`;
+    `Hi ${name}! Thank you for your visit at Yee Eyelashes 🌸 We'd love your feedback — please leave us a Google review: ${reviewLink}  📍 278 Plandome Rd, Manhasset · 516-984-3859`;
 
   const results = await Promise.allSettled(
     eligible.map(async (b) => {

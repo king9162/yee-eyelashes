@@ -1,0 +1,20 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/refill-reminder",
+      "schedule": "30 0 * * *"
+    },
+    {
+      "path": "/api/cron/google-review",
+      "schedule": "30 0 * * *"
+    },
+    {
+      "path": "/api/cron/sync-google-reviews",
+      "schedule": "0 10 * * *"
+    },
+    {
+      "path": "/api/cron/sync-square",
+      "schedule": "0 6 * * *"
+    }
+  ]
+}

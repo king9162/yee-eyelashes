@@ -25,9 +25,10 @@ export async function GET(req: NextRequest) {
   const { data: daysSetting } = await db.from("settings").select("value").eq("key", "refill_days").maybeSingle();
   const refillDays = Math.max(1, parseInt(daysSetting?.value ?? "14") || 14);
 
-  const target = new Date();
+  const todayNY = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+  const target  = new Date(todayNY + "T12:00:00");
   target.setDate(target.getDate() - refillDays);
-  const targetDate = target.toISOString().split("T")[0];
+  const targetDate = target.toLocaleDateString("en-CA", { timeZone: "America/New_York" });
 
   const { data: bookings, error } = await db
     .from("bookings")
@@ -42,10 +43,10 @@ export async function GET(req: NextRequest) {
   }
 
   // Fetch upcoming bookings in the next 14 days to skip clients who already rebooked
-  const today = new Date().toISOString().split("T")[0];
-  const twoWeeksLater = new Date();
+  const today = todayNY;
+  const twoWeeksLater = new Date(todayNY + "T12:00:00");
   twoWeeksLater.setDate(twoWeeksLater.getDate() + 14);
-  const twoWeeksDate = twoWeeksLater.toISOString().split("T")[0];
+  const twoWeeksDate = twoWeeksLater.toLocaleDateString("en-CA", { timeZone: "America/New_York" });
 
   const { data: upcomingBookings } = await db
     .from("bookings")
@@ -70,7 +71,7 @@ export async function GET(req: NextRequest) {
 
   const results = await Promise.allSettled(
     eligible.map(async (b) => {
-      const smsText = `Hi ${b.name}! It's been 2 weeks since your last lash appointment at Yee Eyelashes — perfect time for a refill! Book now: https://square.site/appointments/buyer/widget/qe4tfv3078b5gx/LYH1D5CHJ3Q63  📍 278 Plandome Rd, Manhasset · 929-806-2467`;
+      const smsText = `Hi ${b.name}! It's been 2 weeks since your last lash appointment at Yee Eyelashes — perfect time for a refill! Book now: https://square.site/appointments/buyer/widget/qe4tfv3078b5gx/LYH1D5CHJ3Q63  📍 278 Plandome Rd, Manhasset · 516-984-3859`;
 
       await Promise.all([
         emailOn
