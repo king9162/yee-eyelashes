@@ -913,6 +913,7 @@ export default function AdminPage() {
               const birthdayEmailSentAt = tracking[ck]?.["birthday-email"];
               const birthdaySmsSentAt   = tracking[ck]?.["birthday-sms"];
               const noReview            = !!tracking[ck]?.["no-review"];
+              const noRefill            = !!tracking[ck]?.["no-refill"];
               const clientName = `${c.first_name} ${c.last_name}`.trim() || "Unknown";
               const mCardCancelledDates = new Set(clientBkgs.filter(b => b.status === "cancelled").map(b => b.date));
               const actualVCount = uniqueV.filter(v => !mCardCancelledDates.has(v.date ?? "")).length;
@@ -1049,6 +1050,13 @@ export default function AdminPage() {
                                   : "bg-neutral-50 border-neutral-200 text-neutral-500 active:bg-neutral-100"
                             }`}>
                             {reviewSmsSentAt ? `✓ ${reviewSmsSentAt}` : dbReview ? <span>💬 Review<br/><span className="text-[9px] text-neutral-400">Auto ✓</span></span> : "💬 Review SMS"}
+                          </button>
+                          <button
+                            onClick={() => noRefill ? trackClear(ck, "no-refill") : trackMark(ck, "no-refill", "", "opted-out")}
+                            className={`col-span-2 py-2 px-1 text-[10px] font-semibold rounded-xl border transition-all ${
+                              noRefill ? "bg-red-50 border-red-300 text-red-600" : "bg-neutral-50 border-neutral-200 text-neutral-400"
+                            }`}>
+                            {noRefill ? "🚫 No Auto Refill (tap to undo)" : "🚫 No Auto Refill"}
                           </button>
                           <button
                             onClick={() => sendRefillEmail(c, ck)}
@@ -1366,6 +1374,7 @@ export default function AdminPage() {
                                 const bdayEmailSent        = !!tracking[ck]?.["birthday-email"];
                                 const bdaySmsSent          = !!tracking[ck]?.["birthday-sms"];
                                 const noReviewFlag         = !!tracking[ck]?.["no-review"];
+                                const noRefillFlag         = !!tracking[ck]?.["no-refill"];
                                 const groups = [
                                   {
                                     label: "Review",
@@ -1385,6 +1394,15 @@ export default function AdminPage() {
                                   },
                                   {
                                     label: "Refill",
+                                    extra: (
+                                      <div className="mx-3 mb-2">
+                                        <button
+                                          onClick={() => noRefillFlag ? trackClear(ck, "no-refill") : trackMark(ck, "no-refill", "", "opted-out")}
+                                          className={`w-full text-[10px] font-semibold px-3 py-1.5 rounded-lg border transition-all ${noRefillFlag ? "bg-red-50 border-red-300 text-red-600" : "bg-neutral-50 border-neutral-200 text-neutral-400 hover:border-red-300 hover:text-red-500"}`}>
+                                          {noRefillFlag ? "🚫 No Auto Refill — click to undo" : "🚫 No Auto Refill"}
+                                        </button>
+                                      </div>
+                                    ),
                                     items: [
                                       { key: "refill-email" as const, icon: "✉", label: "Email", canSend: !!c.email && !refillAlreadySent && !isDeleted, onSend: () => sendRefillEmail(c, ck), autoSent: dbRefillSent ? fmtSent(dbRefillSent) : undefined },
                                       { key: "refill-sms"   as const, icon: "💬", label: "SMS",   canSend: !!c.phone && !refillSmsAlreadySent && !dbRefillSent && !isDeleted, onSend: () => sendRefillSMS(c, ck),   autoSent: dbRefillSent ? fmtSent(dbRefillSent) : undefined },

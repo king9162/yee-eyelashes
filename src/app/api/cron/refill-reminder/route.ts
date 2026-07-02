@@ -55,6 +55,15 @@ export async function GET(req: NextRequest) {
     .lte("date", twoWeeksDate)
     .neq("status", "cancelled");
 
+  // Exclude clients who opted out of auto refill
+  const { data: noRefillActions } = await db.from("client_actions").select("client_id").eq("action_type", "no-refill");
+  const noRefillClientIds = new Set((noRefillActions ?? []).map(a => a.client_id));
+  let noRefillPhones = new Set<string>();
+  if (noRefillClientIds.size > 0) {
+    const { data: noRefillClients } = await db.from("clients").select("phone").in("id", [...noRefillClientIds]);
+    noRefillPhones = new Set((noRefillClients ?? []).map(c => c.phone?.replace(/\D/g, "").slice(-10)).filter(Boolean));
+  }
+
   const upcomingPhones = new Set(
     upcomingBookings?.map(b => b.phone?.replace(/\D/g, "").slice(-10)).filter(Boolean)
   );
@@ -64,9 +73,9 @@ export async function GET(req: NextRequest) {
 
   const eligible = (bookings ?? []).filter(b => {
     const phone = b.phone?.replace(/\D/g, "").slice(-10);
-    const hasUpcoming = (phone && upcomingPhones.has(phone)) ||
-                        (b.email && upcomingEmails.has(b.email));
-    return !hasUpcoming;
+    const hasUpcoming = (phone && upcomingPhones.has(phone)) || (b.email && upcomingEmails.has(b.email));
+    const optedOut = phone && noRefillPhones.has(phone);
+    return !hasUpcoming && !optedOut;
   });
 
   const results = await Promise.allSettled(
