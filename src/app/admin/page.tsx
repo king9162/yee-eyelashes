@@ -1030,13 +1030,15 @@ export default function AdminPage() {
                           </button>
                           <button
                             onClick={() => sendReviewSMS(c, ck)}
-                            disabled={!c.phone || !!reviewSmsSentAt || isDeleted}
+                            disabled={!c.phone || !!reviewSmsSentAt || !!dbReview || isDeleted}
                             className={`py-2 px-1 text-[10px] font-semibold rounded-xl border transition-all disabled:opacity-30 ${
                               reviewSmsSentAt
                                 ? "bg-blue-50 border-blue-200 text-blue-600"
-                                : "bg-neutral-50 border-neutral-200 text-neutral-500 active:bg-neutral-100"
+                                : dbReview
+                                  ? "bg-neutral-100 border-neutral-200 text-neutral-400"
+                                  : "bg-neutral-50 border-neutral-200 text-neutral-500 active:bg-neutral-100"
                             }`}>
-                            {reviewSmsSentAt ? `✓ ${reviewSmsSentAt}` : "💬 Review SMS"}
+                            {reviewSmsSentAt ? `✓ ${reviewSmsSentAt}` : dbReview ? <span>💬 Review<br/><span className="text-[9px] text-neutral-400">Auto ✓</span></span> : "💬 Review SMS"}
                           </button>
                           <button
                             onClick={() => sendRefillEmail(c, ck)}
@@ -1052,13 +1054,15 @@ export default function AdminPage() {
                           </button>
                           <button
                             onClick={() => sendRefillSMS(c, ck)}
-                            disabled={!c.phone || !!refillSmsSentAt || isDeleted}
+                            disabled={!c.phone || !!refillSmsSentAt || !!dbRefill || isDeleted}
                             className={`py-2 px-1 text-[10px] font-semibold rounded-xl border transition-all disabled:opacity-30 ${
                               refillSmsSentAt
                                 ? "bg-amber-50 border-amber-200 text-amber-600"
-                                : "bg-neutral-50 border-neutral-200 text-neutral-500 active:bg-neutral-100"
+                                : dbRefill
+                                  ? "bg-neutral-100 border-neutral-200 text-neutral-400"
+                                  : "bg-neutral-50 border-neutral-200 text-neutral-500 active:bg-neutral-100"
                             }`}>
-                            {refillSmsSentAt ? `✓ ${refillSmsSentAt}` : "💬 Refill SMS"}
+                            {refillSmsSentAt ? `✓ ${refillSmsSentAt}` : dbRefill ? <span>💬 Refill<br/><span className="text-[9px] text-neutral-400">Auto ✓</span></span> : "💬 Refill SMS"}
                           </button>
                           <button
                             onClick={() => sendBirthdayEmail(c, ck)}
@@ -1356,14 +1360,14 @@ export default function AdminPage() {
                                     label: "Review",
                                     items: [
                                       { key: "review-email" as const, icon: "✉", label: "Email", canSend: !!c.email && !reviewAlreadySent && !isDeleted, onSend: () => sendReviewEmail(c, ck), autoSent: dbReviewSent ? fmtSent(dbReviewSent) : undefined },
-                                      { key: "review-sms"   as const, icon: "💬", label: "SMS",   canSend: !!c.phone && !reviewSmsAlreadySent && !isDeleted, onSend: () => sendReviewSMS(c, ck),   autoSent: undefined },
+                                      { key: "review-sms"   as const, icon: "💬", label: "SMS",   canSend: !!c.phone && !reviewSmsAlreadySent && !dbReviewSent && !isDeleted, onSend: () => sendReviewSMS(c, ck),   autoSent: dbReviewSent ? fmtSent(dbReviewSent) : undefined },
                                     ],
                                   },
                                   {
                                     label: "Refill",
                                     items: [
                                       { key: "refill-email" as const, icon: "✉", label: "Email", canSend: !!c.email && !refillAlreadySent && !isDeleted, onSend: () => sendRefillEmail(c, ck), autoSent: dbRefillSent ? fmtSent(dbRefillSent) : undefined },
-                                      { key: "refill-sms"   as const, icon: "💬", label: "SMS",   canSend: !!c.phone && !refillSmsAlreadySent && !isDeleted, onSend: () => sendRefillSMS(c, ck),   autoSent: undefined },
+                                      { key: "refill-sms"   as const, icon: "💬", label: "SMS",   canSend: !!c.phone && !refillSmsAlreadySent && !dbRefillSent && !isDeleted, onSend: () => sendRefillSMS(c, ck),   autoSent: dbRefillSent ? fmtSent(dbRefillSent) : undefined },
                                     ],
                                   },
                                   {
