@@ -42,6 +42,22 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  // Fallback: fill missing phone/email from clients table by name
+  const { data: allClientsRefill } = await db.from("clients").select("first_name, last_name, phone, email");
+  const clientByNameRefill = new Map<string, { phone: string; email: string }>();
+  for (const c of allClientsRefill ?? []) {
+    const full  = `${c.first_name ?? ""} ${c.last_name ?? ""}`.trim().toLowerCase();
+    const first = (c.first_name ?? "").trim().toLowerCase();
+    const entry = { phone: c.phone ?? "", email: c.email ?? "" };
+    if (full)  clientByNameRefill.set(full,  entry);
+    if (first) clientByNameRefill.set(first, entry);
+  }
+  const enrichedRefillBookings = (bookings ?? []).map(b => {
+    if (b.phone || b.email) return b;
+    const found = clientByNameRefill.get((b.name ?? "").trim().toLowerCase());
+    return found ? { ...b, phone: found.phone, email: found.email } : b;
+  });
+
   // Fetch upcoming bookings in the next 14 days to skip clients who already rebooked
   const today = todayNY;
   const twoWeeksLater = new Date(todayNY + "T12:00:00");
@@ -71,11 +87,11 @@ export async function GET(req: NextRequest) {
     upcomingBookings?.map(b => b.email).filter(Boolean)
   );
 
-  const eligible = (bookings ?? []).filter(b => {
+  const eligible = enrichedRefillBookings.filter(b => {
     const phone = b.phone?.replace(/\D/g, "").slice(-10);
     const hasUpcoming = (phone && upcomingPhones.has(phone)) || (b.email && upcomingEmails.has(b.email));
     const optedOut = phone && noRefillPhones.has(phone);
-    return !hasUpcoming && !optedOut;
+    return !hasUpcoming && !optedOut && ((emailOn && b.email) || (smsOn && b.phone));
   });
 
   const results = await Promise.allSettled(

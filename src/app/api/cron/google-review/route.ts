@@ -35,6 +35,22 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  // Fallback: fill missing phone/email from clients table by name
+  const { data: allClients } = await db.from("clients").select("first_name, last_name, phone, email");
+  const clientByName = new Map<string, { phone: string; email: string }>();
+  for (const c of allClients ?? []) {
+    const full  = `${c.first_name ?? ""} ${c.last_name ?? ""}`.trim().toLowerCase();
+    const first = (c.first_name ?? "").trim().toLowerCase();
+    const entry = { phone: c.phone ?? "", email: c.email ?? "" };
+    if (full)  clientByName.set(full,  entry);
+    if (first) clientByName.set(first, entry);
+  }
+  const enrichedBookings = (bookings ?? []).map(b => {
+    if (b.phone || b.email) return b;
+    const found = clientByName.get((b.name ?? "").trim().toLowerCase());
+    return found ? { ...b, phone: found.phone, email: found.email } : b;
+  });
+
   // Exclude clients who opted out of auto review
   const { data: noReviewActions } = await db
     .from("client_actions")
@@ -53,7 +69,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const eligible = (bookings ?? []).filter(b => {
+  const eligible = enrichedBookings.filter(b => {
     const phone10 = b.phone?.replace(/\D/g, "").slice(-10);
     if (phone10 && noReviewPhones.has(phone10)) return false;
     return (emailOn && b.email) || (smsOn && b.phone);
