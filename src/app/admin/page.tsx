@@ -1037,7 +1037,7 @@ export default function AdminPage() {
                         <div className="grid grid-cols-2 gap-2">
                           <button
                             onClick={() => sendReviewEmail(c, ck)}
-                            disabled={!c.email || reviewAlreadySent || isDeleted}
+                            disabled={!c.email || reviewAlreadySent || !!noReview || !!reviewGiven || isDeleted}
                             className={`py-2 px-1 text-[10px] font-semibold rounded-xl border transition-all disabled:opacity-30 ${
                               reviewSentAt
                                 ? "bg-green-50 border-green-300 text-green-700"
@@ -1049,7 +1049,7 @@ export default function AdminPage() {
                           </button>
                           <button
                             onClick={() => sendReviewSMS(c, ck)}
-                            disabled={!c.phone || !!reviewSmsSentAt || !!dbReview || isDeleted}
+                            disabled={!c.phone || !!reviewSmsSentAt || !!dbReview || !!noReview || !!reviewGiven || isDeleted}
                             className={`py-2 px-1 text-[10px] font-semibold rounded-xl border transition-all disabled:opacity-30 ${
                               reviewSmsSentAt
                                 ? "bg-blue-50 border-blue-200 text-blue-600"
@@ -1391,6 +1391,7 @@ export default function AdminPage() {
                                 const bdaySmsSent          = !!tracking[ck]?.["birthday-sms"];
                                 const noReviewFlag         = !!tracking[ck]?.["no-review"];
                                 const noRefillFlag         = !!tracking[ck]?.["no-refill"];
+                                const reviewGivenFlag      = !!tracking[ck]?.["review-given"];
                                 const groups = [
                                   {
                                     label: "Review",
@@ -1404,8 +1405,8 @@ export default function AdminPage() {
                                       </div>
                                     ),
                                     items: [
-                                      { key: "review-email" as const, icon: "✉", label: "Email", canSend: !!c.email && !reviewAlreadySent && !isDeleted, onSend: () => sendReviewEmail(c, ck), autoSent: dbReviewSent ? fmtSent(dbReviewSent) : undefined },
-                                      { key: "review-sms"   as const, icon: "💬", label: "SMS",   canSend: !!c.phone && !reviewSmsAlreadySent && !dbReviewSent && !isDeleted, onSend: () => sendReviewSMS(c, ck),   autoSent: dbReviewSent ? fmtSent(dbReviewSent) : undefined },
+                                      { key: "review-email" as const, icon: "✉", label: "Email", canSend: !!c.email && !reviewAlreadySent && !noReviewFlag && !reviewGivenFlag && !isDeleted, onSend: () => sendReviewEmail(c, ck), autoSent: dbReviewSent ? fmtSent(dbReviewSent) : undefined },
+                                      { key: "review-sms"   as const, icon: "💬", label: "SMS",   canSend: !!c.phone && !reviewSmsAlreadySent && !dbReviewSent && !noReviewFlag && !reviewGivenFlag && !isDeleted, onSend: () => sendReviewSMS(c, ck),   autoSent: dbReviewSent ? fmtSent(dbReviewSent) : undefined },
                                     ],
                                   },
                                   {
