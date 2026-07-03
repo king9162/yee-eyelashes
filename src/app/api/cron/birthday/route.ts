@@ -35,21 +35,23 @@ export async function GET(req: NextRequest) {
   }
 
   // Per-channel dedup
-  const [{ data: emailSentToday }, { data: smsSentToday }] = await Promise.all([
+  const [{ data: emailSentToday }, { data: smsSentToday }, { data: unsubActions }] = await Promise.all([
     db.from("client_actions").select("client_id")
       .in("action_type", ["auto-birthday-email", "birthday-email"])
       .eq("sent_at", today),
     db.from("client_actions").select("client_id")
       .in("action_type", ["auto-birthday-sms", "birthday-sms"])
       .eq("sent_at", today),
+    db.from("client_actions").select("client_id").eq("action_type", "sms-unsubscribed"),
   ]);
   const emailSentIds = new Set((emailSentToday ?? []).map(a => a.client_id));
   const smsSentIds   = new Set((smsSentToday  ?? []).map(a => a.client_id));
+  const unsubIds     = new Set((unsubActions  ?? []).map(a => a.client_id));
 
   type EligibleClient = typeof birthdayClients extends (infer T)[] | null ? T & { shouldEmail: boolean; shouldSms: boolean } : never;
   const eligible: EligibleClient[] = (birthdayClients ?? []).flatMap(c => {
     const shouldEmail = emailOn && !!c.email && !emailSentIds.has(c.id);
-    const shouldSms   = smsOn   && !!c.phone && !smsSentIds.has(c.id);
+    const shouldSms   = smsOn   && !!c.phone && !smsSentIds.has(c.id) && !unsubIds.has(c.id);
     if (!shouldEmail && !shouldSms) return [];
     return [{ ...c, shouldEmail, shouldSms }];
   });

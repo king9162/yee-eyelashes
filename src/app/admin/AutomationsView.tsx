@@ -32,6 +32,8 @@ type ActionEntry = {
   created_at:  string;
 };
 
+type PreviewClient = { id: string; first_name: string; last_name: string; phone: string; email: string; channels: string[] };
+
 type ClientEntry = {
   id:         string;
   first_name: string;
@@ -87,6 +89,9 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
   const [bookingsWithSends, setBookingsWithSends] = useState<BookingWithSend[]>([]);
   const [loading,         setLoading]         = useState(true);
   const [showLog,         setShowLog]         = useState(true);
+  const [showCronLog,     setShowCronLog]     = useState(false);
+  const [preview,         setPreview]         = useState<{ review: PreviewClient[]; refill: PreviewClient[]; birthday: PreviewClient[]; date: string; refillTarget: string } | null>(null);
+  const [loadingPreview,  setLoadingPreview]  = useState(false);
   const [saving,          setSaving]          = useState<string | null>(null);
   const [savingDays,      setSavingDays]      = useState(false);
 
@@ -129,6 +134,13 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
       body: JSON.stringify({ key: "refill_days", value: String(days) }),
     });
     setSavingDays(false);
+  }
+
+  async function fetchPreview() {
+    setLoadingPreview(true);
+    const res = await fetch("/api/admin/preview-sends", { headers });
+    if (res.ok) setPreview(await res.json());
+    setLoadingPreview(false);
   }
 
   async function toggle(id: string) {
@@ -218,6 +230,18 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
   const combinedHistory = [...manualEntries, ...autoEntries]
     .sort((a, b) => b.created_at.localeCompare(a.created_at));
 
+  // Group auto-sends by the date they were created (= when cron ran)
+  const cronHistory = Object.values(
+    history
+      .filter(a => a.action_type.startsWith("auto-"))
+      .reduce((acc, a) => {
+        const runDate = a.created_at?.split("T")[0] ?? a.sent_at;
+        if (!acc[runDate]) acc[runDate] = { date: runDate, entries: [] };
+        acc[runDate].entries.push(a);
+        return acc;
+      }, {} as Record<string, { date: string; entries: typeof history }>)
+  ).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 10);
+
   const TYPE_LABELS: Record<string, string> = {
     "review-email":        "Review Email",
     "review-sms":          "Review SMS",
@@ -239,7 +263,51 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
     <div className="flex-1 overflow-auto p-6 bg-neutral-50">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-[22px] font-bold text-[#1C1C1C]">Automations</h2>
+        <button
+          onClick={fetchPreview}
+          disabled={loadingPreview}
+          className="flex items-center gap-1.5 px-4 py-2 bg-[#1C1C1C] text-white text-[12px] font-semibold rounded-lg hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all disabled:opacity-40">
+          {loadingPreview ? "Loading…" : "Preview Tonight's Sends"}
+        </button>
       </div>
+
+      {/* ── Tonight's Preview ── */}
+      {preview && (
+        <div className="bg-white border border-neutral-200 rounded-xl overflow-hidden mb-8">
+          <div className="px-5 py-3 border-b border-neutral-100 flex items-center justify-between">
+            <div>
+              <h3 className="text-[14px] font-bold text-[#1C1C1C]">Tonight&apos;s Send Preview</h3>
+              <p className="text-[11px] text-neutral-400 mt-0.5">{preview.date} · Refill target: {preview.refillTarget}</p>
+            </div>
+            <button onClick={() => setPreview(null)} className="text-neutral-300 hover:text-neutral-500 text-xl leading-none">✕</button>
+          </div>
+          <div className="p-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[
+              { label: "Review", color: "blue", clients: preview.review },
+              { label: "Refill", color: "amber", clients: preview.refill },
+              { label: "Birthday", color: "pink", clients: preview.birthday },
+            ].map(({ label, color, clients }) => (
+              <div key={label}>
+                <p className={`text-[10px] uppercase tracking-[0.15em] font-semibold mb-2 ${
+                  color === "blue" ? "text-blue-500" : color === "amber" ? "text-amber-500" : "text-pink-500"
+                }`}>{label} ({clients.length})</p>
+                {clients.length === 0 ? (
+                  <p className="text-[12px] text-neutral-300">None scheduled</p>
+                ) : (
+                  <div className="flex flex-col gap-1.5">
+                    {clients.map(c => (
+                      <div key={c.id} className="flex items-center justify-between">
+                        <span className="text-[12px] text-[#1C1C1C]">{`${c.first_name ?? ""} ${c.last_name ?? ""}`.trim()}</span>
+                        <span className="text-[10px] text-neutral-400">{c.channels.join(", ")}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── Active automations ── */}
       <div className="bg-white border border-neutral-200 rounded-xl overflow-hidden mb-10">
@@ -469,6 +537,46 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
         </div>
 
       </div>
+
+      {/* ── Cron History ── */}
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-[18px] font-bold text-[#1C1C1C]">Cron History</h3>
+        <button onClick={() => setShowCronLog(p => !p)} className="text-[12px] text-neutral-400 hover:text-[#1C1C1C] transition-colors">
+          {showCronLog ? "Hide" : "Show"} ({cronHistory.length} runs)
+        </button>
+      </div>
+      {showCronLog && (
+        <div className="bg-white border border-neutral-200 rounded-xl overflow-hidden mb-8">
+          {cronHistory.length === 0 ? (
+            <p className="px-5 py-8 text-center text-[13px] text-neutral-300">No cron runs logged yet.</p>
+          ) : (
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-neutral-100 bg-neutral-50">
+                  {["Date","Emails Sent","SMS Sent","Unique Clients"].map(h => (
+                    <th key={h} className="text-left text-[10px] font-semibold text-neutral-400 px-5 py-3 uppercase tracking-[0.08em]">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-neutral-50">
+                {cronHistory.map(({ date, entries }) => {
+                  const emailCount  = entries.filter(e => e.action_type.includes("email")).length;
+                  const smsCount    = entries.filter(e => e.action_type.includes("sms")).length;
+                  const uniqueCount = new Set(entries.map(e => e.client_id)).size;
+                  return (
+                    <tr key={date} className="hover:bg-neutral-50">
+                      <td className="px-5 py-3 text-[13px] text-[#1C1C1C]">{normDate(date)}</td>
+                      <td className="px-5 py-3 text-[13px] text-[#1C1C1C]">{emailCount}</td>
+                      <td className="px-5 py-3 text-[13px] text-[#1C1C1C]">{smsCount}</td>
+                      <td className="px-5 py-3 text-[13px] text-[#1C1C1C]">{uniqueCount}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
 
       {/* ── Send History ── */}
       <div className="flex items-center justify-between mb-3">

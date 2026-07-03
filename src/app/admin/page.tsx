@@ -629,6 +629,18 @@ export default function AdminPage() {
     a.click(); URL.revokeObjectURL(url);
   }
 
+  function exportClientsCSV(clientGroups: { client: Client; visits: { id: string; date: string; notes: string }[] }[]) {
+    const rows = [["First Name","Last Name","Phone","Email","Birthday","Last Visit","Notes","Recommendation"]];
+    for (const { client: c, visits } of clientGroups) {
+      const lastVisit = visits.map(v => v.date).filter(Boolean).sort().at(-1) ?? "";
+      rows.push([c.first_name, c.last_name, c.phone, c.email, c.birthday ?? "", lastVisit, c.notes ?? "", c.recommendation ?? ""]);
+    }
+    const csv = rows.map(r => r.map(f => `"${(f ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+    a.download = `yee-clients-${new Date().toLocaleDateString("en-CA")}.csv`; a.click();
+  }
+
   // ── Login ──────────────────────────────────────────────────
   if (!authed) {
     return (
@@ -801,10 +813,17 @@ export default function AdminPage() {
             <h2 className="text-[15px] font-semibold text-[#1C1C1C]">
               {view === "clients-elly" ? "Elly's Clients" : "My Clients"}
             </h2>
-            <p className="text-[11px] text-neutral-400">
-              {totalUniqueCount} active
-              {deletedGroupCount > 0 && <span className="ml-1.5 text-red-300">· {deletedGroupCount} deleted</span>}
-            </p>
+            <div className="flex items-center gap-3">
+              <p className="text-[11px] text-neutral-400">
+                {totalUniqueCount} active
+                {deletedGroupCount > 0 && <span className="ml-1.5 text-red-300">· {deletedGroupCount} deleted</span>}
+              </p>
+              <button
+                onClick={() => exportClientsCSV(clientGroups)}
+                className="px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] bg-neutral-100 text-neutral-500 border border-neutral-200 rounded-lg hover:bg-[#1C1C1C] hover:text-white transition-all whitespace-nowrap">
+                Export CSV
+              </button>
+            </div>
           </div>
           {view !== "clients-elly" && (
             <p className="text-[11px] text-neutral-400 mt-1">
@@ -921,8 +940,8 @@ export default function AdminPage() {
 
               const ck = c.id;
               const reviewGiven    = tracking[ck]?.["review-given"];
-              const reviewSentAt   = tracking[ck]?.["review-email"];
-              const refillSentAt   = tracking[ck]?.["refill-email"];
+              const reviewSentAt   = tracking[ck]?.["review-email"]   ?? tracking[ck]?.["auto-review-email"];
+              const refillSentAt   = tracking[ck]?.["refill-email"]   ?? tracking[ck]?.["auto-refill-email"];
               const cPhoneN        = normPhoneInline(c.phone ?? "");
               const clientBkgs     = bookings.filter(b =>
                 (cPhoneN && normPhoneInline(b.phone ?? "") === cPhoneN) ||
@@ -932,10 +951,10 @@ export default function AdminPage() {
               const dbRefill = clientBkgs.map(b => b.refill_sent_at).filter(Boolean).sort().at(-1);
               const reviewAlreadySent = !!dbReview || !!reviewSentAt;
               const refillAlreadySent  = !!dbRefill  || !!refillSentAt;
-              const reviewSmsSentAt   = tracking[ck]?.["review-sms"];
-              const refillSmsSentAt   = tracking[ck]?.["refill-sms"];
-              const birthdayEmailSentAt = tracking[ck]?.["birthday-email"];
-              const birthdaySmsSentAt   = tracking[ck]?.["birthday-sms"];
+              const reviewSmsSentAt   = tracking[ck]?.["review-sms"]  ?? tracking[ck]?.["auto-review-sms"];
+              const refillSmsSentAt   = tracking[ck]?.["refill-sms"]  ?? tracking[ck]?.["auto-refill-sms"];
+              const birthdayEmailSentAt = tracking[ck]?.["birthday-email"] ?? tracking[ck]?.["auto-birthday-email"];
+              const birthdaySmsSentAt   = tracking[ck]?.["birthday-sms"]   ?? tracking[ck]?.["auto-birthday-sms"];
               const noReview            = !!tracking[ck]?.["no-review"];
               const noRefill            = !!tracking[ck]?.["no-refill"];
               const clientName = `${c.first_name} ${c.last_name}`.trim() || "Unknown";
@@ -1407,12 +1426,12 @@ export default function AdminPage() {
 
                                 const name = `${c.first_name} ${c.last_name}`.trim() || c.first_name;
 
-                                const reviewAlreadySent    = !!dbReviewSent || !!tracking[ck]?.["review-email"];
-                                const refillAlreadySent    = !!dbRefillSent  || !!tracking[ck]?.["refill-email"];
-                                const reviewSmsAlreadySent = !!tracking[ck]?.["review-sms"];
-                                const refillSmsAlreadySent = !!tracking[ck]?.["refill-sms"];
-                                const bdayEmailSent        = !!tracking[ck]?.["birthday-email"];
-                                const bdaySmsSent          = !!tracking[ck]?.["birthday-sms"];
+                                const reviewAlreadySent    = !!dbReviewSent || !!tracking[ck]?.["review-email"] || !!tracking[ck]?.["auto-review-email"];
+                                const refillAlreadySent    = !!dbRefillSent  || !!tracking[ck]?.["refill-email"]  || !!tracking[ck]?.["auto-refill-email"];
+                                const reviewSmsAlreadySent = !!tracking[ck]?.["review-sms"]   || !!tracking[ck]?.["auto-review-sms"];
+                                const refillSmsAlreadySent = !!tracking[ck]?.["refill-sms"]   || !!tracking[ck]?.["auto-refill-sms"];
+                                const bdayEmailSent        = !!tracking[ck]?.["birthday-email"] || !!tracking[ck]?.["auto-birthday-email"];
+                                const bdaySmsSent          = !!tracking[ck]?.["birthday-sms"]   || !!tracking[ck]?.["auto-birthday-sms"];
                                 const noReviewFlag         = !!tracking[ck]?.["no-review"];
                                 const noRefillFlag         = !!tracking[ck]?.["no-refill"];
                                 const reviewGivenFlag      = !!tracking[ck]?.["review-given"];

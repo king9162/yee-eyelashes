@@ -49,6 +49,7 @@ export async function GET(req: NextRequest) {
   const [
     { data: autoEmailSent }, { data: autoSmsSent },
     { data: manualEmailSent }, { data: manualSmsSent },
+    { data: unsubActions },
   ] = await Promise.all([
     db.from("client_actions").select("client_id")
       .in("action_type", ["auto-refill-email", "auto-refill"]).eq("sent_at", targetDate),
@@ -58,6 +59,7 @@ export async function GET(req: NextRequest) {
       .eq("action_type", "refill-email").gte("sent_at", targetDate),
     db.from("client_actions").select("client_id")
       .eq("action_type", "refill-sms").gte("sent_at", targetDate),
+    db.from("client_actions").select("client_id").eq("action_type", "sms-unsubscribed"),
   ]);
   const emailSentIds = new Set([
     ...(autoEmailSent   ?? []).map(a => a.client_id),
@@ -67,6 +69,7 @@ export async function GET(req: NextRequest) {
     ...(autoSmsSent   ?? []).map(a => a.client_id),
     ...(manualSmsSent ?? []).map(a => a.client_id),
   ]);
+  const unsubIds = new Set((unsubActions ?? []).map(a => a.client_id));
 
   // Skip clients who already have an upcoming booking in the next 14 days
   const twoWeeksDate = offsetDateNY(today, 14);
@@ -91,7 +94,7 @@ export async function GET(req: NextRequest) {
     const hasUpcoming = (phone && upcomingPhones.has(phone)) || (c.email && upcomingEmails.has(c.email));
     if (hasUpcoming) return [];
     const shouldEmail = emailOn && !!c.email && !emailSentIds.has(c.id);
-    const shouldSms   = smsOn   && !!c.phone && !smsSentIds.has(c.id);
+    const shouldSms   = smsOn   && !!c.phone && !smsSentIds.has(c.id) && !unsubIds.has(c.id);
     if (!shouldEmail && !shouldSms) return [];
     return [{ ...c, shouldEmail, shouldSms }];
   });

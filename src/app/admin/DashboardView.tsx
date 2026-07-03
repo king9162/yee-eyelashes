@@ -36,7 +36,7 @@ type DashBooking = {
   service_label: string; time: string; phone: string; email: string;
   duration_min?: number; notes?: string;
 };
-type DashClient  = { id: string; visit_date: string; phone: string; email: string; owner: string; notes: string };
+type DashClient  = { id: string; visit_date: string; phone: string; email: string; owner: string; notes: string; first_name: string; last_name: string; birthday?: string };
 type DashReview  = { id: string; rating: number; deleted_from_google?: boolean };
 
 function parseTimeMin(t: string): number {
@@ -388,6 +388,20 @@ export default function DashboardView({ adminKey }: { adminKey: string }) {
       sub: loading ? "…" : reviews.length > 0 ? "5★" : "no reviews yet" },
   ];
 
+  const upcomingBirthdays = clients.flatMap(c => {
+    if (!c.birthday) return [];
+    const [bm, bd] = c.birthday.split("/").map(Number);
+    if (!bm || !bd) return [];
+    for (let i = 0; i <= 7; i++) {
+      const d = new Date(new Date().toLocaleString("en-US", { timeZone: "America/New_York" }));
+      d.setDate(d.getDate() + i);
+      if (d.getMonth() + 1 === bm && d.getDate() === bd) {
+        return [{ ...c, daysUntil: i }];
+      }
+    }
+    return [];
+  }).sort((a, b) => a.daysUntil - b.daysUntil);
+
   const tomorrowStr = (() => {
     const d = new Date(today);
     d.setDate(d.getDate() + 1);
@@ -559,6 +573,31 @@ export default function DashboardView({ adminKey }: { adminKey: string }) {
           </div>
         ))}
       </div>
+
+      {upcomingBirthdays.length > 0 && (
+        <div className="bg-white border border-neutral-200 rounded-xl p-4 mb-6">
+          <p className="text-[9px] uppercase tracking-[0.15em] text-neutral-400 mb-3">🎂 Upcoming Birthdays</p>
+          <div className="flex flex-col gap-2">
+            {upcomingBirthdays.map(c => (
+              <div key={c.id} className="flex items-center justify-between">
+                <span className="text-[13px] font-semibold text-[#1C1C1C]">
+                  {`${c.first_name ?? ""} ${c.last_name ?? ""}`.trim() || "Unknown"}
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[12px] text-neutral-400">{c.birthday}</span>
+                  <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                    c.daysUntil === 0
+                      ? "bg-pink-100 text-pink-600"
+                      : "bg-neutral-100 text-neutral-500"
+                  }`}>
+                    {c.daysUntil === 0 ? "Today!" : `In ${c.daysUntil} day${c.daysUntil === 1 ? "" : "s"}`}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-[15px] font-bold text-[#1C1C1C]">Upcoming Appointments</h3>
