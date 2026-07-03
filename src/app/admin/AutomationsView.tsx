@@ -16,13 +16,13 @@ const AUTOMATIONS: AutomationRow[] = [
   { id: "refill-sms",     channel: "sms",   name: "Refill Reminder SMS", defaultOn: false,
     description: "Send a text reminder to clients who haven't rebooked in a while" },
   { id: "review-email",   channel: "email", name: "Google Reviews",      defaultOn: true,
-    description: "Ask customers for a Google review the day after their appointment" },
+    description: "Ask customers for a Google review the night of their appointment" },
   { id: "review-sms",     channel: "sms",   name: "Google Reviews SMS",  defaultOn: false,
-    description: "Send a text asking for a Google review the day after their appointment" },
-  { id: "birthday-email", channel: "email", name: "Birthday Wish",       defaultOn: true,
-    description: "Send a birthday email with 20% off discount on the client's birthday" },
+    description: "Send a text asking for a Google review the night of their appointment" },
+  { id: "birthday-email", channel: "email", name: "Birthday Wish",       defaultOn: false,
+    description: "Auto-send a birthday email with 20% off on the client's birthday (9 AM)" },
   { id: "birthday-sms",   channel: "sms",   name: "Birthday Wish SMS",   defaultOn: false,
-    description: "Send a birthday text with 20% off discount on the client's birthday" },
+    description: "Auto-send a birthday text with 20% off on the client's birthday (9 AM)" },
 ];
 
 type ActionEntry = {
@@ -150,10 +150,17 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
 
   const clientMap = Object.fromEntries(clients.map(c => [c.id, c]));
 
-  const AUTO_ACTION_TYPES = new Set(["auto-review", "auto-refill"]);
+  const AUTO_ACTION_TYPES = new Set([
+    "auto-review", "auto-review-email", "auto-review-sms",
+    "auto-refill", "auto-refill-email", "auto-refill-sms",
+    "auto-birthday-email", "auto-birthday-sms",
+  ]);
   const ALL_SEND_TYPES = [
     "review-email","review-sms","refill-email","refill-sms",
-    "birthday-email","birthday-sms","auto-review","auto-refill",
+    "birthday-email","birthday-sms",
+    "auto-review","auto-review-email","auto-review-sms",
+    "auto-refill","auto-refill-email","auto-refill-sms",
+    "auto-birthday-email","auto-birthday-sms",
   ];
 
   // Build combined history: client_actions + bookings sent_at fields
@@ -212,14 +219,20 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
     .sort((a, b) => b.created_at.localeCompare(a.created_at));
 
   const TYPE_LABELS: Record<string, string> = {
-    "review-email":   "Review Email",
-    "review-sms":     "Review SMS",
-    "refill-email":   "Refill Email",
-    "refill-sms":     "Refill SMS",
-    "birthday-email": "Birthday Email",
-    "birthday-sms":   "Birthday SMS",
-    "auto-review":    "Review (Auto)",
-    "auto-refill":    "Refill (Auto)",
+    "review-email":        "Review Email",
+    "review-sms":          "Review SMS",
+    "refill-email":        "Refill Email",
+    "refill-sms":          "Refill SMS",
+    "birthday-email":      "Birthday Email",
+    "birthday-sms":        "Birthday SMS",
+    "auto-review":         "Review (Auto)",
+    "auto-review-email":   "Review Email (Auto)",
+    "auto-review-sms":     "Review SMS (Auto)",
+    "auto-refill":         "Refill (Auto)",
+    "auto-refill-email":   "Refill Email (Auto)",
+    "auto-refill-sms":     "Refill SMS (Auto)",
+    "auto-birthday-email": "Birthday Email (Auto)",
+    "auto-birthday-sms":   "Birthday SMS (Auto)",
   };
 
   return (
@@ -507,20 +520,22 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
                         onClick={async () => {
                           if (!confirm(`Delete send record for ${e.name}?`)) return;
                           if (e.client_id) {
-                            await fetch("/api/admin/client-actions", {
+                            const res = await fetch("/api/admin/client-actions", {
                               method: "DELETE",
                               headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminKey}` },
                               body: JSON.stringify({ client_id: e.client_id, action_type: e.action_type }),
                             });
+                            if (!res.ok) { alert("Failed to delete — please try again."); return; }
                             setHistory(prev => prev.filter(h =>
                               !(h.client_id === e.client_id && h.action_type === e.action_type)
                             ));
                           } else if (e.booking_id && e.booking_field) {
-                            await fetch(`/api/bookings/${e.booking_id}`, {
+                            const res = await fetch(`/api/bookings/${e.booking_id}`, {
                               method: "PATCH",
                               headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminKey}` },
                               body: JSON.stringify({ [e.booking_field]: null }),
                             });
+                            if (!res.ok) { alert("Failed to delete — please try again."); return; }
                             setBookingsWithSends(prev => prev.map(b =>
                               b.id === e.booking_id ? { ...b, [e.booking_field!]: null } : b
                             ));

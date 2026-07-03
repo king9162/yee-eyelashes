@@ -1,0 +1,92 @@
+import { NextRequest, NextResponse } from "next/server";
+import { supabaseAdmin }     from "@/lib/supabase";
+import { sendBirthdayEmail } from "@/lib/email";
+import { sendSMS }           from "@/lib/sms";
+
+export async function GET(req: NextRequest) {
+  const authHeader = req.headers.get("authorization");
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const db = supabaseAdmin();
+
+  const [{ data: emailSetting }, { data: smsSetting }] = await Promise.all([
+    db.from("settings").select("value").eq("key", "birthday-email").maybeSingle(),
+    db.from("settings").select("value").eq("key", "birthday-sms").maybeSingle(),
+  ]);
+  const emailOn = emailSetting?.value === "true";
+  const smsOn   = smsSetting?.value === "true";
+  if (!emailOn && !smsOn) return NextResponse.json({ skipped: true, reason: "disabled" });
+
+  // Today's MM/DD in NY time — matches birthday field format
+  const nowNY   = new Date(new Date().toLocaleString("en-US", { timeZone: "America/New_York" }));
+  const todayNY = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+  const mm = String(nowNY.getMonth() + 1).padStart(2, "0");
+  const dd = String(nowNY.getDate()).padStart(2, "0");
+  const todayMMDD = `${mm}/${dd}`;
+
+  // Fetch clients with birthday today
+  const { data: birthdayClients, error } = await db
+    .from("clients")
+    .select("id, first_name, last_name, phone, email, birthday")
+    .eq("birthday", todayMMDD)
+    .not("deleted", "eq", true);
+
+  if (error) {
+    console.error("Birthday cron query error:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  // Per-channel dedup: check if already sent today (or this year via manual send)
+  const [{ data: emailSentToday }, { data: smsSentToday }] = await Promise.all([
+    db.from("client_actions").select("client_id")
+      .in("action_type", ["auto-birthday-email", "birthday-email"])
+      .eq("sent_at", todayNY),
+    db.from("client_actions").select("client_id")
+      .in("action_type", ["auto-birthday-sms", "birthday-sms"])
+      .eq("sent_at", todayNY),
+  ]);
+  const emailSentIds = new Set((emailSentToday ?? []).map(a => a.client_id));
+  const smsSentIds   = new Set((smsSentToday  ?? []).map(a => a.client_id));
+
+  type EligibleClient = typeof birthdayClients extends (infer T)[] | null ? T & { shouldEmail: boolean; shouldSms: boolean } : never;
+  const eligible: EligibleClient[] = (birthdayClients ?? []).flatMap(c => {
+    const shouldEmail = emailOn && !!c.email && !emailSentIds.has(c.id);
+    const shouldSms   = smsOn   && !!c.phone && !smsSentIds.has(c.id);
+    if (!shouldEmail && !shouldSms) return [];
+    return [{ ...c, shouldEmail, shouldSms }];
+  });
+
+  const bookUrl = "https://square.site/appointments/buyer/widget/qe4tfv3078b5gx/LYH1D5CHJ3Q63";
+  const smsText = (name: string) =>
+    `🎂 Happy Birthday, ${name}! Celebrate with gorgeous lashes, enjoy 20% off any service this month at Yee Eyelashes 🎁 Book: ${bookUrl} 📍 278 Plandome Rd, Manhasset · 516-984-3859`;
+
+  const results = await Promise.allSettled(
+    eligible.map(async (c) => {
+      const name = `${c.first_name ?? ""} ${c.last_name ?? ""}`.trim() || c.first_name;
+      await Promise.all([
+        c.shouldEmail
+          ? sendBirthdayEmail({ name, email: c.email }).catch(e => console.error("Birthday email error:", e))
+          : Promise.resolve(),
+        c.shouldSms
+          ? sendSMS(c.phone, smsText(name)).catch(e => console.error("Birthday SMS error:", e))
+          : Promise.resolve(),
+      ]);
+
+      if (c.shouldEmail) await db.from("client_actions").upsert(
+        { client_id: c.id, action_type: "auto-birthday-email", sent_at: todayNY },
+        { onConflict: "client_id,action_type" }
+      );
+      if (c.shouldSms) await db.from("client_actions").upsert(
+        { client_id: c.id, action_type: "auto-birthday-sms", sent_at: todayNY },
+        { onConflict: "client_id,action_type" }
+      );
+    })
+  );
+
+  const sent   = results.filter(r => r.status === "fulfilled").length;
+  const failed = results.filter(r => r.status === "rejected").length;
+
+  return NextResponse.json({ sent, failed, date: todayNY, birthday: todayMMDD });
+}

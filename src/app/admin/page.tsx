@@ -338,6 +338,15 @@ export default function AdminPage() {
     // Auto-load data on mount (handles page refresh when already authed)
     fetchClients(savedKey);
     const iv = setInterval(async () => {
+      // Check session expiry on each tick
+      const expiry = sessionStorage.getItem("admin_expiry");
+      if (expiry && Date.now() > parseInt(expiry)) {
+        sessionStorage.removeItem("admin_key");
+        sessionStorage.removeItem("admin_expiry");
+        setAuthed(false);
+        alert("Session expired. Please log in again.");
+        return;
+      }
       const [cRes] = await Promise.all([
         fetch("/api/clients", { headers: { Authorization: `Bearer ${savedKey}` } }),
       ]);

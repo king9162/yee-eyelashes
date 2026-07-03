@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
   const db = supabaseAdmin();
   const { error } = await db
     .from("client_actions")
-    .upsert({ client_id, action_type, sent_at: sent_at ?? new Date().toLocaleDateString("en-CA") },
+    .upsert({ client_id, action_type, sent_at: sent_at ?? new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" }) },
       { onConflict: "client_id,action_type" });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
