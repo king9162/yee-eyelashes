@@ -338,6 +338,7 @@ export default function AdminPage() {
     // Auto-load data on mount (handles page refresh when already authed)
     fetchClients(savedKey);
     const iv = setInterval(async () => {
+      // Poll DB every 30 s so changes on another device appear quickly
       // Check session expiry on each tick
       const expiry = sessionStorage.getItem("admin_expiry");
       if (expiry && Date.now() > parseInt(expiry)) {
@@ -354,7 +355,7 @@ export default function AdminPage() {
       const fresh: Client[] = await cRes.json();
       setClients(prev => { if (fresh.length > prev.length) setNewDataToast(true); return fresh; });
       await loadActions(savedKey);
-    }, 60_000);
+    }, 30_000);
     return () => clearInterval(iv);
   }, [authed, fetchClients, loadActions]);
 
@@ -1052,7 +1053,7 @@ export default function AdminPage() {
                       {/* Actions: ★ Given + 2×2 send grid */}
                       <div className="space-y-2">
                         <button
-                          onClick={() => noReview ? trackClear(ck, "no-review") : trackMark(ck, "no-review", "", "opted-out")}
+                          onClick={() => noReview ? trackClear(ck, "no-review") : trackMark(ck, "no-review")}
                           className={`w-full py-2 px-1 text-[10px] font-semibold rounded-xl border transition-all ${
                             noReview
                               ? "bg-red-50 border-red-300 text-red-600"
@@ -1067,7 +1068,7 @@ export default function AdminPage() {
                               trackClear(ck, "no-review");
                             } else {
                               trackMark(ck, "review-given");
-                              trackMark(ck, "no-review", "", "opted-out");
+                              trackMark(ck, "no-review");
                             }
                           }}
                           className={`w-full py-2 px-1 text-[10px] font-semibold rounded-xl border transition-all ${
@@ -1103,7 +1104,7 @@ export default function AdminPage() {
                             {reviewSmsSentAt ? `✓ ${reviewSmsSentAt}` : dbReview ? <span>💬 Review<br/><span className="text-[9px] text-neutral-400">Auto ✓</span></span> : "💬 Review SMS"}
                           </button>
                           <button
-                            onClick={() => noRefill ? trackClear(ck, "no-refill") : trackMark(ck, "no-refill", "", "opted-out")}
+                            onClick={() => noRefill ? trackClear(ck, "no-refill") : trackMark(ck, "no-refill")}
                             className={`col-span-2 py-2 px-1 text-[10px] font-semibold rounded-xl border transition-all ${
                               noRefill ? "bg-red-50 border-red-300 text-red-600" : "bg-neutral-50 border-neutral-200 text-neutral-400"
                             }`}>
@@ -1395,7 +1396,7 @@ export default function AdminPage() {
                                           trackClear(ck, "no-review");
                                         } else {
                                           trackMark(ck, reviewGivenKey);
-                                          trackMark(ck, "no-review", "", "opted-out");
+                                          trackMark(ck, "no-review");
                                         }
                                       }}
                                       title={reviewGiven ? `Given on ${reviewGiven}` : "Mark as reviewed in person"}
@@ -1441,7 +1442,7 @@ export default function AdminPage() {
                                     extra: (
                                       <div className="mx-3 mb-2">
                                         <button
-                                          onClick={() => noReviewFlag ? trackClear(ck, "no-review") : trackMark(ck, "no-review", "", "opted-out")}
+                                          onClick={() => noReviewFlag ? trackClear(ck, "no-review") : trackMark(ck, "no-review")}
                                           className={`w-full text-[10px] font-semibold px-3 py-1.5 rounded-lg border transition-all ${noReviewFlag ? "bg-red-50 border-red-300 text-red-600" : "bg-neutral-50 border-neutral-200 text-neutral-400 hover:border-red-300 hover:text-red-500"}`}>
                                           {noReviewFlag ? "🚫 No Auto Review — click to undo" : "🚫 No Auto Review"}
                                         </button>
@@ -1457,7 +1458,7 @@ export default function AdminPage() {
                                     extra: (
                                       <div className="mx-3 mb-2">
                                         <button
-                                          onClick={() => noRefillFlag ? trackClear(ck, "no-refill") : trackMark(ck, "no-refill", "", "opted-out")}
+                                          onClick={() => noRefillFlag ? trackClear(ck, "no-refill") : trackMark(ck, "no-refill")}
                                           className={`w-full text-[10px] font-semibold px-3 py-1.5 rounded-lg border transition-all ${noRefillFlag ? "bg-red-50 border-red-300 text-red-600" : "bg-neutral-50 border-neutral-200 text-neutral-400 hover:border-red-300 hover:text-red-500"}`}>
                                           {noRefillFlag ? "🚫 No Auto Refill — click to undo" : "🚫 No Auto Refill"}
                                         </button>
