@@ -43,17 +43,30 @@ export async function GET(req: NextRequest) {
     .eq("action_type", "no-refill");
   const noRefillClientIds = new Set((noRefillActions ?? []).map(a => a.client_id));
 
-  // Per-channel dedup — covers both manual and auto sends
-  const [{ data: emailSentToday }, { data: smsSentToday }] = await Promise.all([
+  // Per-channel dedup:
+  // Auto sends: stored with sent_at = targetDate (visit date), check exact match
+  // Manual sends: stored with sent_at = send date (today), check >= visit date to catch same-day manual sends
+  const [
+    { data: autoEmailSent }, { data: autoSmsSent },
+    { data: manualEmailSent }, { data: manualSmsSent },
+  ] = await Promise.all([
     db.from("client_actions").select("client_id")
-      .in("action_type", ["auto-refill-email", "auto-refill", "refill-email"])
-      .eq("sent_at", targetDate),
+      .in("action_type", ["auto-refill-email", "auto-refill"]).eq("sent_at", targetDate),
     db.from("client_actions").select("client_id")
-      .in("action_type", ["auto-refill-sms", "auto-refill", "refill-sms"])
-      .eq("sent_at", targetDate),
+      .in("action_type", ["auto-refill-sms",   "auto-refill"]).eq("sent_at", targetDate),
+    db.from("client_actions").select("client_id")
+      .eq("action_type", "refill-email").gte("sent_at", targetDate),
+    db.from("client_actions").select("client_id")
+      .eq("action_type", "refill-sms").gte("sent_at", targetDate),
   ]);
-  const emailSentIds = new Set((emailSentToday ?? []).map(a => a.client_id));
-  const smsSentIds   = new Set((smsSentToday  ?? []).map(a => a.client_id));
+  const emailSentIds = new Set([
+    ...(autoEmailSent   ?? []).map(a => a.client_id),
+    ...(manualEmailSent ?? []).map(a => a.client_id),
+  ]);
+  const smsSentIds = new Set([
+    ...(autoSmsSent   ?? []).map(a => a.client_id),
+    ...(manualSmsSent ?? []).map(a => a.client_id),
+  ]);
 
   // Skip clients who already have an upcoming booking in the next 14 days
   const twoWeeksDate = offsetDateNY(today, 14);
