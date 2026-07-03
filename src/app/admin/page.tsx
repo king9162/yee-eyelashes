@@ -189,7 +189,7 @@ export default function AdminPage() {
     } catch { /* non-fatal */ }
   }, []);
 
-  async function trackMark(clientId: string, type: string, _name = "", date = new Date().toLocaleDateString("en-CA")) {
+  async function trackMark(clientId: string, type: string, _name = "", date = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" })) {
     setTracking(prev => ({
       ...prev,
       [clientId]: { ...(prev[clientId] ?? {}), [type]: date },

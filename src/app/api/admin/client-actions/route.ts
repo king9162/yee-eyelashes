@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { todayNY } from "@/lib/date";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
   const db = supabaseAdmin();
   const { error } = await db
     .from("client_actions")
-    .upsert({ client_id, action_type, sent_at: sent_at ?? new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" }) },
+    .upsert({ client_id, action_type, sent_at: sent_at ?? todayNY() },
       { onConflict: "client_id,action_type" });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });

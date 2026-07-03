@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { sendGoogleReviewEmail } from "@/lib/email";
 import { sendSMS } from "@/lib/sms";
+import { todayNY } from "@/lib/date";
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
@@ -19,8 +20,7 @@ export async function GET(req: NextRequest) {
   const smsOn   = smsSetting?.value === "true";
   if (!emailOn && !smsOn) return NextResponse.json({ skipped: true, reason: "disabled" });
 
-  // Today in NY time (cron runs at 00:30 UTC = 8:30 PM EDT)
-  const targetDate = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+  const targetDate = todayNY();
 
   const { data: todayClients, error } = await db
     .from("clients")
@@ -33,14 +33,13 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // Clients opted out of auto review
   const { data: noReviewActions } = await db
     .from("client_actions")
     .select("client_id")
     .eq("action_type", "no-review");
   const noReviewClientIds = new Set((noReviewActions ?? []).map(a => a.client_id));
 
-  // Per-channel dedup: any of these action types from today means already sent
+  // Per-channel dedup — covers both manual and auto sends
   const [{ data: emailSentToday }, { data: smsSentToday }] = await Promise.all([
     db.from("client_actions").select("client_id")
       .in("action_type", ["auto-review-email", "auto-review", "review-email"])
@@ -77,7 +76,6 @@ export async function GET(req: NextRequest) {
           : Promise.resolve(),
       ]);
 
-      // Track per-channel so manual sends are visible in Send History and dedup works both ways
       if (c.shouldEmail) await db.from("client_actions").upsert(
         { client_id: c.id, action_type: "auto-review-email", sent_at: targetDate },
         { onConflict: "client_id,action_type" }
@@ -87,7 +85,6 @@ export async function GET(req: NextRequest) {
         { onConflict: "client_id,action_type" }
       );
 
-      // Update bookings.review_sent_at for Send History legacy display
       await db.from("bookings")
         .update({ review_sent_at: new Date().toISOString() })
         .eq("date", targetDate)

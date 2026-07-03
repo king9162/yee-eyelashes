@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin }          from "@/lib/supabase";
 import { sendRefillReminderEmail } from "@/lib/email";
 import { sendSMS }                from "@/lib/sms";
+import { todayNY, offsetDateNY }  from "@/lib/date";
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
@@ -22,12 +23,9 @@ export async function GET(req: NextRequest) {
   const { data: daysSetting } = await db.from("settings").select("value").eq("key", "refill_days").maybeSingle();
   const refillDays = Math.max(1, parseInt(daysSetting?.value ?? "14") || 14);
 
-  const todayNY = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
-  const target  = new Date(todayNY + "T12:00:00");
-  target.setDate(target.getDate() - refillDays);
-  const targetDate = target.toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+  const today      = todayNY();
+  const targetDate = offsetDateNY(today, -refillDays);
 
-  // Query clients whose most recent visit was refillDays ago
   const { data: targetClients, error } = await db
     .from("clients")
     .select("id, first_name, last_name, phone, email")
@@ -39,14 +37,13 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // Clients opted out of auto refill
   const { data: noRefillActions } = await db
     .from("client_actions")
     .select("client_id")
     .eq("action_type", "no-refill");
   const noRefillClientIds = new Set((noRefillActions ?? []).map(a => a.client_id));
 
-  // Per-channel dedup
+  // Per-channel dedup — covers both manual and auto sends
   const [{ data: emailSentToday }, { data: smsSentToday }] = await Promise.all([
     db.from("client_actions").select("client_id")
       .in("action_type", ["auto-refill-email", "auto-refill", "refill-email"])
@@ -59,14 +56,11 @@ export async function GET(req: NextRequest) {
   const smsSentIds   = new Set((smsSentToday  ?? []).map(a => a.client_id));
 
   // Skip clients who already have an upcoming booking in the next 14 days
-  const twoWeeksLater = new Date(todayNY + "T12:00:00");
-  twoWeeksLater.setDate(twoWeeksLater.getDate() + 14);
-  const twoWeeksDate = twoWeeksLater.toLocaleDateString("en-CA", { timeZone: "America/New_York" });
-
+  const twoWeeksDate = offsetDateNY(today, 14);
   const { data: upcomingBookings } = await db
     .from("bookings")
     .select("phone, email")
-    .gte("date", todayNY)
+    .gte("date", today)
     .lte("date", twoWeeksDate)
     .neq("status", "cancelled");
 
@@ -77,22 +71,7 @@ export async function GET(req: NextRequest) {
     (upcomingBookings ?? []).map(b => b.email).filter(Boolean)
   );
 
-  // Fetch bookings from targetDate to get service labels dynamically
-  const { data: targetBookings } = await db
-    .from("bookings")
-    .select("phone, email, service_label")
-    .eq("date", targetDate)
-    .neq("status", "cancelled");
-
-  const serviceLabelByPhone = new Map<string, string>();
-  const serviceLabelByEmail = new Map<string, string>();
-  for (const b of targetBookings ?? []) {
-    const p = b.phone?.replace(/\D/g, "").slice(-10);
-    if (p && b.service_label) serviceLabelByPhone.set(p, b.service_label);
-    if (b.email && b.service_label) serviceLabelByEmail.set(b.email, b.service_label);
-  }
-
-  type EligibleClient = typeof targetClients extends (infer T)[] | null ? T & { shouldEmail: boolean; shouldSms: boolean; serviceLabel: string } : never;
+  type EligibleClient = typeof targetClients extends (infer T)[] | null ? T & { shouldEmail: boolean; shouldSms: boolean } : never;
   const eligible: EligibleClient[] = (targetClients ?? []).flatMap(c => {
     if (noRefillClientIds.has(c.id)) return [];
     const phone = c.phone?.replace(/\D/g, "").slice(-10);
@@ -101,11 +80,7 @@ export async function GET(req: NextRequest) {
     const shouldEmail = emailOn && !!c.email && !emailSentIds.has(c.id);
     const shouldSms   = smsOn   && !!c.phone && !smsSentIds.has(c.id);
     if (!shouldEmail && !shouldSms) return [];
-    const serviceLabel =
-      (phone && serviceLabelByPhone.get(phone)) ||
-      (c.email && serviceLabelByEmail.get(c.email)) ||
-      "睫毛嫁接";
-    return [{ ...c, shouldEmail, shouldSms, serviceLabel }];
+    return [{ ...c, shouldEmail, shouldSms }];
   });
 
   const bookUrl = "https://square.site/appointments/buyer/widget/qe4tfv3078b5gx/LYH1D5CHJ3Q63";
@@ -117,7 +92,7 @@ export async function GET(req: NextRequest) {
       const name = `${c.first_name ?? ""} ${c.last_name ?? ""}`.trim() || c.first_name;
       await Promise.all([
         c.shouldEmail
-          ? sendRefillReminderEmail({ name, email: c.email, phone: c.phone, serviceLabel: c.serviceLabel })
+          ? sendRefillReminderEmail({ name, email: c.email, phone: c.phone, serviceLabel: "睫毛嫁接" })
               .catch(e => console.error("Email error:", e))
           : Promise.resolve(),
         c.shouldSms
@@ -134,7 +109,6 @@ export async function GET(req: NextRequest) {
         { onConflict: "client_id,action_type" }
       );
 
-      // Update bookings.refill_sent_at for Send History legacy display
       await db.from("bookings")
         .update({ refill_sent_at: new Date().toISOString() })
         .eq("date", targetDate)

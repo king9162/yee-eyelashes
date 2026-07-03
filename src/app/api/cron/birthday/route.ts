@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin }     from "@/lib/supabase";
 import { sendBirthdayEmail } from "@/lib/email";
 import { sendSMS }           from "@/lib/sms";
+import { todayNY, todayMMDD } from "@/lib/date";
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
@@ -19,18 +20,13 @@ export async function GET(req: NextRequest) {
   const smsOn   = smsSetting?.value === "true";
   if (!emailOn && !smsOn) return NextResponse.json({ skipped: true, reason: "disabled" });
 
-  // Today's MM/DD in NY time — matches birthday field format
-  const nowNY   = new Date(new Date().toLocaleString("en-US", { timeZone: "America/New_York" }));
-  const todayNY = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
-  const mm = String(nowNY.getMonth() + 1).padStart(2, "0");
-  const dd = String(nowNY.getDate()).padStart(2, "0");
-  const todayMMDD = `${mm}/${dd}`;
+  const today      = todayNY();
+  const birthdayMD = todayMMDD(); // "MM/DD"
 
-  // Fetch clients with birthday today
   const { data: birthdayClients, error } = await db
     .from("clients")
-    .select("id, first_name, last_name, phone, email, birthday")
-    .eq("birthday", todayMMDD)
+    .select("id, first_name, last_name, phone, email")
+    .eq("birthday", birthdayMD)
     .not("deleted", "eq", true);
 
   if (error) {
@@ -38,14 +34,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // Per-channel dedup: check if already sent today (or this year via manual send)
+  // Per-channel dedup
   const [{ data: emailSentToday }, { data: smsSentToday }] = await Promise.all([
     db.from("client_actions").select("client_id")
       .in("action_type", ["auto-birthday-email", "birthday-email"])
-      .eq("sent_at", todayNY),
+      .eq("sent_at", today),
     db.from("client_actions").select("client_id")
       .in("action_type", ["auto-birthday-sms", "birthday-sms"])
-      .eq("sent_at", todayNY),
+      .eq("sent_at", today),
   ]);
   const emailSentIds = new Set((emailSentToday ?? []).map(a => a.client_id));
   const smsSentIds   = new Set((smsSentToday  ?? []).map(a => a.client_id));
@@ -75,11 +71,11 @@ export async function GET(req: NextRequest) {
       ]);
 
       if (c.shouldEmail) await db.from("client_actions").upsert(
-        { client_id: c.id, action_type: "auto-birthday-email", sent_at: todayNY },
+        { client_id: c.id, action_type: "auto-birthday-email", sent_at: today },
         { onConflict: "client_id,action_type" }
       );
       if (c.shouldSms) await db.from("client_actions").upsert(
-        { client_id: c.id, action_type: "auto-birthday-sms", sent_at: todayNY },
+        { client_id: c.id, action_type: "auto-birthday-sms", sent_at: today },
         { onConflict: "client_id,action_type" }
       );
     })
@@ -88,5 +84,5 @@ export async function GET(req: NextRequest) {
   const sent   = results.filter(r => r.status === "fulfilled").length;
   const failed = results.filter(r => r.status === "rejected").length;
 
-  return NextResponse.json({ sent, failed, date: todayNY, birthday: todayMMDD });
+  return NextResponse.json({ sent, failed, date: today, birthday: birthdayMD });
 }
