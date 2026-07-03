@@ -16,6 +16,16 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const body    = await req.json();
   const db      = supabaseAdmin();
 
+  // ── Clear send timestamps (review_sent_at / refill_sent_at) ────────────
+  if ("review_sent_at" in body || "refill_sent_at" in body) {
+    const fields: Record<string, unknown> = {};
+    if ("review_sent_at" in body) fields.review_sent_at = body.review_sent_at ?? null;
+    if ("refill_sent_at" in body) fields.refill_sent_at = body.refill_sent_at ?? null;
+    const { error } = await db.from("bookings").update(fields).eq("id", id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ success: true });
+  }
+
   // ── Reschedule (date/time change) ────────────────────────────────────────
   if (body.date || body.time) {
     const { data: existing } = await db.from("bookings").select("*").eq("id", id).single();

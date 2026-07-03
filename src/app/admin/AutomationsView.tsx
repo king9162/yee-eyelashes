@@ -49,16 +49,35 @@ type BookingWithSend = {
 };
 
 type HistoryEntry = {
-  key:         string;
-  name:        string;
-  phone?:      string;
-  action_type: string;
-  sent_at:     string;
-  created_at:  string;
-  source:      "manual" | "auto";
-  client_id?:  string;
-  index?:      number;
+  key:           string;
+  name:          string;
+  phone?:        string;
+  action_type:   string;
+  sent_at:       string;
+  created_at:    string;
+  source:        "manual" | "auto";
+  client_id?:    string;
+  booking_id?:   string;
+  booking_field?: "review_sent_at" | "refill_sent_at";
+  index?:        number;
 };
+
+function normDate(s: string): string {
+  if (!s || s === "opted-out") return s;
+  let d: Date;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    d = new Date(s + "T12:00:00");
+  } else if (/^\d{4}\/\d{1,2}\/\d{1,2}$/.test(s)) {
+    const [y, m, day] = s.split("/").map(Number);
+    d = new Date(y, m - 1, day);
+  } else if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)) {
+    return s; // already M/D/YYYY
+  } else {
+    return s;
+  }
+  if (isNaN(d.getTime())) return s;
+  return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+}
 
 export default function AutomationsView({ adminKey }: { adminKey: string }) {
   const [settings,        setSettings]        = useState<Record<string, boolean>>({});
@@ -131,43 +150,60 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
 
   const clientMap = Object.fromEntries(clients.map(c => [c.id, c]));
 
-  // Build combined history: manual (client_actions) + auto (bookings sent_at fields)
+  const AUTO_ACTION_TYPES = new Set(["auto-review", "auto-refill"]);
+  const ALL_SEND_TYPES = [
+    "review-email","review-sms","refill-email","refill-sms",
+    "birthday-email","birthday-sms","auto-review","auto-refill",
+  ];
+
+  // Build combined history: client_actions + bookings sent_at fields
   const manualEntries: HistoryEntry[] = history
-    .filter(a => ["review-email","review-sms","refill-email","refill-sms"].includes(a.action_type))
+    .filter(a => ALL_SEND_TYPES.includes(a.action_type))
     .map((e, i) => {
       const c = clientMap[e.client_id];
       return {
-        key:         `manual-${e.client_id}-${e.action_type}`,
+        key:         `action-${e.client_id}-${e.action_type}`,
         name:        c ? `${c.first_name} ${c.last_name}`.trim() || c.first_name : e.client_id.slice(0, 8),
         phone:       c?.phone,
         action_type: e.action_type,
         sent_at:     e.sent_at,
         created_at:  e.created_at,
-        source:      "manual" as const,
+        source:      AUTO_ACTION_TYPES.has(e.action_type) ? "auto" as const : "manual" as const,
         client_id:   e.client_id,
         index:       i,
       };
     });
 
+  // De-dupe: don't show booking-based auto entry if a client_action "auto-review/refill" already covers it
+  const actionClientIds = new Set(
+    history.filter(a => AUTO_ACTION_TYPES.has(a.action_type)).map(a => a.client_id)
+  );
   const autoEntries: HistoryEntry[] = bookingsWithSends.flatMap(b => {
     const entries: HistoryEntry[] = [];
-    if (b.review_sent_at) entries.push({
-      key:         `auto-${b.id}-review`,
-      name:        b.name,
-      phone:       b.phone,
-      action_type: "review-email",
-      sent_at:     b.review_sent_at.split("T")[0],
-      created_at:  b.review_sent_at,
-      source:      "auto" as const,
+    const clientId = clients.find(c =>
+      c.phone?.replace(/\D/g, "").slice(-10) === b.phone?.replace(/\D/g, "").slice(-10)
+    )?.id;
+    if (b.review_sent_at && !(clientId && actionClientIds.has(clientId))) entries.push({
+      key:           `auto-${b.id}-review`,
+      name:          b.name,
+      phone:         b.phone,
+      action_type:   "review-email",
+      sent_at:       b.review_sent_at.split("T")[0],
+      created_at:    b.review_sent_at,
+      source:        "auto" as const,
+      booking_id:    b.id,
+      booking_field: "review_sent_at",
     });
-    if (b.refill_sent_at) entries.push({
-      key:         `auto-${b.id}-refill`,
-      name:        b.name,
-      phone:       b.phone,
-      action_type: "refill-email",
-      sent_at:     b.refill_sent_at.split("T")[0],
-      created_at:  b.refill_sent_at,
-      source:      "auto" as const,
+    if (b.refill_sent_at && !(clientId && actionClientIds.has(clientId))) entries.push({
+      key:           `auto-${b.id}-refill`,
+      name:          b.name,
+      phone:         b.phone,
+      action_type:   "refill-email",
+      sent_at:       b.refill_sent_at.split("T")[0],
+      created_at:    b.refill_sent_at,
+      source:        "auto" as const,
+      booking_id:    b.id,
+      booking_field: "refill_sent_at",
     });
     return entries;
   });
@@ -182,6 +218,8 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
     "refill-sms":     "Refill SMS",
     "birthday-email": "Birthday Email",
     "birthday-sms":   "Birthday SMS",
+    "auto-review":    "Review (Auto)",
+    "auto-refill":    "Refill (Auto)",
   };
 
   return (
@@ -422,25 +460,9 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
       {/* ── Send History ── */}
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-[18px] font-bold text-[#1C1C1C]">Send History</h3>
-        <div className="flex items-center gap-4">
-          <button
-            onClick={async () => {
-              if (!confirm("Clear all auto-sent records? The cron will be able to resend to all clients.")) return;
-              const res = await fetch("/api/admin/reset-sms-sent", {
-                method: "POST",
-                headers: { Authorization: `Bearer ${adminKey}` },
-              });
-              if (res.ok) {
-                setBookingsWithSends([]);
-              }
-            }}
-            className="text-[12px] text-red-400 hover:text-red-600 transition-colors">
-            Reset Auto-Sent
-          </button>
-          <button onClick={() => setShowLog(p => !p)} className="text-[12px] text-neutral-400 hover:text-[#1C1C1C] transition-colors">
-            {showLog ? "Hide" : "Show"} ({combinedHistory.length})
-          </button>
-        </div>
+        <button onClick={() => setShowLog(p => !p)} className="text-[12px] text-neutral-400 hover:text-[#1C1C1C] transition-colors">
+          {showLog ? "Hide" : "Show"} ({combinedHistory.length})
+        </button>
       </div>
       {showLog && (
         <div className="bg-white border border-neutral-200 rounded-xl overflow-hidden">
@@ -463,9 +485,8 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
                     </td>
                     <td className="px-5 py-3">
                       <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
-                        e.action_type === "review-email" ? "bg-blue-50 text-blue-600"
-                        : e.action_type === "review-sms"  ? "bg-blue-50 text-blue-500"
-                        : e.action_type === "refill-sms"  ? "bg-amber-50 text-amber-500"
+                        e.action_type.includes("review")  ? "bg-blue-50 text-blue-600"
+                        : e.action_type.includes("birthday") ? "bg-pink-50 text-pink-500"
                         : "bg-amber-50 text-amber-600"
                       }`}>
                         {TYPE_LABELS[e.action_type] ?? e.action_type}
@@ -480,12 +501,12 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
                         {e.source === "auto" ? "Auto" : "Manual"}
                       </span>
                     </td>
-                    <td className="px-5 py-3 text-[12px] text-neutral-400">{e.sent_at}</td>
+                    <td className="px-5 py-3 text-[12px] text-neutral-400">{normDate(e.sent_at)}</td>
                     <td className="px-5 py-3 text-right">
-                      {e.source === "manual" && e.client_id && (
-                        <button
-                          onClick={async () => {
-                            if (!confirm(`Delete this send record for ${e.name}?`)) return;
+                      <button
+                        onClick={async () => {
+                          if (!confirm(`Delete send record for ${e.name}?`)) return;
+                          if (e.client_id) {
                             await fetch("/api/admin/client-actions", {
                               method: "DELETE",
                               headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminKey}` },
@@ -494,12 +515,21 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
                             setHistory(prev => prev.filter(h =>
                               !(h.client_id === e.client_id && h.action_type === e.action_type)
                             ));
-                          }}
-                          className="text-[11px] text-neutral-300 hover:text-red-400 transition-colors px-1"
-                          title="Delete record">
-                          ✕
-                        </button>
-                      )}
+                          } else if (e.booking_id && e.booking_field) {
+                            await fetch(`/api/bookings/${e.booking_id}`, {
+                              method: "PATCH",
+                              headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminKey}` },
+                              body: JSON.stringify({ [e.booking_field]: null }),
+                            });
+                            setBookingsWithSends(prev => prev.map(b =>
+                              b.id === e.booking_id ? { ...b, [e.booking_field!]: null } : b
+                            ));
+                          }
+                        }}
+                        className="text-[11px] text-neutral-300 hover:text-red-400 transition-colors px-1"
+                        title="Delete record">
+                        ✕
+                      </button>
                     </td>
                   </tr>
                 ))}
