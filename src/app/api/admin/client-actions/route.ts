@@ -23,14 +23,12 @@ export async function POST(req: NextRequest) {
   const { client_id, action_type, sent_at } = await req.json();
   if (!client_id || !action_type) return NextResponse.json({ error: "Missing fields" }, { status: 400 });
   const db = supabaseAdmin();
-  const { data, error } = await db
+  const { error } = await db
     .from("client_actions")
     .upsert({ client_id, action_type, sent_at: sent_at ?? new Date().toLocaleDateString() },
-      { onConflict: "client_id,action_type" })
-    .select()
-    .single();
+      { onConflict: "client_id,action_type" });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data);
+  return NextResponse.json({ ok: true });
 }
 
 export async function DELETE(req: NextRequest) {

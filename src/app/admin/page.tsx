@@ -194,30 +194,45 @@ export default function AdminPage() {
       ...prev,
       [clientId]: { ...(prev[clientId] ?? {}), [type]: date },
     }));
-    try {
-      const adminKey = sessionStorage.getItem("admin_key") ?? "";
-      await fetch("/api/admin/client-actions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminKey}` },
-        body: JSON.stringify({ client_id: clientId, action_type: type, sent_at: date }),
+    const adminKey = sessionStorage.getItem("admin_key") ?? "";
+    const res = await fetch("/api/admin/client-actions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminKey}` },
+      body: JSON.stringify({ client_id: clientId, action_type: type, sent_at: date }),
+    }).catch(() => null);
+    if (!res?.ok) {
+      // Roll back optimistic update so UI stays in sync with DB
+      setTracking(prev => {
+        const next = { ...prev, [clientId]: { ...(prev[clientId] ?? {}) } };
+        delete next[clientId][type];
+        return next;
       });
-    } catch { /* non-fatal */ }
+      alert("Failed to save — please try again.");
+    }
   }
 
   async function trackClear(clientId: string, type: string) {
+    let prevValue: string | undefined;
     setTracking(prev => {
+      prevValue = prev[clientId]?.[type];
       const next = { ...prev, [clientId]: { ...(prev[clientId] ?? {}) } };
       delete next[clientId][type];
       return next;
     });
-    try {
-      const adminKey = sessionStorage.getItem("admin_key") ?? "";
-      await fetch("/api/admin/client-actions", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminKey}` },
-        body: JSON.stringify({ client_id: clientId, action_type: type }),
-      });
-    } catch { /* non-fatal */ }
+    const adminKey = sessionStorage.getItem("admin_key") ?? "";
+    const res = await fetch("/api/admin/client-actions", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminKey}` },
+      body: JSON.stringify({ client_id: clientId, action_type: type }),
+    }).catch(() => null);
+    if (!res?.ok) {
+      // Roll back optimistic update
+      setTracking(prev => ({
+        ...prev,
+        [clientId]: { ...(prev[clientId] ?? {}), ...(prevValue !== undefined ? { [type]: prevValue } : {}) },
+      }));
+      alert("Failed to save — please try again.");
+    }
   }
 
   const normPhoneInline = (p: string) => (p ?? "").replace(/\D/g, "").slice(-10);
