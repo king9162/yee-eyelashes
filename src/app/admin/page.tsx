@@ -1018,7 +1018,15 @@ export default function AdminPage() {
                           {noReview ? "🚫 No Auto Review (tap to undo)" : "🚫 No Auto Review"}
                         </button>
                         <button
-                          onClick={() => reviewGiven ? trackClear(ck, "review-given") : trackMark(ck, "review-given")}
+                          onClick={() => {
+                            if (reviewGiven) {
+                              trackClear(ck, "review-given");
+                              trackClear(ck, "no-review");
+                            } else {
+                              trackMark(ck, "review-given");
+                              trackMark(ck, "no-review", "", "opted-out");
+                            }
+                          }}
                           className={`w-full py-2 px-1 text-[10px] font-semibold rounded-xl border transition-all ${
                             reviewGiven
                               ? "bg-green-50 border-green-300 text-green-700"
@@ -1338,7 +1346,15 @@ export default function AdminPage() {
                                     <button
                                       type="button"
                                       onMouseDown={e => e.preventDefault()}
-                                      onClick={() => reviewGiven ? trackClear(ck, reviewGivenKey) : trackMark(ck, reviewGivenKey)}
+                                      onClick={() => {
+                                        if (reviewGiven) {
+                                          trackClear(ck, reviewGivenKey);
+                                          trackClear(ck, "no-review");
+                                        } else {
+                                          trackMark(ck, reviewGivenKey);
+                                          trackMark(ck, "no-review", "", "opted-out");
+                                        }
+                                      }}
                                       title={reviewGiven ? `Given on ${reviewGiven}` : "Mark as reviewed in person"}
                                       className={`text-[11px] px-2 py-1.5 rounded-lg border transition-all ${
                                         reviewGiven
