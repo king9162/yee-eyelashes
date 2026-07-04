@@ -94,6 +94,7 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
   const [loadingPreview,  setLoadingPreview]  = useState(false);
   const [saving,          setSaving]          = useState<string | null>(null);
   const [savingDays,      setSavingDays]      = useState(false);
+  const [runningCron,     setRunningCron]     = useState<string | null>(null);
 
   const headers = { Authorization: `Bearer ${adminKey}` };
 
@@ -153,6 +154,18 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
     const res = await fetch("/api/admin/preview-sends", { headers });
     if (res.ok) setPreview(await res.json());
     setLoadingPreview(false);
+  }
+
+  async function runCron(type: "google-review" | "refill-reminder" | "birthday") {
+    setRunningCron(type);
+    const res = await fetch(`/api/cron/${type}`, { headers });
+    const data = await res.json().catch(() => ({}));
+    setRunningCron(null);
+    if (!res.ok) { alert(`Cron failed: ${data.error ?? res.status}`); return; }
+    alert(`Done — sent: ${data.sent ?? 0}, failed: ${data.failed ?? 0}`);
+    // Refresh history
+    const aRes = await fetch("/api/admin/client-actions", { headers });
+    if (aRes.ok) setHistory(await aRes.json());
   }
 
   async function toggle(id: string) {
@@ -273,14 +286,34 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
 
   return (
     <div className="flex-1 overflow-auto p-6 bg-neutral-50">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 gap-3 flex-wrap">
         <h2 className="text-[22px] font-bold text-[#1C1C1C]">Automations</h2>
-        <button
-          onClick={fetchPreview}
-          disabled={loadingPreview}
-          className="flex items-center gap-1.5 px-4 py-2 bg-[#1C1C1C] text-white text-[12px] font-semibold rounded-lg hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all disabled:opacity-40">
-          {loadingPreview ? "Loading…" : "Preview Tonight's Sends"}
-        </button>
+        <div className="flex gap-2 flex-wrap justify-end">
+          <button
+            onClick={fetchPreview}
+            disabled={loadingPreview}
+            className="px-4 py-2 bg-neutral-100 text-neutral-700 text-[12px] font-semibold rounded-lg hover:bg-neutral-200 transition-all disabled:opacity-40">
+            {loadingPreview ? "Loading…" : "Preview Tonight's Sends"}
+          </button>
+          <button
+            onClick={() => runCron("google-review")}
+            disabled={!!runningCron}
+            className="px-4 py-2 bg-blue-600 text-white text-[12px] font-semibold rounded-lg hover:bg-blue-700 transition-all disabled:opacity-40">
+            {runningCron === "google-review" ? "Sending…" : "▶ Run Review Now"}
+          </button>
+          <button
+            onClick={() => runCron("refill-reminder")}
+            disabled={!!runningCron}
+            className="px-4 py-2 bg-green-600 text-white text-[12px] font-semibold rounded-lg hover:bg-green-700 transition-all disabled:opacity-40">
+            {runningCron === "refill-reminder" ? "Sending…" : "▶ Run Refill Now"}
+          </button>
+          <button
+            onClick={() => runCron("birthday")}
+            disabled={!!runningCron}
+            className="px-4 py-2 bg-[#C9A84C] text-white text-[12px] font-semibold rounded-lg hover:opacity-80 transition-all disabled:opacity-40">
+            {runningCron === "birthday" ? "Sending…" : "▶ Run Birthday Now"}
+          </button>
+        </div>
       </div>
 
       {/* ── Tonight's Preview ── */}

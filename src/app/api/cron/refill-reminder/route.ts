@@ -6,7 +6,8 @@ import { todayNY, offsetDateNY }  from "@/lib/date";
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const validTokens = [`Bearer ${process.env.CRON_SECRET}`, `Bearer ${process.env.ADMIN_SECRET_KEY}`];
+  if (!validTokens.includes(authHeader ?? "")) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
