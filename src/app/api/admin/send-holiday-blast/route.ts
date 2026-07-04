@@ -20,7 +20,7 @@ function isRealName(n: string | null | undefined) {
 
 type RawClient = {
   id: string; first_name: string | null; last_name: string | null;
-  phone: string;
+  phone: string | null; owner: string | null; deleted: boolean | null;
 };
 
 async function fetchData(db: ReturnType<typeof supabaseAdmin>, today: string) {
@@ -29,18 +29,18 @@ async function fetchData(db: ReturnType<typeof supabaseAdmin>, today: string) {
     { data: unsubActions },
     { data: alreadySent },
   ] = await Promise.all([
-    // Same as My Clients: all rows, owner != elly, not deleted, has phone
+    // Fetch all — filter owner in JS exactly like My Clients does (c.owner !== "elly")
     db.from("clients")
-      .select("id, first_name, last_name, phone")
-      .not("deleted", "eq", true)
-      .not("phone",   "is", null)
-      .or("owner.neq.elly,owner.is.null"),
+      .select("id, first_name, last_name, phone, owner, deleted"),
 
     db.from("client_actions").select("client_id").eq("action_type", "sms-unsubscribed"),
     db.from("client_actions").select("client_id").eq("action_type", "holiday-blast-sms").eq("sent_at", today),
   ]);
 
-  const rows = (rawRows ?? []) as RawClient[];
+  // Mirror My Clients JS filter exactly: owner !== "elly" and not deleted and has phone
+  const rows = (rawRows ?? [] as RawClient[]).filter(
+    (c: RawClient) => c.owner !== "elly" && !c.deleted && c.phone
+  ) as RawClient[];
 
   const idToPhone   = new Map(rows.map(c => [c.id, normPhone(c.phone)]));
   const unsubPhones = new Set((unsubActions ?? []).map(a => idToPhone.get(a.client_id) ?? "").filter(Boolean));
@@ -66,7 +66,7 @@ function buildList(
         id: c.id,
         first_name: (c.first_name ?? "").trim(),
         last_name:  (c.last_name  ?? "").trim(),
-        phone: c.phone,
+        phone: c.phone!,
       });
     }
     const g = grouped.get(ph)!;
