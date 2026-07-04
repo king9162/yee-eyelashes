@@ -32,9 +32,9 @@ async function fetchData(db: ReturnType<typeof supabaseAdmin>, today: string) {
     // Same as My Clients: all rows, owner != elly, not deleted, has phone
     db.from("clients")
       .select("id, first_name, last_name, phone")
-      .not("deleted",  "eq", true)
-      .not("phone",    "is", null)
-      .neq("owner", "elly"),
+      .not("deleted", "eq", true)
+      .not("phone",   "is", null)
+      .or("owner.neq.elly,owner.is.null"),
 
     db.from("client_actions").select("client_id").eq("action_type", "sms-unsubscribed"),
     db.from("client_actions").select("client_id").eq("action_type", "holiday-blast-sms").eq("sent_at", today),
@@ -88,10 +88,11 @@ function buildList(
 
       return true;
     })
-    .sort((a, b) =>
-      a.first_name.localeCompare(b.first_name) ||
-      a.last_name.localeCompare(b.last_name)
-    );
+    .sort((a, b) => {
+      const nameA = (a.first_name || a.last_name).toUpperCase();
+      const nameB = (b.first_name || b.last_name).toUpperCase();
+      return nameA.localeCompare(nameB);
+    });
 }
 
 export async function GET(req: NextRequest) {
