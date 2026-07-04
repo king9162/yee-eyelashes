@@ -89,9 +89,22 @@ export async function GET(req: NextRequest) {
   const cancelledReviewPhones = new Set((cancelledReview ?? []).map(b => b.phone?.replace(/\D/g,"").slice(-10)).filter(Boolean));
   const cancelledReviewEmails = new Set((cancelledReview ?? []).map(b => b.email).filter(Boolean));
 
+  // Deduplicate helpers — same grouping logic as My Clients
+  function dedup<T extends { phone?: string; email?: string }>(arr: T[]): T[] {
+    const phones = new Set<string>(); const emails = new Set<string>();
+    return arr.filter(c => {
+      const ph = c.phone?.replace(/\D/g,"").slice(-10);
+      if (ph && phones.has(ph)) return false;
+      if (c.email && emails.has(c.email)) return false;
+      if (ph) phones.add(ph);
+      if (c.email) emails.add(c.email);
+      return true;
+    });
+  }
+
   type ClientRow = { id: string; first_name: string; last_name: string; phone: string; email: string; channels: string[] };
 
-  const review: ClientRow[] = (reviewClients ?? []).flatMap(c => {
+  const review: ClientRow[] = dedup(reviewClients ?? []).flatMap(c => {
     if (!`${c.first_name ?? ""} ${c.last_name ?? ""}`.trim()) return [];
     if (noReviewIds.has(c.id)) return [];
     const phone = c.phone?.replace(/\D/g,"").slice(-10);
@@ -103,7 +116,7 @@ export async function GET(req: NextRequest) {
     return [{ id: c.id, first_name: c.first_name, last_name: c.last_name, phone: c.phone, email: c.email, channels }];
   });
 
-  const refill: ClientRow[] = (refillClients ?? []).flatMap(c => {
+  const refill: ClientRow[] = dedup(refillClients ?? []).flatMap(c => {
     if (!`${c.first_name ?? ""} ${c.last_name ?? ""}`.trim()) return [];
     if (noRefillIds.has(c.id)) return [];
     const phone = c.phone?.replace(/\D/g,"").slice(-10);

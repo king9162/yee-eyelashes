@@ -38,6 +38,18 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  // Deduplicate by phone/email (same as My Clients grouping logic)
+  const seenPhones = new Set<string>();
+  const seenEmails = new Set<string>();
+  const dedupedClients = (targetClients ?? []).filter(c => {
+    const ph = c.phone?.replace(/\D/g, "").slice(-10);
+    if (ph && seenPhones.has(ph)) return false;
+    if (c.email && seenEmails.has(c.email)) return false;
+    if (ph) seenPhones.add(ph);
+    if (c.email) seenEmails.add(c.email);
+    return true;
+  });
+
   const { data: noRefillActions } = await db
     .from("client_actions")
     .select("client_id")
@@ -96,7 +108,7 @@ export async function GET(req: NextRequest) {
   );
 
   type EligibleClient = typeof targetClients extends (infer T)[] | null ? T & { shouldEmail: boolean; shouldSms: boolean } : never;
-  const eligible: EligibleClient[] = (targetClients ?? []).flatMap(c => {
+  const eligible: EligibleClient[] = dedupedClients.flatMap(c => {
     const name = `${c.first_name ?? ""} ${c.last_name ?? ""}`.trim();
     if (!name) return []; // skip nameless records (bad Square sync data)
     if (noRefillClientIds.has(c.id)) return [];
