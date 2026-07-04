@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
   const noReviewClientIds = new Set((noReviewActions ?? []).map(a => a.client_id));
 
   // Per-channel dedup — covers both manual and auto sends
-  const [{ data: emailSentToday }, { data: smsSentToday }, { data: unsubActions }] = await Promise.all([
+  const [{ data: emailSentToday }, { data: smsSentToday }, { data: unsubActions }, { data: cancelledToday }] = await Promise.all([
     db.from("client_actions").select("client_id")
       .in("action_type", ["auto-review-email", "auto-review", "review-email"])
       .eq("sent_at", targetDate),
@@ -49,10 +49,14 @@ export async function GET(req: NextRequest) {
       .in("action_type", ["auto-review-sms", "auto-review", "review-sms"])
       .eq("sent_at", targetDate),
     db.from("client_actions").select("client_id").eq("action_type", "sms-unsubscribed"),
+    // Skip clients whose appointment today was cancelled
+    db.from("bookings").select("phone, email").eq("date", targetDate).eq("status", "cancelled"),
   ]);
-  const emailSentIds = new Set((emailSentToday ?? []).map(a => a.client_id));
-  const smsSentIds   = new Set((smsSentToday  ?? []).map(a => a.client_id));
-  const unsubIds     = new Set((unsubActions  ?? []).map(a => a.client_id));
+  const emailSentIds    = new Set((emailSentToday ?? []).map(a => a.client_id));
+  const smsSentIds      = new Set((smsSentToday  ?? []).map(a => a.client_id));
+  const unsubIds        = new Set((unsubActions  ?? []).map(a => a.client_id));
+  const cancelledPhones = new Set((cancelledToday ?? []).map(b => b.phone?.replace(/\D/g,"").slice(-10)).filter(Boolean));
+  const cancelledEmails = new Set((cancelledToday ?? []).map(b => b.email).filter(Boolean));
 
   const reviewLink = process.env.GOOGLE_REVIEW_URL ?? "https://g.page/yee-eyelashes";
   const smsText = (name: string) =>
@@ -61,6 +65,9 @@ export async function GET(req: NextRequest) {
   type EligibleClient = typeof todayClients extends (infer T)[] | null ? T & { shouldEmail: boolean; shouldSms: boolean } : never;
   const eligible: EligibleClient[] = (todayClients ?? []).flatMap(c => {
     if (noReviewClientIds.has(c.id)) return [];
+    const phone = c.phone?.replace(/\D/g,"").slice(-10);
+    // Skip if their booking today was cancelled
+    if ((phone && cancelledPhones.has(phone)) || (c.email && cancelledEmails.has(c.email))) return [];
     const shouldEmail = emailOn && !!c.email && !emailSentIds.has(c.id);
     const shouldSms   = smsOn   && !!c.phone && !smsSentIds.has(c.id) && !unsubIds.has(c.id);
     if (!shouldEmail && !shouldSms) return [];

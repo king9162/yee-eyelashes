@@ -40,6 +40,11 @@ export async function GET(req: NextRequest) {
     { data: bdayEmailSent },
     { data: bdaySmsSent },
     { data: upcoming },
+    { data: cancelledRefill },
+    { data: cancelledReview },
+    { data: manualRefillEmail },
+    { data: manualRefillSms },
+    { data: unsubActions },
   ] = await Promise.all([
     db.from("clients").select("id, first_name, last_name, phone, email").eq("visit_date", today).not("deleted","eq",true),
     db.from("clients").select("id, first_name, last_name, phone, email").eq("visit_date", refillTarget).not("deleted","eq",true),
@@ -53,35 +58,46 @@ export async function GET(req: NextRequest) {
     db.from("client_actions").select("client_id").in("action_type",["auto-birthday-email","birthday-email"]).eq("sent_at", today),
     db.from("client_actions").select("client_id").in("action_type",["auto-birthday-sms","birthday-sms"]).eq("sent_at", today),
     db.from("bookings").select("phone, email").gte("date", today).lte("date", offsetDateNY(today, 14)).neq("status","cancelled"),
-  ]);
-
-  const noReviewIds = new Set((noReviewActions ?? []).map(a => a.client_id));
-  const noRefillIds = new Set((noRefillActions ?? []).map(a => a.client_id));
-  const reviewEmailSentIds = new Set((reviewEmailSent ?? []).map(a => a.client_id));
-  const reviewSmsSentIds   = new Set((reviewSmsSent   ?? []).map(a => a.client_id));
-  const refillEmailSentIds = new Set((refillEmailSent ?? []).map(a => a.client_id));
-  const refillSmsSentIds   = new Set((refillSmsSent   ?? []).map(a => a.client_id));
-  const bdayEmailSentIds   = new Set((bdayEmailSent   ?? []).map(a => a.client_id));
-  const bdaySmsSentIds     = new Set((bdaySmsSent     ?? []).map(a => a.client_id));
-
-  // Also check manual refill sends since visit date
-  const [{ data: manualRefillEmail }, { data: manualRefillSms }] = await Promise.all([
+    // Cancelled on refill target date → skip from refill
+    db.from("bookings").select("phone, email").eq("date", refillTarget).eq("status","cancelled"),
+    // Cancelled today → skip from review
+    db.from("bookings").select("phone, email").eq("date", today).eq("status","cancelled"),
+    // Manual refill sends
     db.from("client_actions").select("client_id").eq("action_type","refill-email").gte("sent_at", refillTarget),
     db.from("client_actions").select("client_id").eq("action_type","refill-sms").gte("sent_at", refillTarget),
+    db.from("client_actions").select("client_id").eq("action_type","sms-unsubscribed"),
   ]);
+
+  const noReviewIds        = new Set((noReviewActions  ?? []).map(a => a.client_id));
+  const noRefillIds        = new Set((noRefillActions  ?? []).map(a => a.client_id));
+  const reviewEmailSentIds = new Set((reviewEmailSent  ?? []).map(a => a.client_id));
+  const reviewSmsSentIds   = new Set((reviewSmsSent    ?? []).map(a => a.client_id));
+  const refillEmailSentIds = new Set((refillEmailSent  ?? []).map(a => a.client_id));
+  const refillSmsSentIds   = new Set((refillSmsSent    ?? []).map(a => a.client_id));
+  const bdayEmailSentIds   = new Set((bdayEmailSent    ?? []).map(a => a.client_id));
+  const bdaySmsSentIds     = new Set((bdaySmsSent      ?? []).map(a => a.client_id));
+  const unsubIds           = new Set((unsubActions     ?? []).map(a => a.client_id));
+
   (manualRefillEmail ?? []).forEach(a => refillEmailSentIds.add(a.client_id));
   (manualRefillSms   ?? []).forEach(a => refillSmsSentIds.add(a.client_id));
 
   const upcomingPhones = new Set((upcoming ?? []).map(b => b.phone?.replace(/\D/g,"").slice(-10)).filter(Boolean));
   const upcomingEmails = new Set((upcoming ?? []).map(b => b.email).filter(Boolean));
 
+  const cancelledRefillPhones = new Set((cancelledRefill ?? []).map(b => b.phone?.replace(/\D/g,"").slice(-10)).filter(Boolean));
+  const cancelledRefillEmails = new Set((cancelledRefill ?? []).map(b => b.email).filter(Boolean));
+  const cancelledReviewPhones = new Set((cancelledReview ?? []).map(b => b.phone?.replace(/\D/g,"").slice(-10)).filter(Boolean));
+  const cancelledReviewEmails = new Set((cancelledReview ?? []).map(b => b.email).filter(Boolean));
+
   type ClientRow = { id: string; first_name: string; last_name: string; phone: string; email: string; channels: string[] };
 
   const review: ClientRow[] = (reviewClients ?? []).flatMap(c => {
     if (noReviewIds.has(c.id)) return [];
+    const phone = c.phone?.replace(/\D/g,"").slice(-10);
+    if ((phone && cancelledReviewPhones.has(phone)) || (c.email && cancelledReviewEmails.has(c.email))) return [];
     const channels: string[] = [];
     if (reviewEmailOn && c.email && !reviewEmailSentIds.has(c.id)) channels.push("email");
-    if (reviewSmsOn   && c.phone && !reviewSmsSentIds.has(c.id))   channels.push("sms");
+    if (reviewSmsOn   && c.phone && !reviewSmsSentIds.has(c.id) && !unsubIds.has(c.id)) channels.push("sms");
     if (!channels.length) return [];
     return [{ id: c.id, first_name: c.first_name, last_name: c.last_name, phone: c.phone, email: c.email, channels }];
   });
@@ -89,10 +105,11 @@ export async function GET(req: NextRequest) {
   const refill: ClientRow[] = (refillClients ?? []).flatMap(c => {
     if (noRefillIds.has(c.id)) return [];
     const phone = c.phone?.replace(/\D/g,"").slice(-10);
+    if ((phone && cancelledRefillPhones.has(phone)) || (c.email && cancelledRefillEmails.has(c.email))) return [];
     if ((phone && upcomingPhones.has(phone)) || (c.email && upcomingEmails.has(c.email))) return [];
     const channels: string[] = [];
     if (refillEmailOn && c.email && !refillEmailSentIds.has(c.id)) channels.push("email");
-    if (refillSmsOn   && c.phone && !refillSmsSentIds.has(c.id))   channels.push("sms");
+    if (refillSmsOn   && c.phone && !refillSmsSentIds.has(c.id) && !unsubIds.has(c.id)) channels.push("sms");
     if (!channels.length) return [];
     return [{ id: c.id, first_name: c.first_name, last_name: c.last_name, phone: c.phone, email: c.email, channels }];
   });
@@ -100,7 +117,7 @@ export async function GET(req: NextRequest) {
   const birthday: ClientRow[] = (bdayClients ?? []).flatMap(c => {
     const channels: string[] = [];
     if (bdayEmailOn && c.email && !bdayEmailSentIds.has(c.id)) channels.push("email");
-    if (bdaySmsOn   && c.phone && !bdaySmsSentIds.has(c.id))  channels.push("sms");
+    if (bdaySmsOn   && c.phone && !bdaySmsSentIds.has(c.id) && !unsubIds.has(c.id)) channels.push("sms");
     if (!channels.length) return [];
     return [{ id: c.id, first_name: c.first_name, last_name: c.last_name, phone: c.phone, email: c.email, channels }];
   });

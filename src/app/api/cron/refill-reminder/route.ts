@@ -72,14 +72,15 @@ export async function GET(req: NextRequest) {
   ]);
   const unsubIds = new Set((unsubActions ?? []).map(a => a.client_id));
 
-  // Skip clients who already have an upcoming booking in the next 14 days
   const twoWeeksDate = offsetDateNY(today, 14);
-  const { data: upcomingBookings } = await db
-    .from("bookings")
-    .select("phone, email")
-    .gte("date", today)
-    .lte("date", twoWeeksDate)
-    .neq("status", "cancelled");
+  const [{ data: upcomingBookings }, { data: cancelledOnTarget }] = await Promise.all([
+    // Skip clients who already have an upcoming booking in the next 14 days
+    db.from("bookings").select("phone, email")
+      .gte("date", today).lte("date", twoWeeksDate).neq("status", "cancelled"),
+    // Skip clients whose visit on targetDate was actually cancelled
+    db.from("bookings").select("phone, email")
+      .eq("date", targetDate).eq("status", "cancelled"),
+  ]);
 
   const upcomingPhones = new Set(
     (upcomingBookings ?? []).map(b => b.phone?.replace(/\D/g, "").slice(-10)).filter(Boolean)
@@ -87,11 +88,20 @@ export async function GET(req: NextRequest) {
   const upcomingEmails = new Set(
     (upcomingBookings ?? []).map(b => b.email).filter(Boolean)
   );
+  const cancelledPhones = new Set(
+    (cancelledOnTarget ?? []).map(b => b.phone?.replace(/\D/g, "").slice(-10)).filter(Boolean)
+  );
+  const cancelledEmails = new Set(
+    (cancelledOnTarget ?? []).map(b => b.email).filter(Boolean)
+  );
 
   type EligibleClient = typeof targetClients extends (infer T)[] | null ? T & { shouldEmail: boolean; shouldSms: boolean } : never;
   const eligible: EligibleClient[] = (targetClients ?? []).flatMap(c => {
     if (noRefillClientIds.has(c.id)) return [];
     const phone = c.phone?.replace(/\D/g, "").slice(-10);
+    // Skip if their booking on targetDate was cancelled
+    const wasCancelled = (phone && cancelledPhones.has(phone)) || (c.email && cancelledEmails.has(c.email));
+    if (wasCancelled) return [];
     const hasUpcoming = (phone && upcomingPhones.has(phone)) || (c.email && upcomingEmails.has(c.email));
     if (hasUpcoming) return [];
     const shouldEmail = emailOn && !!c.email && !emailSentIds.has(c.id);
