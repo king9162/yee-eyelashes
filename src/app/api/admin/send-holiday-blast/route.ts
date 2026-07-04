@@ -23,38 +23,16 @@ type RawClient = {
   phone: string | null; owner: string | null; deleted: boolean | null;
 };
 
-async function fetchData(db: ReturnType<typeof supabaseAdmin>, today: string) {
-  const [
-    { data: rawRows },
-    { data: unsubActions },
-    { data: alreadySent },
-  ] = await Promise.all([
-    // Fetch all — filter owner in JS exactly like My Clients does (c.owner !== "elly")
-    db.from("clients")
-      .select("id, first_name, last_name, phone, owner, deleted"),
+async function fetchRows(db: ReturnType<typeof supabaseAdmin>) {
+  const { data: rawRows } = await db.from("clients")
+    .select("id, first_name, last_name, phone, owner, deleted");
 
-    db.from("client_actions").select("client_id").eq("action_type", "sms-unsubscribed"),
-    db.from("client_actions").select("client_id").eq("action_type", "holiday-blast-sms").eq("sent_at", today),
-  ]);
-
-  // Mirror My Clients JS filter exactly: owner !== "elly" and not deleted and has phone
-  const rows = (rawRows ?? [] as RawClient[]).filter(
+  return (rawRows ?? [] as RawClient[]).filter(
     (c: RawClient) => c.owner !== "elly" && !c.deleted && c.phone
   ) as RawClient[];
-
-  const idToPhone   = new Map(rows.map(c => [c.id, normPhone(c.phone)]));
-  const unsubPhones = new Set((unsubActions ?? []).map(a => idToPhone.get(a.client_id) ?? "").filter(Boolean));
-  const sentPhones  = new Set((alreadySent  ?? []).map(a => idToPhone.get(a.client_id) ?? "").filter(Boolean));
-
-  return { rows, unsubPhones, sentPhones };
 }
 
-function buildList(
-  rows: RawClient[],
-  unsubPhones: Set<string>,
-  sentPhones: Set<string>,
-) {
-  // Group by phone — same as My Clients
+function buildList(rows: RawClient[], excludePhones: Set<string>) {
   const grouped = new Map<string, { id: string; first_name: string; last_name: string; phone: string }>();
 
   for (const c of rows) {
@@ -70,22 +48,14 @@ function buildList(
       });
     }
     const g = grouped.get(ph)!;
-
-    // Prefer real names over Unknown/empty when merging rows
     if (!isRealName(g.first_name) && isRealName(c.first_name)) g.first_name = (c.first_name ?? "").trim();
     if (!isRealName(g.last_name)  && isRealName(c.last_name))  g.last_name  = (c.last_name  ?? "").trim();
   }
 
   return Array.from(grouped.values())
     .filter(g => {
-      // Must have a real name
       if (!isRealName(g.first_name) && !isRealName(g.last_name)) return false;
-
-      // Skip unsubscribed / already sent today
-      const ph = normPhone(g.phone);
-      if (unsubPhones.has(ph)) return false;
-      if (sentPhones.has(ph))  return false;
-
+      if (excludePhones.has(normPhone(g.phone))) return false;
       return true;
     })
     .sort((a, b) => {
@@ -95,17 +65,33 @@ function buildList(
     });
 }
 
+async function getUnsubPhones(db: ReturnType<typeof supabaseAdmin>, rows: RawClient[]) {
+  const { data: unsubActions } = await db.from("client_actions")
+    .select("client_id").eq("action_type", "sms-unsubscribed");
+  const idToPhone = new Map(rows.map(c => [c.id, normPhone(c.phone)]));
+  return new Set((unsubActions ?? []).map(a => idToPhone.get(a.client_id) ?? "").filter(Boolean));
+}
+
+async function getSentPhones(db: ReturnType<typeof supabaseAdmin>, rows: RawClient[], today: string) {
+  const { data: alreadySent } = await db.from("client_actions")
+    .select("client_id").eq("action_type", "holiday-blast-sms").eq("sent_at", today);
+  const idToPhone = new Map(rows.map(c => [c.id, normPhone(c.phone)]));
+  return new Set((alreadySent ?? []).map(a => idToPhone.get(a.client_id) ?? "").filter(Boolean));
+}
+
+// GET: show full My Clients list (only exclude unsubscribed, NOT already-sent-today)
 export async function GET(req: NextRequest) {
   if (!auth(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const db    = supabaseAdmin();
-  const today = todayNY();
-  const { rows, unsubPhones, sentPhones } = await fetchData(db, today);
-  const clients = buildList(rows, unsubPhones, sentPhones);
+  const db   = supabaseAdmin();
+  const rows = await fetchRows(db);
+  const unsubPhones = await getUnsubPhones(db, rows);
+  const clients = buildList(rows, unsubPhones);
 
-  return NextResponse.json({ clients, date: today });
+  return NextResponse.json({ clients, date: todayNY() });
 }
 
+// POST: send only to those not yet sent today (prevents duplicate sends)
 export async function POST(req: NextRequest) {
   if (!auth(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -114,8 +100,13 @@ export async function POST(req: NextRequest) {
 
   const db    = supabaseAdmin();
   const today = todayNY();
-  const { rows, unsubPhones, sentPhones } = await fetchData(db, today);
-  let clients = buildList(rows, unsubPhones, sentPhones);
+  const rows  = await fetchRows(db);
+
+  const unsubPhones = await getUnsubPhones(db, rows);
+  const sentPhones  = await getSentPhones(db, rows, today);
+  const excludePhones = new Set([...unsubPhones, ...sentPhones]);
+
+  let clients = buildList(rows, excludePhones);
 
   if (Array.isArray(clientIds) && clientIds.length > 0) {
     const allowed = new Set<string>(clientIds);
