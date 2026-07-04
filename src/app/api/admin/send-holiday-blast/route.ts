@@ -103,16 +103,7 @@ export async function GET(req: NextRequest) {
   const { rows, unsubPhones, sentPhones } = await fetchData(db, today);
   const clients = buildList(rows, unsubPhones, sentPhones);
 
-  const debug = req.nextUrl.searchParams.get("debug") === "1" ? {
-    totalRows: rows.length,
-    unsubCount: unsubPhones.size,
-    sentCount: sentPhones.size,
-    sample: rows.slice(0, 5).map(r => ({ id: r.id, first_name: r.first_name, last_name: r.last_name, phone: r.phone, owner: r.owner, deleted: r.deleted })),
-    bettyRows: rows.filter(r => (r.first_name ?? "").toLowerCase().includes("betty") || (r.last_name ?? "").toLowerCase().includes("betty")),
-    quentinRows: rows.filter(r => (r.first_name ?? "").toLowerCase().includes("quentin") || (r.last_name ?? "").toLowerCase().includes("quentin")),
-  } : undefined;
-
-  return NextResponse.json({ clients, date: today, ...(debug ? { debug } : {}) });
+  return NextResponse.json({ clients, date: today });
 }
 
 export async function POST(req: NextRequest) {
