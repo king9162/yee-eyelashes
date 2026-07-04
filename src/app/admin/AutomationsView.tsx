@@ -123,6 +123,18 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
       setLoading(false);
     }
     load();
+    const iv = setInterval(async () => {
+      const [aRes, bRes] = await Promise.all([
+        fetch("/api/admin/client-actions", { headers }),
+        fetch("/api/bookings",             { headers }),
+      ]);
+      if (aRes.ok) setHistory(await aRes.json());
+      if (bRes.ok) {
+        const all: BookingWithSend[] = await bRes.json();
+        setBookingsWithSends(all.filter(b => b.review_sent_at || b.refill_sent_at));
+      }
+    }, 30_000);
+    return () => clearInterval(iv);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [adminKey]);
 
