@@ -52,7 +52,11 @@ function buildBlastList(
         phone: c.phone, visitDates: [],
       });
     }
-    if (c.visit_date) grouped.get(ph)!.visitDates.push(c.visit_date);
+    const g = grouped.get(ph)!;
+    // Merge name — same as My Clients: fill in missing fields from later rows
+    if (!g.first_name && c.first_name) g.first_name = c.first_name;
+    if (!g.last_name  && c.last_name)  g.last_name  = c.last_name;
+    if (c.visit_date) g.visitDates.push(c.visit_date);
   }
 
   return Array.from(grouped.values())
@@ -66,6 +70,7 @@ function buildBlastList(
     })
     .filter(g => {
       if (!g.latestVisit) return false;            // only cancelled visits → skip
+      if (!`${g.first_name ?? ""} ${g.last_name ?? ""}`.trim()) return false; // no name → skip
       const ph = normPhone(g.phone);
       if (unsubPhones.has(ph)) return false;       // unsubscribed
       if (alreadySentPhones.has(ph)) return false; // already sent today
