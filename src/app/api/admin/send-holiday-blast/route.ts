@@ -42,7 +42,7 @@ function buildMyClientsList(
 
   return Array.from(grouped.values())
     .filter(g => {
-      if (!`${g.first_name} ${g.last_name}`.trim()) return false; // skip nameless
+      if (!(g.first_name?.trim() || g.last_name?.trim())) return false; // skip nameless
       if (unsubPhones.has(normPhone(g.phone))) return false;
       if (alreadySentPhones.has(normPhone(g.phone))) return false;
       return true;
@@ -59,6 +59,8 @@ async function fetchData(db: ReturnType<typeof supabaseAdmin>, today: string) {
       .select("id, first_name, last_name, phone")
       .not("deleted", "eq", true)
       .not("phone",  "is", null)
+      .not("first_name", "is", null)
+      .neq("first_name", "")
       .neq("owner", "elly"),
     db.from("client_actions").select("client_id").eq("action_type", "sms-unsubscribed"),
     db.from("client_actions").select("client_id").eq("action_type", "holiday-blast-sms").eq("sent_at", today),
