@@ -96,8 +96,9 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
   const [savingDays,      setSavingDays]      = useState(false);
   const [runningCron,     setRunningCron]     = useState<string | null>(null);
   const [blastMessage,    setBlastMessage]    = useState<string>("");
-  const [blastCount,      setBlastCount]      = useState<number | null>(null);
-  const [loadingBlastCount, setLoadingBlastCount] = useState(false);
+  const [blastClients,    setBlastClients]    = useState<{ id: string; first_name: string; last_name: string; phone: string }[] | null>(null);
+  const [selectedIds,     setSelectedIds]     = useState<Set<string>>(new Set());
+  const [loadingBlastList, setLoadingBlastList] = useState(false);
   const [sendingBlast,    setSendingBlast]    = useState(false);
   const [blastResult,     setBlastResult]     = useState<{ sent: number; failed: number } | null>(null);
   const [scheduledBlast,  setScheduledBlast]  = useState<{ message: string; sendAt: string; label: string } | null>(null);
@@ -219,28 +220,35 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
     setScheduledBlast(null);
   }
 
-  async function fetchBlastCount() {
-    setLoadingBlastCount(true);
+  async function fetchBlastClients() {
+    setLoadingBlastList(true);
+    setBlastResult(null);
     const res = await fetch("/api/admin/send-holiday-blast", { headers });
-    if (res.ok) { const { count } = await res.json(); setBlastCount(count); }
-    setLoadingBlastCount(false);
+    if (res.ok) {
+      const { clients } = await res.json();
+      setBlastClients(clients ?? []);
+      setSelectedIds(new Set((clients ?? []).map((c: { id: string }) => c.id)));
+    }
+    setLoadingBlastList(false);
   }
 
   async function sendBlast() {
     if (!blastMessage.trim()) { alert("Message cannot be empty"); return; }
-    if (!confirm(`Send this message to ${blastCount ?? "all eligible"} clients? This cannot be undone.`)) return;
+    if (selectedIds.size === 0) { alert("No clients selected"); return; }
+    if (!confirm(`Send to ${selectedIds.size} selected clients? This cannot be undone.`)) return;
     setSendingBlast(true);
     setBlastResult(null);
     const res = await fetch("/api/admin/send-holiday-blast", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminKey}` },
-      body: JSON.stringify({ message: blastMessage }),
+      body: JSON.stringify({ message: blastMessage, clientIds: [...selectedIds] }),
     });
     const data = await res.json().catch(() => ({}));
     setSendingBlast(false);
     if (!res.ok) { alert(`Failed: ${data.error ?? res.status}`); return; }
     setBlastResult({ sent: data.sent, failed: data.failed });
-    setBlastCount(null);
+    setBlastClients(null);
+    setSelectedIds(new Set());
     const aRes = await fetch("/api/admin/client-actions", { headers });
     if (aRes.ok) setHistory(await aRes.json());
   }
@@ -477,7 +485,7 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
                   onClick={() => {
                     setSelectedPreset(p.id);
                     setBlastMessage(p.message);
-                    setBlastCount(null);
+                    setBlastClients(null);
                     setBlastResult(null);
                   }}
                   className={`text-[12px] font-semibold px-3 py-1.5 rounded-lg border transition-all ${
@@ -489,7 +497,7 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
                 </button>
               ))}
               <button
-                onClick={() => { setSelectedPreset("custom"); setBlastMessage(""); setBlastCount(null); setBlastResult(null); }}
+                onClick={() => { setSelectedPreset("custom"); setBlastMessage(""); setBlastClients(null); setBlastResult(null); }}
                 className={`text-[12px] font-semibold px-3 py-1.5 rounded-lg border transition-all ${
                   selectedPreset === "custom"
                     ? "bg-neutral-700 text-white border-neutral-700"
@@ -503,44 +511,87 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
           {/* Message editor */}
           <textarea
             value={blastMessage}
-            onChange={e => { setBlastMessage(e.target.value); setBlastCount(null); setBlastResult(null); setSelectedPreset("custom"); }}
+            onChange={e => { setBlastMessage(e.target.value); setBlastClients(null); setBlastResult(null); setSelectedPreset("custom"); }}
             rows={4}
             className="w-full border border-neutral-200 rounded-lg px-3 py-2.5 text-[13px] text-[#1C1C1C] focus:outline-none focus:border-[#C9A84C] resize-none"
             placeholder="Select an event above or type a custom message…"
           />
 
-          {/* Actions row */}
-          <div className="flex items-center gap-3 flex-wrap">
-            <button
-              onClick={fetchBlastCount}
-              disabled={loadingBlastCount || !blastMessage.trim()}
-              className="px-4 py-2 bg-neutral-100 text-neutral-700 text-[12px] font-semibold rounded-lg hover:bg-neutral-200 transition-all disabled:opacity-40">
-              {loadingBlastCount ? "Loading…" : "Preview Recipients"}
-            </button>
-            {blastCount !== null && (
-              <span className="text-[12px] text-neutral-500">{blastCount} clients will receive this</span>
-            )}
-            <div className="flex items-center gap-2 ml-auto">
-              {/* Schedule */}
-              <input
-                type="date"
-                value={blastScheduleDate}
-                onChange={e => setBlastScheduleDate(e.target.value)}
-                className="border border-neutral-200 rounded-lg px-2 py-1.5 text-[12px] text-neutral-700 focus:outline-none focus:border-[#C9A84C]"
-              />
-              <button
-                onClick={scheduleBlast}
-                disabled={schedulingBlast || !blastMessage.trim()}
-                className="px-4 py-2 bg-purple-600 text-white text-[12px] font-semibold rounded-lg hover:bg-purple-700 transition-all disabled:opacity-40">
-                {schedulingBlast ? "Saving…" : "⏰ Schedule 10 AM"}
-              </button>
-              <button
-                onClick={sendBlast}
-                disabled={sendingBlast || !blastMessage.trim()}
-                className="px-4 py-2 bg-[#C9A84C] text-white text-[12px] font-semibold rounded-lg hover:opacity-80 transition-all disabled:opacity-40">
-                {sendingBlast ? "Sending…" : "Send Now"}
-              </button>
+          {/* Preview button */}
+          <button
+            onClick={fetchBlastClients}
+            disabled={loadingBlastList || !blastMessage.trim()}
+            className="px-4 py-2 bg-neutral-100 text-neutral-700 text-[12px] font-semibold rounded-lg hover:bg-neutral-200 transition-all disabled:opacity-40 w-fit">
+            {loadingBlastList ? "Loading…" : "Preview Recipient List"}
+          </button>
+
+          {/* Client checklist */}
+          {blastClients !== null && (
+            <div className="border border-neutral-200 rounded-xl overflow-hidden">
+              <div className="flex items-center justify-between px-4 py-2.5 bg-neutral-50 border-b border-neutral-100">
+                <span className="text-[12px] font-semibold text-neutral-600">
+                  {selectedIds.size} / {blastClients.length} 人已選
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setSelectedIds(new Set(blastClients.map(c => c.id)))}
+                    className="text-[11px] font-semibold px-3 py-1 bg-white border border-neutral-200 rounded-lg hover:border-[#C9A84C] hover:text-[#C9A84C] transition-all">
+                    全選
+                  </button>
+                  <button
+                    onClick={() => setSelectedIds(new Set())}
+                    className="text-[11px] font-semibold px-3 py-1 bg-white border border-neutral-200 rounded-lg hover:border-red-300 hover:text-red-400 transition-all">
+                    全部取消
+                  </button>
+                </div>
+              </div>
+              <div className="max-h-[280px] overflow-y-auto divide-y divide-neutral-50">
+                {blastClients.length === 0 ? (
+                  <p className="px-4 py-6 text-center text-[12px] text-neutral-300">No eligible clients</p>
+                ) : blastClients.map(c => {
+                  const checked = selectedIds.has(c.id);
+                  const name = `${c.first_name ?? ""} ${c.last_name ?? ""}`.trim() || c.first_name;
+                  return (
+                    <label key={c.id} className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors ${checked ? "bg-white hover:bg-neutral-50" : "bg-neutral-50"}`}>
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => setSelectedIds(prev => {
+                          const next = new Set(prev);
+                          checked ? next.delete(c.id) : next.add(c.id);
+                          return next;
+                        })}
+                        className="w-4 h-4 accent-[#C9A84C] shrink-0"
+                      />
+                      <span className={`text-[13px] font-semibold flex-1 ${checked ? "text-[#1C1C1C]" : "text-neutral-300 line-through"}`}>{name}</span>
+                      <span className="text-[11px] text-neutral-400 shrink-0">{c.phone}</span>
+                    </label>
+                  );
+                })}
+              </div>
             </div>
+          )}
+
+          {/* Send / Schedule row */}
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            <input
+              type="date"
+              value={blastScheduleDate}
+              onChange={e => setBlastScheduleDate(e.target.value)}
+              className="border border-neutral-200 rounded-lg px-2 py-1.5 text-[12px] text-neutral-700 focus:outline-none focus:border-[#C9A84C]"
+            />
+            <button
+              onClick={scheduleBlast}
+              disabled={schedulingBlast || !blastMessage.trim()}
+              className="px-4 py-2 bg-purple-600 text-white text-[12px] font-semibold rounded-lg hover:bg-purple-700 transition-all disabled:opacity-40">
+              {schedulingBlast ? "Saving…" : "⏰ Schedule 10 AM"}
+            </button>
+            <button
+              onClick={sendBlast}
+              disabled={sendingBlast || !blastMessage.trim() || (blastClients !== null && selectedIds.size === 0)}
+              className="px-4 py-2 bg-[#C9A84C] text-white text-[12px] font-semibold rounded-lg hover:opacity-80 transition-all disabled:opacity-40">
+              {sendingBlast ? "Sending…" : blastClients !== null ? `Send Now (${selectedIds.size})` : "Send Now"}
+            </button>
           </div>
 
           {blastResult && (

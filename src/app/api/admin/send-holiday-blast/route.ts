@@ -9,8 +9,10 @@ function auth(req: NextRequest) {
   return (req.headers.get("Authorization") ?? "") === `Bearer ${process.env.ADMIN_SECRET_KEY}`;
 }
 
+type RawClient = { id: string; first_name: string; last_name: string; phone: string };
+
 function eligibleClients(
-  allClients: { id: string; phone: string }[],
+  allClients: RawClient[],
   unsubIds: Set<string>,
   alreadySentIds: Set<string>
 ) {
@@ -34,36 +36,45 @@ export async function GET(req: NextRequest) {
   const today = todayNY();
 
   const [{ data: allClients }, { data: unsubActions }, { data: alreadySent }] = await Promise.all([
-    db.from("clients").select("id, phone").not("deleted", "eq", true).not("phone", "is", null).neq("owner", "elly"),
-    db.from("client_actions").select("client_id").eq("action_type", "sms-unsubscribed"),
-    db.from("client_actions").select("client_id").eq("action_type", "holiday-blast-sms").eq("sent_at", today),
-  ]);
-
-  const unsubIds      = new Set((unsubActions ?? []).map(a => a.client_id));
-  const alreadySentIds = new Set((alreadySent  ?? []).map(a => a.client_id));
-
-  const count = eligibleClients(allClients ?? [], unsubIds, alreadySentIds).length;
-  return NextResponse.json({ count, date: today });
-}
-
-export async function POST(req: NextRequest) {
-  if (!auth(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const { message } = await req.json();
-  if (!message?.trim()) return NextResponse.json({ error: "message required" }, { status: 400 });
-
-  const db    = supabaseAdmin();
-  const today = todayNY();
-
-  const [{ data: allClients }, { data: unsubActions }, { data: alreadySent }] = await Promise.all([
-    db.from("clients").select("id, phone").not("deleted", "eq", true).not("phone", "is", null).neq("owner", "elly"),
+    db.from("clients").select("id, first_name, last_name, phone")
+      .not("deleted", "eq", true).not("phone", "is", null).neq("owner", "elly")
+      .order("first_name", { ascending: true }),
     db.from("client_actions").select("client_id").eq("action_type", "sms-unsubscribed"),
     db.from("client_actions").select("client_id").eq("action_type", "holiday-blast-sms").eq("sent_at", today),
   ]);
 
   const unsubIds       = new Set((unsubActions ?? []).map(a => a.client_id));
   const alreadySentIds = new Set((alreadySent  ?? []).map(a => a.client_id));
-  const clients        = eligibleClients(allClients ?? [], unsubIds, alreadySentIds);
+  const clients        = eligibleClients((allClients ?? []) as RawClient[], unsubIds, alreadySentIds);
+
+  return NextResponse.json({ clients, date: today });
+}
+
+export async function POST(req: NextRequest) {
+  if (!auth(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { message, clientIds } = await req.json();
+  if (!message?.trim()) return NextResponse.json({ error: "message required" }, { status: 400 });
+
+  const db    = supabaseAdmin();
+  const today = todayNY();
+
+  const [{ data: allClients }, { data: unsubActions }, { data: alreadySent }] = await Promise.all([
+    db.from("clients").select("id, first_name, last_name, phone")
+      .not("deleted", "eq", true).not("phone", "is", null).neq("owner", "elly"),
+    db.from("client_actions").select("client_id").eq("action_type", "sms-unsubscribed"),
+    db.from("client_actions").select("client_id").eq("action_type", "holiday-blast-sms").eq("sent_at", today),
+  ]);
+
+  const unsubIds       = new Set((unsubActions ?? []).map(a => a.client_id));
+  const alreadySentIds = new Set((alreadySent  ?? []).map(a => a.client_id));
+  let clients          = eligibleClients((allClients ?? []) as RawClient[], unsubIds, alreadySentIds);
+
+  // If caller passed a specific list, filter to only those IDs
+  if (Array.isArray(clientIds) && clientIds.length > 0) {
+    const allowed = new Set<string>(clientIds);
+    clients = clients.filter(c => allowed.has(c.id));
+  }
 
   const results = await Promise.allSettled(
     clients.map(async (c) => {
