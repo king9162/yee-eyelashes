@@ -108,6 +108,7 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
   });
   const [schedulingBlast, setSchedulingBlast] = useState(false);
   const [selectedPreset,  setSelectedPreset]  = useState<string | null>(null);
+  const [blastSearch,     setBlastSearch]     = useState("");
 
   const headers = { Authorization: `Bearer ${adminKey}` };
 
@@ -175,7 +176,7 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
     {
       id: "independence-day",
       label: "🇺🇸 Independence Day",
-      message: "Happy 4th of July! 🇺🇸🎆\n\nWishing you a fun, safe, and beautiful holiday! ❤️🤍💙\n\n— Yee Eyelashes",
+      message: "Yee Eyelashes: Happy 4th of July! 🇺🇸🎆\n\nWishing you a fun, safe, and beautiful holiday! ❤️🤍💙",
     },
     {
       id: "christmas",
@@ -526,51 +527,69 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
           </button>
 
           {/* Client checklist */}
-          {blastClients !== null && (
-            <div className="border border-neutral-200 rounded-xl overflow-hidden">
-              <div className="flex items-center justify-between px-4 py-2.5 bg-neutral-50 border-b border-neutral-100">
-                <span className="text-[12px] font-semibold text-neutral-600">
-                  {selectedIds.size} / {blastClients.length} 人已選
-                </span>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setSelectedIds(new Set(blastClients.map(c => c.id)))}
-                    className="text-[11px] font-semibold px-3 py-1 bg-white border border-neutral-200 rounded-lg hover:border-[#C9A84C] hover:text-[#C9A84C] transition-all">
-                    全選
-                  </button>
-                  <button
-                    onClick={() => setSelectedIds(new Set())}
-                    className="text-[11px] font-semibold px-3 py-1 bg-white border border-neutral-200 rounded-lg hover:border-red-300 hover:text-red-400 transition-all">
-                    全部取消
-                  </button>
+          {blastClients !== null && (() => {
+            const q = blastSearch.trim().toLowerCase();
+            const visible = q
+              ? blastClients.filter(c => `${c.first_name ?? ""} ${c.last_name ?? ""}`.toLowerCase().includes(q))
+              : blastClients;
+            return (
+              <div className="border border-neutral-200 rounded-xl overflow-hidden">
+                {/* Header: count + select all/none */}
+                <div className="flex items-center justify-between px-4 py-2.5 bg-neutral-50 border-b border-neutral-100 gap-2 flex-wrap">
+                  <span className="text-[12px] font-semibold text-neutral-600">
+                    {selectedIds.size} / {blastClients.length} 人已選
+                  </span>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setSelectedIds(new Set(blastClients.map(c => c.id)))}
+                      className="text-[11px] font-semibold px-3 py-1 bg-white border border-neutral-200 rounded-lg hover:border-[#C9A84C] hover:text-[#C9A84C] transition-all">
+                      全選
+                    </button>
+                    <button
+                      onClick={() => setSelectedIds(new Set())}
+                      className="text-[11px] font-semibold px-3 py-1 bg-white border border-neutral-200 rounded-lg hover:border-red-300 hover:text-red-400 transition-all">
+                      全部取消
+                    </button>
+                  </div>
+                </div>
+                {/* Search */}
+                <div className="px-4 py-2 border-b border-neutral-100 bg-white">
+                  <input
+                    type="text"
+                    value={blastSearch}
+                    onChange={e => setBlastSearch(e.target.value)}
+                    placeholder="Search clients…"
+                    className="w-full text-[12px] px-3 py-1.5 border border-neutral-200 rounded-lg focus:outline-none focus:border-[#C9A84C]"
+                  />
+                </div>
+                {/* List */}
+                <div className="max-h-[280px] overflow-y-auto divide-y divide-neutral-50">
+                  {visible.length === 0 ? (
+                    <p className="px-4 py-6 text-center text-[12px] text-neutral-300">No clients found</p>
+                  ) : visible.map(c => {
+                    const checked = selectedIds.has(c.id);
+                    const name = `${c.first_name ?? ""} ${c.last_name ?? ""}`.trim();
+                    return (
+                      <label key={c.id} className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors ${checked ? "bg-white hover:bg-neutral-50" : "bg-neutral-50"}`}>
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => setSelectedIds(prev => {
+                            const next = new Set(prev);
+                            checked ? next.delete(c.id) : next.add(c.id);
+                            return next;
+                          })}
+                          className="w-4 h-4 accent-[#C9A84C] shrink-0"
+                        />
+                        <span className={`text-[13px] font-semibold flex-1 ${checked ? "text-[#1C1C1C]" : "text-neutral-300 line-through"}`}>{name}</span>
+                        <span className="text-[11px] text-neutral-400 shrink-0">{c.phone}</span>
+                      </label>
+                    );
+                  })}
                 </div>
               </div>
-              <div className="max-h-[280px] overflow-y-auto divide-y divide-neutral-50">
-                {blastClients.length === 0 ? (
-                  <p className="px-4 py-6 text-center text-[12px] text-neutral-300">No eligible clients</p>
-                ) : blastClients.map(c => {
-                  const checked = selectedIds.has(c.id);
-                  const name = `${c.first_name ?? ""} ${c.last_name ?? ""}`.trim() || c.first_name;
-                  return (
-                    <label key={c.id} className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors ${checked ? "bg-white hover:bg-neutral-50" : "bg-neutral-50"}`}>
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={() => setSelectedIds(prev => {
-                          const next = new Set(prev);
-                          checked ? next.delete(c.id) : next.add(c.id);
-                          return next;
-                        })}
-                        className="w-4 h-4 accent-[#C9A84C] shrink-0"
-                      />
-                      <span className={`text-[13px] font-semibold flex-1 ${checked ? "text-[#1C1C1C]" : "text-neutral-300 line-through"}`}>{name}</span>
-                      <span className="text-[11px] text-neutral-400 shrink-0">{c.phone}</span>
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* Send / Schedule row */}
           <div className="flex items-center gap-2 flex-wrap justify-end">
