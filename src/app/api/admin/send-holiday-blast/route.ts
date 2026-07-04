@@ -13,71 +13,62 @@ function normPhone(p: string) {
   return p?.replace(/\D/g, "").slice(-10) ?? "";
 }
 
-type RawClient = {
-  id: string; first_name: string; last_name: string;
-  phone: string; email: string; visit_date: string;
-};
-
-type BlastClient = {
-  id: string; first_name: string; last_name: string;
-  phone: string; latestVisit: string;
-};
+type RawClient = { id: string; first_name: string; last_name: string; phone: string };
 
 /**
- * Build the eligible client list matching My Clients ordering:
- * - Group rows by phone (deduplicate)
- * - Find latest NON-cancelled visit date per group
- * - Exclude groups with no non-cancelled visits
- * - Sort by that date descending (same as My Clients)
- * - Exclude unsubscribed and already-sent-today clients
+ * Same grouping as My Clients:
+ * - Deduplicate by phone
+ * - Merge names across rows (in case one row is nameless)
+ * - Skip nameless groups
+ * - Sort A-Z by first name
  */
-function buildBlastList(
+function buildMyClientsList(
   allClients: RawClient[],
-  cancelledMap: Map<string, Set<string>>,
   unsubPhones: Set<string>,
   alreadySentPhones: Set<string>
-): BlastClient[] {
-  // Group by phone → collect all visit dates + pick best representative row
-  const grouped = new Map<string, {
-    id: string; first_name: string; last_name: string;
-    phone: string; visitDates: string[];
-  }>();
+) {
+  const grouped = new Map<string, { id: string; first_name: string; last_name: string; phone: string }>();
 
   for (const c of allClients) {
     const ph = normPhone(c.phone ?? "");
     if (!ph) continue;
     if (!grouped.has(ph)) {
-      grouped.set(ph, {
-        id: c.id, first_name: c.first_name, last_name: c.last_name,
-        phone: c.phone, visitDates: [],
-      });
+      grouped.set(ph, { id: c.id, first_name: c.first_name ?? "", last_name: c.last_name ?? "", phone: c.phone });
     }
     const g = grouped.get(ph)!;
-    // Merge name — same as My Clients: fill in missing fields from later rows
     if (!g.first_name && c.first_name) g.first_name = c.first_name;
     if (!g.last_name  && c.last_name)  g.last_name  = c.last_name;
-    if (c.visit_date) g.visitDates.push(c.visit_date);
   }
 
   return Array.from(grouped.values())
-    .map(g => {
-      const ph = normPhone(g.phone);
-      const cancelled = cancelledMap.get(ph) ?? new Set<string>();
-      const latestVisit = g.visitDates
-        .filter(d => d && !cancelled.has(d))
-        .sort().at(-1) ?? "";
-      return { ...g, latestVisit };
-    })
     .filter(g => {
-      if (!g.latestVisit) return false;            // only cancelled visits → skip
-      if (!`${g.first_name ?? ""} ${g.last_name ?? ""}`.trim()) return false; // no name → skip
-      const ph = normPhone(g.phone);
-      if (unsubPhones.has(ph)) return false;       // unsubscribed
-      if (alreadySentPhones.has(ph)) return false; // already sent today
+      if (!`${g.first_name} ${g.last_name}`.trim()) return false; // skip nameless
+      if (unsubPhones.has(normPhone(g.phone))) return false;
+      if (alreadySentPhones.has(normPhone(g.phone))) return false;
       return true;
     })
-    .sort((a, b) => b.latestVisit.localeCompare(a.latestVisit))
-    .map(({ visitDates, ...c }) => c);
+    .sort((a, b) =>
+      (a.first_name ?? "").localeCompare(b.first_name ?? "") ||
+      (a.last_name  ?? "").localeCompare(b.last_name  ?? "")
+    );
+}
+
+async function fetchData(db: ReturnType<typeof supabaseAdmin>, today: string) {
+  const [{ data: rawClients }, { data: unsubActions }, { data: alreadySent }] = await Promise.all([
+    db.from("clients")
+      .select("id, first_name, last_name, phone")
+      .not("deleted", "eq", true)
+      .not("phone",  "is", null)
+      .neq("owner", "elly"),
+    db.from("client_actions").select("client_id").eq("action_type", "sms-unsubscribed"),
+    db.from("client_actions").select("client_id").eq("action_type", "holiday-blast-sms").eq("sent_at", today),
+  ]);
+
+  const idToPhone      = new Map((rawClients ?? []).map(c => [c.id, normPhone(c.phone ?? "")]));
+  const unsubPhones       = new Set((unsubActions ?? []).map(a => idToPhone.get(a.client_id) ?? "").filter(Boolean));
+  const alreadySentPhones = new Set((alreadySent  ?? []).map(a => idToPhone.get(a.client_id) ?? "").filter(Boolean));
+
+  return { rawClients: (rawClients ?? []) as RawClient[], unsubPhones, alreadySentPhones };
 }
 
 export async function GET(req: NextRequest) {
@@ -85,45 +76,8 @@ export async function GET(req: NextRequest) {
 
   const db    = supabaseAdmin();
   const today = todayNY();
-
-  const [
-    { data: rawClients },
-    { data: cancelledBookings },
-    { data: unsubActions },
-    { data: alreadySent },
-  ] = await Promise.all([
-    db.from("clients")
-      .select("id, first_name, last_name, phone, email, visit_date")
-      .not("deleted", "eq", true)
-      .not("phone",  "is", null)
-      .neq("owner", "elly"),
-    db.from("bookings").select("phone, date").eq("status", "cancelled"),
-    db.from("client_actions").select("client_id").eq("action_type", "sms-unsubscribed"),
-    db.from("client_actions").select("client_id").eq("action_type", "holiday-blast-sms").eq("sent_at", today),
-  ]);
-
-  // Build cancelled dates map: normalizedPhone → Set<date>
-  const cancelledMap = new Map<string, Set<string>>();
-  for (const b of cancelledBookings ?? []) {
-    const ph = normPhone(b.phone ?? "");
-    if (!ph || !b.date) continue;
-    if (!cancelledMap.has(ph)) cancelledMap.set(ph, new Set());
-    cancelledMap.get(ph)!.add(b.date);
-  }
-
-  // Build lookup: clientId → phone for unsub / already-sent checks
-  const idToPhone = new Map<string, string>(
-    (rawClients ?? []).map(c => [c.id, normPhone(c.phone ?? "")])
-  );
-  const unsubPhones      = new Set((unsubActions ?? []).map(a => idToPhone.get(a.client_id) ?? "").filter(Boolean));
-  const alreadySentPhones = new Set((alreadySent ?? []).map(a => idToPhone.get(a.client_id) ?? "").filter(Boolean));
-
-  const clients = buildBlastList(
-    (rawClients ?? []) as RawClient[],
-    cancelledMap,
-    unsubPhones,
-    alreadySentPhones
-  );
+  const { rawClients, unsubPhones, alreadySentPhones } = await fetchData(db, today);
+  const clients = buildMyClientsList(rawClients, unsubPhones, alreadySentPhones);
 
   return NextResponse.json({ clients, date: today });
 }
@@ -136,45 +90,9 @@ export async function POST(req: NextRequest) {
 
   const db    = supabaseAdmin();
   const today = todayNY();
+  const { rawClients, unsubPhones, alreadySentPhones } = await fetchData(db, today);
+  let clients = buildMyClientsList(rawClients, unsubPhones, alreadySentPhones);
 
-  const [
-    { data: rawClients },
-    { data: cancelledBookings },
-    { data: unsubActions },
-    { data: alreadySent },
-  ] = await Promise.all([
-    db.from("clients")
-      .select("id, first_name, last_name, phone, email, visit_date")
-      .not("deleted", "eq", true)
-      .not("phone",  "is", null)
-      .neq("owner", "elly"),
-    db.from("bookings").select("phone, date").eq("status", "cancelled"),
-    db.from("client_actions").select("client_id").eq("action_type", "sms-unsubscribed"),
-    db.from("client_actions").select("client_id").eq("action_type", "holiday-blast-sms").eq("sent_at", today),
-  ]);
-
-  const cancelledMap = new Map<string, Set<string>>();
-  for (const b of cancelledBookings ?? []) {
-    const ph = normPhone(b.phone ?? "");
-    if (!ph || !b.date) continue;
-    if (!cancelledMap.has(ph)) cancelledMap.set(ph, new Set());
-    cancelledMap.get(ph)!.add(b.date);
-  }
-
-  const idToPhone = new Map<string, string>(
-    (rawClients ?? []).map(c => [c.id, normPhone(c.phone ?? "")])
-  );
-  const unsubPhones       = new Set((unsubActions ?? []).map(a => idToPhone.get(a.client_id) ?? "").filter(Boolean));
-  const alreadySentPhones = new Set((alreadySent ?? []).map(a => idToPhone.get(a.client_id) ?? "").filter(Boolean));
-
-  let clients = buildBlastList(
-    (rawClients ?? []) as RawClient[],
-    cancelledMap,
-    unsubPhones,
-    alreadySentPhones
-  );
-
-  // Filter to caller-selected IDs if provided
   if (Array.isArray(clientIds) && clientIds.length > 0) {
     const allowed = new Set<string>(clientIds);
     clients = clients.filter(c => allowed.has(c.id));

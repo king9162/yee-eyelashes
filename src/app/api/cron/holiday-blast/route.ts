@@ -27,40 +27,31 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ skipped: true, reason: `scheduled for ${blast.sendAt}` });
   }
 
-  // Get eligible clients — same logic as My Clients (sorted by latest non-cancelled visit, exclude cancelled-only)
-  const [{ data: rawClients }, { data: cancelledBookings }, { data: unsubActions }, { data: alreadySent }] = await Promise.all([
-    db.from("clients").select("id, phone, visit_date").not("deleted", "eq", true).not("phone", "is", null).neq("owner", "elly"),
-    db.from("bookings").select("phone, date").eq("status", "cancelled"),
+  // Get eligible clients — same as My Clients (owner != elly, dedup by phone, skip nameless)
+  const [{ data: rawClients }, { data: unsubActions }, { data: alreadySent }] = await Promise.all([
+    db.from("clients").select("id, first_name, last_name, phone").not("deleted", "eq", true).not("phone", "is", null).neq("owner", "elly"),
     db.from("client_actions").select("client_id").eq("action_type", "sms-unsubscribed"),
     db.from("client_actions").select("client_id").eq("action_type", "holiday-blast-sms").eq("sent_at", today),
   ]);
 
   const normPhone = (p: string) => p?.replace(/\D/g, "").slice(-10) ?? "";
-
-  const cancelledMap = new Map<string, Set<string>>();
-  for (const b of cancelledBookings ?? []) {
-    const ph = normPhone(b.phone ?? ""); if (!ph || !b.date) continue;
-    if (!cancelledMap.has(ph)) cancelledMap.set(ph, new Set());
-    cancelledMap.get(ph)!.add(b.date);
-  }
-
   const idToPhone = new Map((rawClients ?? []).map(c => [c.id, normPhone(c.phone ?? "")]));
   const unsubPhones       = new Set((unsubActions ?? []).map(a => idToPhone.get(a.client_id) ?? "").filter(Boolean));
   const alreadySentPhones = new Set((alreadySent  ?? []).map(a => idToPhone.get(a.client_id) ?? "").filter(Boolean));
 
-  // Group by phone → find latest non-cancelled visit
-  const grouped = new Map<string, { id: string; phone: string; visitDates: string[] }>();
+  const grouped = new Map<string, { id: string; first_name: string; last_name: string; phone: string }>();
   for (const c of rawClients ?? []) {
     const ph = normPhone(c.phone ?? ""); if (!ph) continue;
-    if (!grouped.has(ph)) grouped.set(ph, { id: c.id, phone: c.phone, visitDates: [] });
-    if (c.visit_date) grouped.get(ph)!.visitDates.push(c.visit_date);
+    if (!grouped.has(ph)) grouped.set(ph, { id: c.id, first_name: c.first_name ?? "", last_name: c.last_name ?? "", phone: c.phone });
+    const g = grouped.get(ph)!;
+    if (!g.first_name && c.first_name) g.first_name = c.first_name;
+    if (!g.last_name  && c.last_name)  g.last_name  = c.last_name;
   }
 
   const clients = Array.from(grouped.values()).filter(g => {
+    if (!`${g.first_name} ${g.last_name}`.trim()) return false;
     const ph = normPhone(g.phone);
-    const cancelled = cancelledMap.get(ph) ?? new Set<string>();
-    const hasRealVisit = g.visitDates.some(d => d && !cancelled.has(d));
-    return hasRealVisit && !unsubPhones.has(ph) && !alreadySentPhones.has(ph);
+    return !unsubPhones.has(ph) && !alreadySentPhones.has(ph);
   });
 
   const results = await Promise.allSettled(
