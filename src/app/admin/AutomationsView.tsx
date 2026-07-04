@@ -248,7 +248,6 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
     setSendingBlast(false);
     if (!res.ok) { alert(`Failed: ${data.error ?? res.status}`); return; }
     setBlastResult({ sent: data.sent, failed: data.failed });
-    setBlastClients(null);
     setSelectedIds(new Set());
     const aRes = await fetch("/api/admin/client-actions", { headers });
     if (aRes.ok) setHistory(await aRes.json());
