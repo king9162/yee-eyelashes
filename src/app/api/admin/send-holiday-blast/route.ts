@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
   const today = todayNY();
 
   const [{ data: allClients }, { data: unsubActions }, { data: alreadySent }] = await Promise.all([
-    db.from("clients").select("id, phone").not("deleted", "eq", true).not("phone", "is", null),
+    db.from("clients").select("id, phone").not("deleted", "eq", true).not("phone", "is", null).neq("owner", "elly"),
     db.from("client_actions").select("client_id").eq("action_type", "sms-unsubscribed"),
     db.from("client_actions").select("client_id").eq("action_type", "holiday-blast-sms").eq("sent_at", today),
   ]);
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
   const today = todayNY();
 
   const [{ data: allClients }, { data: unsubActions }, { data: alreadySent }] = await Promise.all([
-    db.from("clients").select("id, phone").not("deleted", "eq", true).not("phone", "is", null),
+    db.from("clients").select("id, phone").not("deleted", "eq", true).not("phone", "is", null).neq("owner", "elly"),
     db.from("client_actions").select("client_id").eq("action_type", "sms-unsubscribed"),
     db.from("client_actions").select("client_id").eq("action_type", "holiday-blast-sms").eq("sent_at", today),
   ]);
