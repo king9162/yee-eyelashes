@@ -1,0 +1,74 @@
+import { NextRequest, NextResponse } from "next/server";
+import { supabaseAdmin } from "@/lib/supabase";
+import { sendSMS }       from "@/lib/sms";
+import { todayNY }       from "@/lib/date";
+
+export const dynamic = "force-dynamic";
+
+export async function GET(req: NextRequest) {
+  const authHeader  = req.headers.get("authorization");
+  const validTokens = [`Bearer ${process.env.CRON_SECRET}`, `Bearer ${process.env.ADMIN_SECRET_KEY}`];
+  if (!validTokens.includes(authHeader ?? "")) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const db    = supabaseAdmin();
+  const today = todayNY();
+
+  // Read scheduled blast
+  const { data: setting } = await db
+    .from("settings").select("value").eq("key", "scheduled_blast").maybeSingle();
+  if (!setting?.value) return NextResponse.json({ skipped: true, reason: "nothing scheduled" });
+
+  let blast: { message: string; sendAt: string; label: string };
+  try { blast = JSON.parse(setting.value); } catch { return NextResponse.json({ skipped: true, reason: "invalid json" }); }
+
+  if (blast.sendAt > today) {
+    return NextResponse.json({ skipped: true, reason: `scheduled for ${blast.sendAt}` });
+  }
+
+  // Get eligible clients
+  const [{ data: allClients }, { data: unsubActions }, { data: alreadySent }] = await Promise.all([
+    db.from("clients").select("id, phone").not("deleted", "eq", true).not("phone", "is", null),
+    db.from("client_actions").select("client_id").eq("action_type", "sms-unsubscribed"),
+    db.from("client_actions").select("client_id").eq("action_type", "holiday-blast-sms").eq("sent_at", today),
+  ]);
+
+  const unsubIds       = new Set((unsubActions ?? []).map(a => a.client_id));
+  const alreadySentIds = new Set((alreadySent  ?? []).map(a => a.client_id));
+
+  const seen = new Set<string>();
+  const clients = (allClients ?? []).filter(c => {
+    if (!c.phone) return false;
+    if (unsubIds.has(c.id)) return false;
+    if (alreadySentIds.has(c.id)) return false;
+    const ph = c.phone.replace(/\D/g, "").slice(-10);
+    if (!ph) return false;
+    if (seen.has(ph)) return false;
+    seen.add(ph);
+    return true;
+  });
+
+  const results = await Promise.allSettled(
+    clients.map(async (c) => {
+      const digits = c.phone.replace(/\D/g, "");
+      const e164   = digits.startsWith("1") ? `+${digits}` : `+1${digits}`;
+      await sendSMS(e164, blast.message);
+      await db.from("client_actions").insert({
+        client_id:   c.id,
+        action_type: "holiday-blast-sms",
+        sent_at:     today,
+      });
+    })
+  );
+
+  // Clear the scheduled blast so it doesn't fire again
+  await db.from("settings").upsert(
+    { key: "scheduled_blast", value: "", updated_at: new Date().toISOString() },
+    { onConflict: "key" }
+  );
+
+  const sent   = results.filter(r => r.status === "fulfilled").length;
+  const failed = results.filter(r => r.status === "rejected").length;
+  return NextResponse.json({ sent, failed, label: blast.label, date: today });
+}

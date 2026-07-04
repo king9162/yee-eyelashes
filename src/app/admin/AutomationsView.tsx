@@ -95,6 +95,18 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
   const [saving,          setSaving]          = useState<string | null>(null);
   const [savingDays,      setSavingDays]      = useState(false);
   const [runningCron,     setRunningCron]     = useState<string | null>(null);
+  const [blastMessage,    setBlastMessage]    = useState<string>("");
+  const [blastCount,      setBlastCount]      = useState<number | null>(null);
+  const [loadingBlastCount, setLoadingBlastCount] = useState(false);
+  const [sendingBlast,    setSendingBlast]    = useState(false);
+  const [blastResult,     setBlastResult]     = useState<{ sent: number; failed: number } | null>(null);
+  const [scheduledBlast,  setScheduledBlast]  = useState<{ message: string; sendAt: string; label: string } | null>(null);
+  const [blastScheduleDate, setBlastScheduleDate] = useState<string>(() => {
+    const d = new Date(); d.setDate(d.getDate() + 1);
+    return d.toISOString().split("T")[0];
+  });
+  const [schedulingBlast, setSchedulingBlast] = useState(false);
+  const [selectedPreset,  setSelectedPreset]  = useState<string | null>(null);
 
   const headers = { Authorization: `Bearer ${adminKey}` };
 
@@ -111,7 +123,9 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
         const map: Record<string, boolean> = {};
         for (const r of rows) {
           if (r.key === "refill_days") { setRefillDays(parseInt(r.value) || 14); }
-          else { map[r.key] = r.value === "true"; }
+          else if (r.key === "scheduled_blast") {
+            try { const b = JSON.parse(r.value); if (b?.sendAt) setScheduledBlast(b); } catch { /* ignore */ }
+          } else { map[r.key] = r.value === "true"; }
         }
         setSettings(map);
       }
@@ -156,6 +170,81 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
     setLoadingPreview(false);
   }
 
+  const BLAST_PRESETS = [
+    {
+      id: "independence-day",
+      label: "🇺🇸 Independence Day",
+      message: "Happy 4th of July! 🇺🇸🎆\n\nWishing you a fun, safe, and beautiful holiday! ❤️🤍💙\n\n— Yee Eyelashes",
+    },
+    {
+      id: "christmas",
+      label: "🎄 Christmas",
+      message: "🎄 Merry Christmas from Yee Eyelashes! ✨ Wishing you a wonderful holiday season filled with joy and love. We can't wait to see you in the new year! 📍 278 Plandome Rd, Manhasset · 516-984-3859",
+    },
+    {
+      id: "new-year",
+      label: "🎊 New Year",
+      message: "🎊 Happy New Year from Yee Eyelashes! 🥂 Wishing you a beautiful year ahead. We can't wait to see you soon! 📍 278 Plandome Rd, Manhasset · 516-984-3859",
+    },
+    {
+      id: "thanksgiving",
+      label: "🦃 Thanksgiving",
+      message: "🦃 Happy Thanksgiving from Yee Eyelashes! We are grateful for your support and look forward to seeing you soon. 📍 278 Plandome Rd, Manhasset · 516-984-3859",
+    },
+  ];
+
+  async function scheduleBlast() {
+    if (!blastMessage.trim()) { alert("Message cannot be empty"); return; }
+    if (!blastScheduleDate)   { alert("Please pick a date"); return; }
+    const label = BLAST_PRESETS.find(p => p.id === selectedPreset)?.label ?? "Custom";
+    if (!confirm(`Schedule "${label}" blast for ${blastScheduleDate} at 10 AM?\n\nThis will send to all clients at that time.`)) return;
+    setSchedulingBlast(true);
+    const payload = { message: blastMessage, sendAt: blastScheduleDate, label };
+    await fetch("/api/admin/settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminKey}` },
+      body: JSON.stringify({ key: "scheduled_blast", value: JSON.stringify(payload) }),
+    });
+    setScheduledBlast(payload);
+    setSchedulingBlast(false);
+  }
+
+  async function cancelScheduledBlast() {
+    if (!confirm("Cancel the scheduled blast?")) return;
+    await fetch("/api/admin/settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminKey}` },
+      body: JSON.stringify({ key: "scheduled_blast", value: "" }),
+    });
+    setScheduledBlast(null);
+  }
+
+  async function fetchBlastCount() {
+    setLoadingBlastCount(true);
+    const res = await fetch("/api/admin/send-holiday-blast", { headers });
+    if (res.ok) { const { count } = await res.json(); setBlastCount(count); }
+    setLoadingBlastCount(false);
+  }
+
+  async function sendBlast() {
+    if (!blastMessage.trim()) { alert("Message cannot be empty"); return; }
+    if (!confirm(`Send this message to ${blastCount ?? "all eligible"} clients? This cannot be undone.`)) return;
+    setSendingBlast(true);
+    setBlastResult(null);
+    const res = await fetch("/api/admin/send-holiday-blast", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminKey}` },
+      body: JSON.stringify({ message: blastMessage }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setSendingBlast(false);
+    if (!res.ok) { alert(`Failed: ${data.error ?? res.status}`); return; }
+    setBlastResult({ sent: data.sent, failed: data.failed });
+    setBlastCount(null);
+    const aRes = await fetch("/api/admin/client-actions", { headers });
+    if (aRes.ok) setHistory(await aRes.json());
+  }
+
   async function runCron(type: "google-review" | "refill-reminder" | "birthday") {
     setRunningCron(type);
     const res = await fetch(`/api/cron/${type}`, { headers });
@@ -198,6 +287,7 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
     "auto-review","auto-review-email","auto-review-sms",
     "auto-refill","auto-refill-email","auto-refill-sms",
     "auto-birthday-email","auto-birthday-sms",
+    "holiday-blast-sms",
   ];
 
   // Build combined history: client_actions + bookings sent_at fields
@@ -282,6 +372,7 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
     "auto-refill-sms":     "Refill SMS (Auto)",
     "auto-birthday-email": "Birthday Email (Auto)",
     "auto-birthday-sms":   "Birthday SMS (Auto)",
+    "holiday-blast-sms":   "Holiday Blast SMS",
   };
 
   return (
@@ -353,6 +444,114 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
           </div>
         </div>
       )}
+
+      {/* ── Holiday / Broadcast Blast ── */}
+      <div className="bg-white border border-neutral-200 rounded-xl overflow-hidden mb-8">
+        <div className="px-5 py-3 border-b border-neutral-100 flex items-center gap-2">
+          <span className="text-[13px] font-bold text-[#1C1C1C]">Holiday / Broadcast SMS</span>
+          <span className="text-[11px] text-neutral-400">· Send a one-time message to all clients</span>
+        </div>
+        <div className="p-5 space-y-4">
+
+          {/* Scheduled blast banner */}
+          {scheduledBlast && (
+            <div className="flex items-center justify-between gap-3 px-4 py-3 bg-purple-50 border border-purple-200 rounded-xl">
+              <div>
+                <p className="text-[12px] font-bold text-purple-700">⏰ Scheduled: {scheduledBlast.label}</p>
+                <p className="text-[11px] text-purple-500 mt-0.5">Sending on {scheduledBlast.sendAt} at 10:00 AM</p>
+                <p className="text-[11px] text-neutral-500 mt-1 line-clamp-2">{scheduledBlast.message}</p>
+              </div>
+              <button onClick={cancelScheduledBlast}
+                className="shrink-0 text-[11px] font-semibold px-3 py-1.5 bg-white border border-purple-200 text-purple-500 rounded-lg hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-all">
+                Cancel
+              </button>
+            </div>
+          )}
+
+          {/* Event presets */}
+          <div>
+            <p className="text-[11px] font-semibold text-neutral-400 uppercase tracking-[0.1em] mb-2">Event Preset</p>
+            <div className="flex flex-wrap gap-2">
+              {BLAST_PRESETS.map(p => (
+                <button key={p.id}
+                  onClick={() => {
+                    setSelectedPreset(p.id);
+                    setBlastMessage(p.message);
+                    setBlastCount(null);
+                    setBlastResult(null);
+                  }}
+                  className={`text-[12px] font-semibold px-3 py-1.5 rounded-lg border transition-all ${
+                    selectedPreset === p.id
+                      ? "bg-[#C9A84C] text-white border-[#C9A84C]"
+                      : "bg-neutral-50 text-neutral-600 border-neutral-200 hover:border-[#C9A84C] hover:text-[#C9A84C]"
+                  }`}>
+                  {p.label}
+                </button>
+              ))}
+              <button
+                onClick={() => { setSelectedPreset("custom"); setBlastMessage(""); setBlastCount(null); setBlastResult(null); }}
+                className={`text-[12px] font-semibold px-3 py-1.5 rounded-lg border transition-all ${
+                  selectedPreset === "custom"
+                    ? "bg-neutral-700 text-white border-neutral-700"
+                    : "bg-neutral-50 text-neutral-600 border-neutral-200 hover:border-neutral-400"
+                }`}>
+                ✏️ Custom
+              </button>
+            </div>
+          </div>
+
+          {/* Message editor */}
+          <textarea
+            value={blastMessage}
+            onChange={e => { setBlastMessage(e.target.value); setBlastCount(null); setBlastResult(null); setSelectedPreset("custom"); }}
+            rows={4}
+            className="w-full border border-neutral-200 rounded-lg px-3 py-2.5 text-[13px] text-[#1C1C1C] focus:outline-none focus:border-[#C9A84C] resize-none"
+            placeholder="Select an event above or type a custom message…"
+          />
+
+          {/* Actions row */}
+          <div className="flex items-center gap-3 flex-wrap">
+            <button
+              onClick={fetchBlastCount}
+              disabled={loadingBlastCount || !blastMessage.trim()}
+              className="px-4 py-2 bg-neutral-100 text-neutral-700 text-[12px] font-semibold rounded-lg hover:bg-neutral-200 transition-all disabled:opacity-40">
+              {loadingBlastCount ? "Loading…" : "Preview Recipients"}
+            </button>
+            {blastCount !== null && (
+              <span className="text-[12px] text-neutral-500">{blastCount} clients will receive this</span>
+            )}
+            <div className="flex items-center gap-2 ml-auto">
+              {/* Schedule */}
+              <input
+                type="date"
+                value={blastScheduleDate}
+                onChange={e => setBlastScheduleDate(e.target.value)}
+                className="border border-neutral-200 rounded-lg px-2 py-1.5 text-[12px] text-neutral-700 focus:outline-none focus:border-[#C9A84C]"
+              />
+              <button
+                onClick={scheduleBlast}
+                disabled={schedulingBlast || !blastMessage.trim()}
+                className="px-4 py-2 bg-purple-600 text-white text-[12px] font-semibold rounded-lg hover:bg-purple-700 transition-all disabled:opacity-40">
+                {schedulingBlast ? "Saving…" : "⏰ Schedule 10 AM"}
+              </button>
+              <button
+                onClick={sendBlast}
+                disabled={sendingBlast || !blastMessage.trim()}
+                className="px-4 py-2 bg-[#C9A84C] text-white text-[12px] font-semibold rounded-lg hover:opacity-80 transition-all disabled:opacity-40">
+                {sendingBlast ? "Sending…" : "Send Now"}
+              </button>
+            </div>
+          </div>
+
+          {blastResult && (
+            <div className="px-4 py-3 bg-green-50 border border-green-100 rounded-lg">
+              <p className="text-[13px] text-green-700 font-semibold">
+                Done — {blastResult.sent} sent{blastResult.failed > 0 ? `, ${blastResult.failed} failed` : ""}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* ── Active automations ── */}
       <div className="bg-white border border-neutral-200 rounded-xl overflow-hidden mb-10">
@@ -651,8 +850,9 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
                     </td>
                     <td className="px-5 py-3">
                       <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
-                        e.action_type.includes("review")  ? "bg-blue-50 text-blue-600"
-                        : e.action_type.includes("birthday") ? "bg-pink-50 text-pink-500"
+                        e.action_type.includes("review")   ? "bg-blue-50 text-blue-600"
+                        : e.action_type.includes("birthday")  ? "bg-pink-50 text-pink-500"
+                        : e.action_type.includes("holiday")   ? "bg-purple-50 text-purple-600"
                         : "bg-amber-50 text-amber-600"
                       }`}>
                         {TYPE_LABELS[e.action_type] ?? e.action_type}
