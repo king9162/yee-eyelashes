@@ -64,6 +64,8 @@ export async function GET(req: NextRequest) {
 
   type EligibleClient = typeof todayClients extends (infer T)[] | null ? T & { shouldEmail: boolean; shouldSms: boolean } : never;
   const eligible: EligibleClient[] = (todayClients ?? []).flatMap(c => {
+    const name = `${c.first_name ?? ""} ${c.last_name ?? ""}`.trim();
+    if (!name) return []; // skip nameless records (bad Square sync data)
     if (noReviewClientIds.has(c.id)) return [];
     const phone = c.phone?.replace(/\D/g,"").slice(-10);
     // Skip if their booking today was cancelled

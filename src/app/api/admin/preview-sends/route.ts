@@ -92,6 +92,7 @@ export async function GET(req: NextRequest) {
   type ClientRow = { id: string; first_name: string; last_name: string; phone: string; email: string; channels: string[] };
 
   const review: ClientRow[] = (reviewClients ?? []).flatMap(c => {
+    if (!`${c.first_name ?? ""} ${c.last_name ?? ""}`.trim()) return [];
     if (noReviewIds.has(c.id)) return [];
     const phone = c.phone?.replace(/\D/g,"").slice(-10);
     if ((phone && cancelledReviewPhones.has(phone)) || (c.email && cancelledReviewEmails.has(c.email))) return [];
@@ -103,6 +104,7 @@ export async function GET(req: NextRequest) {
   });
 
   const refill: ClientRow[] = (refillClients ?? []).flatMap(c => {
+    if (!`${c.first_name ?? ""} ${c.last_name ?? ""}`.trim()) return [];
     if (noRefillIds.has(c.id)) return [];
     const phone = c.phone?.replace(/\D/g,"").slice(-10);
     if ((phone && cancelledRefillPhones.has(phone)) || (c.email && cancelledRefillEmails.has(c.email))) return [];
