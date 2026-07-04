@@ -17,9 +17,9 @@ export async function GET(req: NextRequest) {
   const { data: settingsRows } = await db.from("settings").select("key, value");
   const settings = Object.fromEntries((settingsRows ?? []).map(r => [r.key, r.value]));
   const reviewEmailOn  = settings["review-email"]  !== "false";
-  const reviewSmsOn    = settings["review-sms"]    === "true";
+  const reviewSmsOn    = settings["review-sms"]    !== "false";
   const refillEmailOn  = settings["refill-email"]  !== "false";
-  const refillSmsOn    = settings["refill-sms"]    === "true";
+  const refillSmsOn    = settings["refill-sms"]    !== "false";
   const bdayEmailOn    = settings["birthday-email"] === "true";
   const bdaySmsOn      = settings["birthday-sms"]   === "true";
   const refillDays     = Math.max(1, parseInt(settings["refill_days"] ?? "14") || 14);

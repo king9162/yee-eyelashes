@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     db.from("settings").select("value").eq("key", "review-sms").maybeSingle(),
   ]);
   const emailOn = emailSetting?.value !== "false";
-  const smsOn   = smsSetting?.value === "true";
+  const smsOn   = smsSetting?.value !== "false";
   if (!emailOn && !smsOn) return NextResponse.json({ skipped: true, reason: "disabled" });
 
   const targetDate = todayNY();
