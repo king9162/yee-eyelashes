@@ -104,7 +104,15 @@ export async function POST(req: NextRequest) {
 
   const unsubPhones = await getUnsubPhones(db, rows);
   const sentPhones  = await getSentPhones(db, rows, today);
-  const excludePhones = new Set([...unsubPhones, ...sentPhones]);
+
+  const { data: blockedActions } = await db.from("client_actions").select("client_id").eq("action_type", "blocked");
+  const blockedPhones = new Set<string>();
+  if ((blockedActions ?? []).length > 0) {
+    const { data: bClients } = await db.from("clients").select("phone").in("id", blockedActions!.map(a => a.client_id));
+    for (const bc of bClients ?? []) { const ph = (bc.phone ?? "").replace(/\D/g,"").slice(-10); if (ph) blockedPhones.add(ph); }
+  }
+
+  const excludePhones = new Set([...unsubPhones, ...sentPhones, ...blockedPhones]);
 
   let clients = buildList(rows, excludePhones);
 

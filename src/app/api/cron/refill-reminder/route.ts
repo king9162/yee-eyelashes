@@ -56,6 +56,13 @@ export async function GET(req: NextRequest) {
     .eq("action_type", "no-refill");
   const noRefillClientIds = new Set((noRefillActions ?? []).map(a => a.client_id));
 
+  const { data: blockedActions } = await db.from("client_actions").select("client_id").eq("action_type", "blocked");
+  const blockedPhones = new Set<string>();
+  if ((blockedActions ?? []).length > 0) {
+    const { data: bClients } = await db.from("clients").select("phone").in("id", blockedActions!.map(a => a.client_id));
+    for (const bc of bClients ?? []) { const ph = (bc.phone ?? "").replace(/\D/g,"").slice(-10); if (ph) blockedPhones.add(ph); }
+  }
+
   // Per-channel dedup:
   // Auto sends: stored with sent_at = targetDate (visit date), check exact match
   // Manual sends: stored with sent_at = send date (today), check >= visit date to catch same-day manual sends
@@ -113,6 +120,7 @@ export async function GET(req: NextRequest) {
     if (!name) return []; // skip nameless records (bad Square sync data)
     if (noRefillClientIds.has(c.id)) return [];
     const phone = c.phone?.replace(/\D/g, "").slice(-10);
+    if (phone && blockedPhones.has(phone)) return [];
     // Skip if their booking on targetDate was cancelled
     const wasCancelled = (phone && cancelledPhones.has(phone)) || (c.email && cancelledEmails.has(c.email));
     if (wasCancelled) return [];

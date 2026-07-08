@@ -52,6 +52,13 @@ export async function GET(req: NextRequest) {
     .eq("action_type", "no-review");
   const noReviewClientIds = new Set((noReviewActions ?? []).map(a => a.client_id));
 
+  const { data: blockedActions } = await db.from("client_actions").select("client_id").eq("action_type", "blocked");
+  const blockedPhones = new Set<string>();
+  if ((blockedActions ?? []).length > 0) {
+    const { data: bClients } = await db.from("clients").select("phone").in("id", blockedActions!.map(a => a.client_id));
+    for (const bc of bClients ?? []) { const ph = (bc.phone ?? "").replace(/\D/g,"").slice(-10); if (ph) blockedPhones.add(ph); }
+  }
+
   // Per-channel dedup — covers both manual and auto sends
   const [{ data: emailSentToday }, { data: smsSentToday }, { data: unsubActions }, { data: cancelledToday }] = await Promise.all([
     db.from("client_actions").select("client_id")
@@ -80,6 +87,7 @@ export async function GET(req: NextRequest) {
     if (!name) return []; // skip nameless records (bad Square sync data)
     if (noReviewClientIds.has(c.id)) return [];
     const phone = c.phone?.replace(/\D/g,"").slice(-10);
+    if (phone && blockedPhones.has(phone)) return [];
     // Skip if their booking today was cancelled
     if ((phone && cancelledPhones.has(phone)) || (c.email && cancelledEmails.has(c.email))) return [];
     const shouldEmail = emailOn && !!c.email && !emailSentIds.has(c.id);

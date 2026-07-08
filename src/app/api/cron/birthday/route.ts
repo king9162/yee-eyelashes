@@ -36,6 +36,13 @@ export async function GET(req: NextRequest) {
   }
 
   // Per-channel dedup
+  const { data: blockedActions } = await db.from("client_actions").select("client_id").eq("action_type", "blocked");
+  const blockedPhones = new Set<string>();
+  if ((blockedActions ?? []).length > 0) {
+    const { data: bClients } = await db.from("clients").select("phone").in("id", blockedActions!.map(a => a.client_id));
+    for (const bc of bClients ?? []) { const ph = (bc.phone ?? "").replace(/\D/g,"").slice(-10); if (ph) blockedPhones.add(ph); }
+  }
+
   const [{ data: emailSentToday }, { data: smsSentToday }, { data: unsubActions }] = await Promise.all([
     db.from("client_actions").select("client_id")
       .in("action_type", ["auto-birthday-email", "birthday-email"])
@@ -51,6 +58,8 @@ export async function GET(req: NextRequest) {
 
   type EligibleClient = typeof birthdayClients extends (infer T)[] | null ? T & { shouldEmail: boolean; shouldSms: boolean } : never;
   const eligible: EligibleClient[] = (birthdayClients ?? []).flatMap(c => {
+    const ph = (c.phone ?? "").replace(/\D/g,"").slice(-10);
+    if (ph && blockedPhones.has(ph)) return [];
     const shouldEmail = emailOn && !!c.email && !emailSentIds.has(c.id);
     const shouldSms   = smsOn   && !!c.phone && !smsSentIds.has(c.id) && !unsubIds.has(c.id);
     if (!shouldEmail && !shouldSms) return [];

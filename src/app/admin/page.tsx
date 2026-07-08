@@ -1436,6 +1436,7 @@ export default function AdminPage() {
                                 const noReviewFlag         = !!tracking[ck]?.["no-review"];
                                 const noRefillFlag         = !!tracking[ck]?.["no-refill"];
                                 const reviewGivenFlag      = !!tracking[ck]?.["review-given"];
+                                const blockedFlag          = visits.some(v => !!tracking[v.id]?.["blocked"]) || !!tracking[ck]?.["blocked"];
                                 const groups = [
                                   {
                                     label: "Review",
@@ -1449,8 +1450,8 @@ export default function AdminPage() {
                                       </div>
                                     ),
                                     items: [
-                                      { key: "review-email" as const, icon: "✉", label: "Email", canSend: !!c.email && !reviewAlreadySent && !noReviewFlag && !reviewGivenFlag && !isDeleted, onSend: () => sendReviewEmail(c, ck), autoSent: dbReviewSent ? fmtSent(dbReviewSent) : undefined },
-                                      { key: "review-sms"   as const, icon: "💬", label: "SMS",   canSend: !!c.phone && !reviewSmsAlreadySent && !dbReviewSent && !noReviewFlag && !reviewGivenFlag && !isDeleted, onSend: () => sendReviewSMS(c, ck),   autoSent: dbReviewSent ? fmtSent(dbReviewSent) : undefined },
+                                      { key: "review-email" as const, icon: "✉", label: "Email", canSend: !!c.email && !reviewAlreadySent && !noReviewFlag && !reviewGivenFlag && !isDeleted && !blockedFlag, onSend: () => sendReviewEmail(c, ck), autoSent: dbReviewSent ? fmtSent(dbReviewSent) : undefined },
+                                      { key: "review-sms"   as const, icon: "💬", label: "SMS",   canSend: !!c.phone && !reviewSmsAlreadySent && !dbReviewSent && !noReviewFlag && !reviewGivenFlag && !isDeleted && !blockedFlag, onSend: () => sendReviewSMS(c, ck),   autoSent: dbReviewSent ? fmtSent(dbReviewSent) : undefined },
                                     ],
                                   },
                                   {
@@ -1465,15 +1466,15 @@ export default function AdminPage() {
                                       </div>
                                     ),
                                     items: [
-                                      { key: "refill-email" as const, icon: "✉", label: "Email", canSend: !!c.email && !refillAlreadySent && !isDeleted, onSend: () => sendRefillEmail(c, ck), autoSent: dbRefillSent ? fmtSent(dbRefillSent) : undefined },
-                                      { key: "refill-sms"   as const, icon: "💬", label: "SMS",   canSend: !!c.phone && !refillSmsAlreadySent && !dbRefillSent && !isDeleted, onSend: () => sendRefillSMS(c, ck),   autoSent: dbRefillSent ? fmtSent(dbRefillSent) : undefined },
+                                      { key: "refill-email" as const, icon: "✉", label: "Email", canSend: !!c.email && !refillAlreadySent && !isDeleted && !blockedFlag, onSend: () => sendRefillEmail(c, ck), autoSent: dbRefillSent ? fmtSent(dbRefillSent) : undefined },
+                                      { key: "refill-sms"   as const, icon: "💬", label: "SMS",   canSend: !!c.phone && !refillSmsAlreadySent && !dbRefillSent && !isDeleted && !blockedFlag, onSend: () => sendRefillSMS(c, ck),   autoSent: dbRefillSent ? fmtSent(dbRefillSent) : undefined },
                                     ],
                                   },
                                   {
                                     label: "Birthday 🎂",
                                     items: [
-                                      { key: "birthday-email" as const, icon: "✉", label: "Email", canSend: !!c.email && !bdayEmailSent && !isDeleted, onSend: () => sendBirthdayEmail(c, ck), autoSent: undefined },
-                                      { key: "birthday-sms"   as const, icon: "💬", label: "SMS",   canSend: !!c.phone && !bdaySmsSent  && !isDeleted, onSend: () => sendBirthdaySMS(c, ck),   autoSent: undefined },
+                                      { key: "birthday-email" as const, icon: "✉", label: "Email", canSend: !!c.email && !bdayEmailSent && !isDeleted && !blockedFlag, onSend: () => sendBirthdayEmail(c, ck), autoSent: undefined },
+                                      { key: "birthday-sms"   as const, icon: "💬", label: "SMS",   canSend: !!c.phone && !bdaySmsSent  && !isDeleted && !blockedFlag, onSend: () => sendBirthdaySMS(c, ck),   autoSent: undefined },
                                     ],
                                   },
                                 ];
@@ -1505,6 +1506,15 @@ export default function AdminPage() {
                                       <div className="absolute z-30 right-0 top-full mt-1 bg-white border border-neutral-200 shadow-xl rounded-2xl w-[240px] text-left overflow-hidden">
                                         {isDeleted && (
                                           <div className="px-4 py-3 text-[11px] text-neutral-400">Actions disabled for deleted clients.</div>
+                                        )}
+                                        {!isDeleted && (
+                                          <div className="px-3 pt-2 pb-1">
+                                            <button
+                                              onClick={() => blockedFlag ? trackClear(ck, "blocked") : trackMark(ck, "blocked")}
+                                              className={`w-full text-[10px] font-semibold px-3 py-1.5 rounded-lg border transition-all ${blockedFlag ? "bg-red-50 border-red-300 text-red-600" : "bg-neutral-50 border-neutral-200 text-neutral-400 hover:border-red-300 hover:text-red-500"}`}>
+                                              {blockedFlag ? "🚫 Blocked — click to unblock" : "🚫 Block All Messages"}
+                                            </button>
+                                          </div>
                                         )}
                                         {!isDeleted && groups.map((group, gi) => (
                                           <div key={group.label} className={gi > 0 ? "border-t-2 border-neutral-100" : ""}>
