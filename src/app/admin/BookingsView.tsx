@@ -120,7 +120,7 @@ export default function BookingsView({ adminKey, onClientClick }: { adminKey: st
 
   function set(k: keyof NewAppt, v: string|number) { setForm(p => ({ ...p, [k]: v })); }
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
   const shown = bookings
     .filter(b => {
       if (filter === "upcoming" && b.date < today) return false;

@@ -470,12 +470,12 @@ export default function DashboardView({ adminKey }: { adminKey: string }) {
     ]},
   };
 
-  const now = new Date();
-  const dayOfWeek = now.getDay();
+  const nowNY = new Date(new Date().toLocaleString("en-US", { timeZone: "America/New_York" }));
+  const dayOfWeek = nowNY.getDay();
   const dayData = DAY_QUOTES[dayOfWeek];
   const todayQuote = dayData.quotes[new Date(todayStr).getDate() % dayData.quotes.length];
 
-  const hour = now.getHours();
+  const hour = nowNY.getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
   function dismissPopup() {
