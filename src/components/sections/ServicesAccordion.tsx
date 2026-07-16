@@ -454,7 +454,7 @@ export default function ServicesAccordion({ lang }: Props) {
           </div>
 
           {/* 4-column grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6" id="service-grid">
             <LashCard
               lang={lang}
               tier="Real Mink"
@@ -482,14 +482,9 @@ export default function ServicesAccordion({ lang }: Props) {
             <FillsPmuCard lang={lang} bookHref={bookHref} />
           </div>
 
-        </div>
-      </section>
-
-      {/* ── Refill Policy ── */}
-      <section className="bg-[#F8F5EF] pb-16">
-        <div className="max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16">
-          <div className="border-t border-neutral-200 pt-10">
-            <p className="text-[9px] uppercase tracking-[0.55em] text-[#C9A84C] mb-5">
+          {/* ── Refill Policy strip ── */}
+          <div className="border-t border-neutral-200 mt-10 pt-8">
+            <p className="text-[9px] uppercase tracking-[0.55em] text-[#C9A84C] mb-4">
               {zh ? "補睫政策" : "Refill Policy"}
             </p>
             <div className="flex flex-col sm:flex-row sm:flex-wrap gap-x-10 gap-y-3">
@@ -500,13 +495,14 @@ export default function ServicesAccordion({ lang }: Props) {
                 { label: zh ? "24 天以上" : "24+ Days",       days: zh ? "全新套組" : "A New Full Set" },
               ].map(({ label, days }) => (
                 <div key={label} className="flex items-center gap-2">
-                  <span className="text-[12px] font-medium text-[#1C1C1C]">{label}</span>
-                  <span className="text-neutral-300 text-[10px]">·</span>
-                  <span className="text-[12px] text-neutral-400">{days}</span>
+                  <span className="text-[14px] font-medium text-[#1C1C1C]">{label}</span>
+                  <span className="text-neutral-300 text-[11px]">·</span>
+                  <span className="text-[14px] text-neutral-400">{days}</span>
                 </div>
               ))}
             </div>
           </div>
+
         </div>
       </section>
     </>
