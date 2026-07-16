@@ -486,75 +486,27 @@ export default function ServicesAccordion({ lang }: Props) {
       </section>
 
       {/* ── Refill Policy ── */}
-      <section className="bg-white py-20">
-        <div className="max-w-[780px] mx-auto px-6 sm:px-10">
-
-          {/* Heading */}
-          <div className="text-center mb-12">
-            <p className="text-[9px] uppercase tracking-[0.55em] text-[#C9A84C] mb-4">
+      <section className="bg-[#F8F5EF] pb-16">
+        <div className="max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16">
+          <div className="border-t border-neutral-200 pt-10">
+            <p className="text-[9px] uppercase tracking-[0.55em] text-[#C9A84C] mb-5">
               {zh ? "補睫政策" : "Refill Policy"}
             </p>
-            <h2 className="text-[2rem] font-light text-[#1C1C1C]" style={{ fontFamily: "var(--font-serif)" }}>
-              {zh ? "以維持您的睫毛美麗與健康" : "To Keep Your Lashes Beautiful and Healthy"}
-            </h2>
-          </div>
-
-          {/* Policy rows */}
-          <div className="divide-y divide-neutral-100 border border-neutral-100 rounded-2xl overflow-hidden">
-            {[
-              {
-                label:   zh ? "一週補睫" : "1 Week Refill",
-                days:    zh ? "最後一次預約後 1–7 天" : "1–7 Days after your last appointment",
-                warning: false,
-              },
-              {
-                label:   zh ? "兩週補睫" : "2 Week Refill",
-                days:    zh ? "最後一次預約後 8–14 天" : "8–14 Days after your last appointment",
-                warning: false,
-              },
-              {
-                label:   zh ? "三週補睫" : "3 Week Refill",
-                days:    zh ? "最後一次預約後 15–23 天" : "15–23 Days after your last appointment",
-                warning: false,
-              },
-              {
-                label:   zh ? "24 天以上" : "24+ Days",
-                days:    zh ? "需重新全套嫁接，費用視睫毛留存情況而定" : "A New Full Set — pricing may apply (depending on lash retention)",
-                warning: true,
-              },
-            ].map(({ label, days, warning }) => (
-              <div key={label} className={`flex items-center gap-6 px-8 py-6 ${warning ? "bg-[#FDFAF4]" : "bg-white"}`}>
-                <div className={`shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${warning ? "bg-[#fef3c7]" : "bg-[#F8F5EF]"}`}>
-                  {warning ? (
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                      <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-                    </svg>
-                  ) : (
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-                    </svg>
-                  )}
+            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-x-10 gap-y-3">
+              {[
+                { label: zh ? "一週補睫" : "1 Week Refill",  days: zh ? "1–7 天" : "1–7 Days" },
+                { label: zh ? "兩週補睫" : "2 Week Refill",  days: zh ? "8–14 天" : "8–14 Days" },
+                { label: zh ? "三週補睫" : "3 Week Refill",  days: zh ? "15–23 天" : "15–23 Days" },
+                { label: zh ? "24 天以上" : "24+ Days",       days: zh ? "全新套組" : "A New Full Set" },
+              ].map(({ label, days }) => (
+                <div key={label} className="flex items-center gap-2">
+                  <span className="text-[12px] font-medium text-[#1C1C1C]">{label}</span>
+                  <span className="text-neutral-300 text-[10px]">·</span>
+                  <span className="text-[12px] text-neutral-400">{days}</span>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className={`text-[13px] font-semibold tracking-wide ${warning ? "text-[#C9A84C]" : "text-[#1C1C1C]"}`}>{label}</p>
-                  <p className="text-[12px] text-neutral-400 mt-0.5 leading-relaxed">{days}</p>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-
-          {/* Bottom note */}
-          <div className="mt-6 flex items-start gap-3 px-6 py-5 bg-[#F8F5EF] rounded-xl border border-neutral-100">
-            <span className="text-[#C9A84C] text-lg leading-none mt-0.5">♡</span>
-            <p className="text-[12px] text-neutral-500 leading-relaxed">
-              {zh
-                ? <>補睫費用依據您 <span className="font-semibold text-[#1C1C1C]">上次預約距今的天數</span> 計算，而非依日曆週數。</>
-                : <>Refill pricing is based on the number of days since your last appointment, <span className="font-semibold text-[#1C1C1C]">not calendar weeks.</span></>
-              }
-            </p>
-          </div>
-
         </div>
       </section>
     </>
