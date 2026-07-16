@@ -330,7 +330,7 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
       name:          b.name,
       phone:         b.phone,
       action_type:   "review-email",
-      sent_at:       b.review_sent_at.split("T")[0],
+      sent_at:       new Date(b.review_sent_at).toLocaleDateString("en-CA", { timeZone: "America/New_York" }),
       created_at:    b.review_sent_at,
       source:        "auto" as const,
       booking_id:    b.id,
@@ -341,7 +341,7 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
       name:          b.name,
       phone:         b.phone,
       action_type:   "refill-email",
-      sent_at:       b.refill_sent_at.split("T")[0],
+      sent_at:       new Date(b.refill_sent_at).toLocaleDateString("en-CA", { timeZone: "America/New_York" }),
       created_at:    b.refill_sent_at,
       source:        "auto" as const,
       booking_id:    b.id,
@@ -351,7 +351,11 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
   });
 
   const combinedHistory = [...manualEntries, ...autoEntries]
-    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+    .sort((a, b) => {
+      const dateCmp = b.sent_at.localeCompare(a.sent_at);
+      if (dateCmp !== 0) return dateCmp;
+      return (b.created_at ?? "").localeCompare(a.created_at ?? "");
+    });
 
   // Group auto-sends by the date they were created (= when cron ran)
   const cronHistory = Object.values(

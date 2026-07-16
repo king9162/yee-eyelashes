@@ -133,6 +133,7 @@ const NAV: { section: string; items: { id: View; label: string }[] }[] = [
 // ── Main ──────────────────────────────────────────────────────
 export default function AdminPage() {
   const [key,    setKey]    = useState("");
+  const [letterRead, setLetterRead] = useState(false);
   const [authed, setAuthed] = useState(() => {
     if (typeof window === "undefined") return false;
     const saved = sessionStorage.getItem("admin_key");
@@ -331,6 +332,12 @@ export default function AdminPage() {
     if (bookingRes.ok) setBookings(await bookingRes.json());
     await loadActions(secret);
   }, [loadActions]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && localStorage.getItem("letter-read") === "1") {
+      setLetterRead(true);
+    }
+  }, []);
 
   useEffect(() => {
     if (!authed) return;
@@ -659,6 +666,11 @@ export default function AdminPage() {
               {loading ? "Verifying..." : "Login"}
             </button>
           </form>
+          {!letterRead && (
+            <a href="/admin/letter" className="mt-4 flex items-center justify-center w-full py-4 rounded-xl text-white text-[13px] tracking-widest uppercase transition-all hover:opacity-90 active:scale-[0.98]" style={{ background: "#C9A84C", fontFamily: "var(--font-montserrat), sans-serif" }}>
+              Letter for Betty ✉
+            </a>
+          )}
         </div>
       </div>
     );
