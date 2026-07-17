@@ -173,6 +173,7 @@ export default function AdminPage() {
   const [deleteMode,    setDeleteMode]    = useState(false);
   const [clientTab,     setClientTab]     = useState<"active" | "deleted">("active");
   const [tracking, setTracking] = useState<Record<string, Record<string, string>>>({});
+  const [letterOpenedAt, setLetterOpenedAt] = useState<string | null>(null);
 
   const loadActions = useCallback(async (secret: string) => {
     try {
@@ -323,13 +324,19 @@ export default function AdminPage() {
   }
 
   const fetchClients = useCallback(async (secret: string) => {
-    const [clientRes, bookingRes] = await Promise.all([
-      fetch("/api/clients",  { headers: { Authorization: `Bearer ${secret}` } }),
-      fetch("/api/bookings", { headers: { Authorization: `Bearer ${secret}` } }),
+    const [clientRes, bookingRes, settingsRes] = await Promise.all([
+      fetch("/api/clients",       { headers: { Authorization: `Bearer ${secret}` } }),
+      fetch("/api/bookings",      { headers: { Authorization: `Bearer ${secret}` } }),
+      fetch("/api/admin/settings",{ headers: { Authorization: `Bearer ${secret}` } }),
     ]);
     if (clientRes.ok) { setClients(await clientRes.json()); setAuthed(true); }
     else { alert("Wrong password"); return; }
     if (bookingRes.ok) setBookings(await bookingRes.json());
+    if (settingsRes.ok) {
+      const rows: { key: string; value: string }[] = await settingsRes.json();
+      const opened = rows.find(r => r.key === "letter_opened_at")?.value ?? null;
+      setLetterOpenedAt(opened);
+    }
     await loadActions(secret);
   }, [loadActions]);
 
@@ -811,8 +818,13 @@ export default function AdminPage() {
           })}
         </nav>
 
-        <div className="px-4 py-3 border-t border-neutral-100">
+        <div className="px-4 py-3 border-t border-neutral-100 space-y-1">
           <p className="text-[10px] text-neutral-300">{clientGroups.length} clients · {new Date().toLocaleDateString()}</p>
+          {letterOpenedAt && (
+            <p className="text-[10px] text-[#C9A84C]">
+              ✉ Letter opened · {new Date(letterOpenedAt).toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+            </p>
+          )}
         </div>
       </aside>
     );
