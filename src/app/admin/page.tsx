@@ -1660,7 +1660,7 @@ export default function AdminPage() {
 
         {/* Main content */}
         <main className="flex-1 min-w-0 overflow-hidden flex flex-col">
-          {view === "dashboard"      && <DashboardView      adminKey={savedKey} />}
+          {view === "dashboard"      && <DashboardView      adminKey={savedKey} letterOpenedAt={letterOpenedAt} adminLoginLog={adminLoginLog} />}
           {view === "analytics"     && <AnalyticsView     adminKey={savedKey} />}
           {view === "update-history" && <UpdateHistoryView  adminKey={savedKey} />}
           {view === "calendar"      && <CalendarView    adminKey={savedKey} />}

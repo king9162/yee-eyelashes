@@ -74,7 +74,11 @@ const APPT_TIMES = [
 const EMPTY_ADD  = { name:"", phone:"", email:"", service_label:"", date:"", time:"10:00 AM", duration_min:90 };
 const EMPTY_EDIT = { ...EMPTY_ADD, notes:"" };
 
-export default function DashboardView({ adminKey }: { adminKey: string }) {
+export default function DashboardView({ adminKey, letterOpenedAt, adminLoginLog }: {
+  adminKey: string;
+  letterOpenedAt?: string | null;
+  adminLoginLog?: { at: string; ip: string; device: string }[];
+}) {
   const [bookings,    setBookings]    = useState<DashBooking[]>([]);
   const [clients,     setClients]     = useState<DashClient[]>([]);
   const [reviews,     setReviews]     = useState<DashReview[]>([]);
@@ -819,6 +823,40 @@ export default function DashboardView({ adminKey }: { adminKey: string }) {
                 {addSaving ? "Saving…" : "Add Appointment"}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Activity Log ── */}
+      {(letterOpenedAt || (adminLoginLog && adminLoginLog.length > 0)) && (
+        <div className="mx-4 mb-6 bg-white border border-neutral-100 rounded-2xl overflow-hidden">
+          <div className="px-5 py-3 border-b border-neutral-50">
+            <p className="text-[11px] font-semibold text-neutral-400 uppercase tracking-[0.12em]">Activity Log</p>
+          </div>
+          <div className="divide-y divide-neutral-50">
+            {letterOpenedAt && (
+              <div className="flex items-center gap-3 px-5 py-3">
+                <span className="text-[#C9A84C] text-[15px]">✉</span>
+                <div>
+                  <p className="text-[12px] font-semibold text-[#1C1C1C]">Letter opened</p>
+                  <p className="text-[11px] text-neutral-400">
+                    {new Date(letterOpenedAt).toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+                  </p>
+                </div>
+              </div>
+            )}
+            {adminLoginLog && [...adminLoginLog].reverse().slice(0, 5).map((e, i) => (
+              <div key={i} className="flex items-center gap-3 px-5 py-3">
+                <span className="text-neutral-300 text-[15px]">🔐</span>
+                <div>
+                  <p className="text-[12px] font-semibold text-[#1C1C1C]">Admin login · {e.device}</p>
+                  <p className="text-[11px] text-neutral-400">
+                    {new Date(e.at).toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+                    <span className="text-neutral-300 ml-1">· {e.ip}</span>
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
