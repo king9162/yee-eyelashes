@@ -46,5 +46,19 @@ export async function POST(req: NextRequest) {
 
   // Success — clear rate limit record
   if (rl) await db.from("settings").delete().eq("key", key);
+
+  // Append login entry to log
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  const ua = req.headers.get("user-agent") ?? "";
+  const device = /iPhone|iPad/.test(ua) ? "iPhone/iPad" : /Android/.test(ua) ? "Android" : /Mac/.test(ua) ? "Mac" : /Windows/.test(ua) ? "Windows" : "Unknown";
+  const entry = { at: new Date().toISOString(), ip: ip.split(".").slice(0, 2).join(".") + ".*.*", device };
+  const { data: logRow } = await db.from("settings").select("value").eq("key", "admin_login_log").maybeSingle();
+  const existing: typeof entry[] = logRow?.value ? JSON.parse(logRow.value) : [];
+  const updated = [...existing, entry].slice(-20); // keep last 20
+  await db.from("settings").upsert(
+    { key: "admin_login_log", value: JSON.stringify(updated), updated_at: new Date().toISOString() },
+    { onConflict: "key" }
+  );
+
   return NextResponse.json({ ok: true });
 }
