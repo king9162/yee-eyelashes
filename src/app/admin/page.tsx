@@ -119,6 +119,10 @@ const NAV: { section: string; items: { id: View; label: string }[] }[] = [
     { id: "analytics",  label: "Report" },
     { id: "seo-pages",  label: "SEO Pages" },
   ]},
+  { section: "Appointments", items: [
+    { id: "calendar", label: "Calendar" },
+    { id: "bookings", label: "Bookings" },
+  ]},
   { section: "Customers", items: [
     { id: "clients-main", label: "My Clients"    },
     { id: "clients-elly", label: "Elly's Clients" },
@@ -493,8 +497,8 @@ export default function AdminPage() {
         });
       }
     }
-    // Delete removed visits
-    for (const id of removedIds) {
+    // Delete removed visits (skip temp IDs that were never saved)
+    for (const id of removedIds.filter(id => !id.startsWith("new_"))) {
       await fetch(`/api/clients/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${savedKey}` } });
     }
     await fetchClients(savedKey);
@@ -817,7 +821,7 @@ export default function AdminPage() {
         </nav>
 
         <div className="px-4 py-3 border-t border-neutral-100 space-y-1.5">
-          <p className="text-[10px] text-neutral-300">{clientGroups.length} clients · {new Date().toLocaleDateString()}</p>
+          <p className="text-[10px] text-neutral-300">{activeGroupsList.length} clients · {new Date().toLocaleDateString()}</p>
           {letterOpenedAt && (
             <p className="text-[10px] text-[#C9A84C]">
               ✉ Letter opened · {new Date(letterOpenedAt).toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
@@ -1345,7 +1349,7 @@ export default function AdminPage() {
               </thead>
               <tbody>
                 {clientGroups.length === 0 && (
-                  <tr><td colSpan={12} className="px-5 py-16 text-center text-[13px] text-neutral-300">No clients found</td></tr>
+                  <tr><td colSpan={11} className="px-5 py-16 text-center text-[13px] text-neutral-300">No clients found</td></tr>
                 )}
                 {clientGroups.map(({ client: c, visits, isDeleted }, idx) => (
                   <tr key={c.id} className={`border-b border-neutral-50 hover:bg-[#FAFAF8] transition-colors ${isDeleted ? "opacity-50" : ""}`}>
