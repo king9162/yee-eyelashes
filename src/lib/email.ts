@@ -338,6 +338,84 @@ export async function sendBettyCancellationNotification(data: BookingEmailData) 
   if (error) throw new Error(`Resend betty cancel error: ${JSON.stringify(error)}`);
 }
 
+// ── 4. Betty reschedule notification ────────────────────────────────────────
+export async function sendBettyRescheduleNotification(data: {
+  name:         string;
+  phone:        string;
+  email:        string;
+  serviceLabel: string;
+  oldDate:      string;
+  oldTime:      string;
+  newDate:      string;
+  newTime:      string;
+}) {
+  const bettyEmail    = process.env.BETTY_EMAIL ?? "yeelashesny@gmail.com";
+  const fmtOld        = formatDate(data.oldDate);
+  const fmtNew        = formatDate(data.newDate);
+
+  const { error } = await getResend().emails.send({
+    from:    `Yee Eyelashes <${FROM}>`,
+    to:      bettyEmail,
+    subject: `Booking Rescheduled — ${data.name} · ${data.serviceLabel} → ${fmtNew}`,
+    html: `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"/></head>
+<body style="margin:0;padding:0;background:#f8f5ef;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f5ef;padding:40px 20px;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;max-width:560px;width:100%;">
+        <tr><td style="background:#C9A84C;height:4px;"></td></tr>
+        <tr><td style="padding:40px 48px 32px;text-align:center;border-bottom:1px solid #f0ece4;">
+          <p style="margin:0 0 8px;font-size:10px;letter-spacing:0.5em;text-transform:uppercase;color:#C9A84C;">Yee Eyelashes</p>
+          <h1 style="margin:0;font-size:24px;font-weight:300;color:#1c1c1c;">Booking Rescheduled</h1>
+        </td></tr>
+        <tr><td style="padding:36px 48px;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#fafaf8;border-left:2px solid #C9A84C;margin-bottom:20px;">
+            <tr><td style="padding:24px 28px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                ${row("Client",  data.name)}
+                ${row("Phone",   data.phone)}
+                ${row("Email",   data.email)}
+                ${row("Service", data.serviceLabel)}
+              </table>
+            </td></tr>
+          </table>
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+            <tr>
+              <td style="width:48%;padding:16px 20px;background:#f8f5ef;vertical-align:top;">
+                <p style="margin:0 0 6px;font-size:9px;letter-spacing:0.35em;text-transform:uppercase;color:#999;">Was</p>
+                <p style="margin:0;font-size:13px;color:#aaa;line-height:1.6;text-decoration:line-through;">${fmtOld}<br/>${data.oldTime}</p>
+              </td>
+              <td style="width:4%;text-align:center;vertical-align:middle;font-size:18px;color:#C9A84C;">→</td>
+              <td style="width:48%;padding:16px 20px;background:#fafaf8;border-left:2px solid #C9A84C;vertical-align:top;">
+                <p style="margin:0 0 6px;font-size:9px;letter-spacing:0.35em;text-transform:uppercase;color:#C9A84C;">Now</p>
+                <p style="margin:0;font-size:13px;color:#1c1c1c;line-height:1.6;">${fmtNew}<br/>${data.newTime}</p>
+              </td>
+            </tr>
+          </table>
+          <table cellpadding="0" cellspacing="0" style="margin:0 auto 0;">
+            <tr><td style="background:#1c1c1c;text-align:center;">
+              <a href="${BASE}/admin" style="display:inline-block;padding:14px 32px;font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:#ffffff;text-decoration:none;">
+                View in Admin →
+              </a>
+            </td></tr>
+          </table>
+        </td></tr>
+        <tr><td style="padding:20px 48px;background:#1c1c1c;text-align:center;">
+          <p style="margin:0;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:#555;">
+            © ${new Date().getFullYear()} Yee Eyelashes · Manhasset, NY
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`,
+  });
+  if (error) throw new Error(`Resend betty reschedule error: ${JSON.stringify(error)}`);
+}
+
 // ── 5. Google Review invitation ──────────────────────────────────────────────
 export async function sendGoogleReviewEmail(data: {
   name:  string;

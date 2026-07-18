@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHmac } from "crypto";
 import { supabaseAdmin } from "@/lib/supabase";
-import { sendConfirmationEmail, sendBettyNotification, sendBettyCancellationNotification } from "@/lib/email";
+import { sendConfirmationEmail, sendBettyNotification, sendBettyCancellationNotification, sendBettyRescheduleNotification } from "@/lib/email";
 import { createCalendarEvent } from "@/lib/google-calendar";
 import { sendSMS } from "@/lib/sms";
 
@@ -229,12 +229,34 @@ export async function POST(req: NextRequest) {
           } catch (err) { console.error("Betty notify error (non-fatal):", err); }
         }
       } else if (eventType === "booking.updated" && squareBookingId) {
+        const { data: existingBooking } = await db
+          .from("bookings")
+          .select("date, time, service_label")
+          .eq("square_booking_id", squareBookingId)
+          .maybeSingle();
+
         await db.from("bookings").update({
           service_label: serviceLabel,
           date:          visitDate,
           time:          bookingTime,
           duration_min:  durationMin,
         }).eq("square_booking_id", squareBookingId);
+
+        // Notify Betty if the date or time actually changed
+        if (existingBooking && (existingBooking.date !== visitDate || existingBooking.time !== bookingTime)) {
+          try {
+            await sendBettyRescheduleNotification({
+              name:         fullName,
+              phone:        phone || "—",
+              email:        email || "—",
+              serviceLabel: serviceLabel,
+              oldDate:      existingBooking.date,
+              oldTime:      existingBooking.time,
+              newDate:      visitDate,
+              newTime:      bookingTime,
+            });
+          } catch (err) { console.error("Reschedule notify error (non-fatal):", err); }
+        }
       }
 
     } catch (err) {
