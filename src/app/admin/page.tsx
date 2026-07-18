@@ -818,6 +818,33 @@ export default function AdminPage() {
 
         <div className="px-4 py-3 border-t border-neutral-100 space-y-1.5">
           <p className="text-[10px] text-neutral-300">{clientGroups.length} clients · {new Date().toLocaleDateString()}</p>
+          {letterOpenedAt && (
+            <p className="text-[10px] text-[#C9A84C]">
+              ✉ Letter opened · {new Date(letterOpenedAt).toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+            </p>
+          )}
+          {adminLoginLog.length > 0 && (
+            <details className="group">
+              <summary className="text-[10px] text-neutral-400 cursor-pointer select-none list-none flex items-center justify-between">
+                <span className="flex items-center gap-1">
+                  <span className="group-open:hidden">▸</span>
+                  <span className="hidden group-open:inline">▾</span>
+                  Logins ({adminLoginLog.length})
+                </span>
+                <button
+                  onClick={async (e) => { e.preventDefault(); await fetch("/api/admin/settings", { method: "PATCH", headers: { "Content-Type": "application/json", Authorization: `Bearer ${savedKey}` }, body: JSON.stringify({ key: "admin_login_log", value: "[]" }) }); setAdminLoginLog([]); }}
+                  className="text-neutral-200 hover:text-red-400 transition-colors ml-2 text-[10px]">✕</button>
+              </summary>
+              <div className="mt-1.5 space-y-1 max-h-40 overflow-y-auto">
+                {[...adminLoginLog].reverse().map((e, i) => (
+                  <div key={i} className="text-[9px] text-neutral-400 leading-tight">
+                    <span className="text-neutral-500">{new Date(e.at).toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</span>
+                    <span className="text-neutral-300 ml-1">· {e.device} · {e.ip}</span>
+                  </div>
+                ))}
+              </div>
+            </details>
+          )}
         </div>
       </aside>
     );
