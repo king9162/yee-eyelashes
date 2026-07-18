@@ -676,11 +676,6 @@ export default function AdminPage() {
               {loading ? "Verifying..." : "Login"}
             </button>
           </form>
-          {!letterRead && (
-            <a href="/admin/letter" className="mt-4 flex items-center justify-center w-full py-4 rounded-xl text-white text-[13px] tracking-widest uppercase transition-all hover:opacity-90 active:scale-[0.98]" style={{ background: "#C9A84C", fontFamily: "var(--font-montserrat), sans-serif" }}>
-              Letter for Betty ✉
-            </a>
-          )}
         </div>
       </div>
     );
@@ -823,28 +818,6 @@ export default function AdminPage() {
 
         <div className="px-4 py-3 border-t border-neutral-100 space-y-1.5">
           <p className="text-[10px] text-neutral-300">{clientGroups.length} clients · {new Date().toLocaleDateString()}</p>
-          {letterOpenedAt && (
-            <p className="text-[10px] text-[#C9A84C]">
-              ✉ Letter opened · {new Date(letterOpenedAt).toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
-            </p>
-          )}
-          {adminLoginLog.length > 0 && (
-            <details className="group">
-              <summary className="text-[10px] text-neutral-400 cursor-pointer select-none list-none flex items-center gap-1">
-                <span className="group-open:hidden">▸</span>
-                <span className="hidden group-open:inline">▾</span>
-                Admin logins ({adminLoginLog.length})
-              </summary>
-              <div className="mt-1.5 space-y-1 max-h-40 overflow-y-auto">
-                {[...adminLoginLog].reverse().map((e, i) => (
-                  <div key={i} className="text-[9px] text-neutral-400 leading-tight">
-                    <span className="text-neutral-500">{new Date(e.at).toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</span>
-                    <span className="text-neutral-300 ml-1">· {e.device} · {e.ip}</span>
-                  </div>
-                ))}
-              </div>
-            </details>
-          )}
         </div>
       </aside>
     );
@@ -1660,7 +1633,10 @@ export default function AdminPage() {
 
         {/* Main content */}
         <main className="flex-1 min-w-0 overflow-hidden flex flex-col">
-          {view === "dashboard"      && <DashboardView      adminKey={savedKey} letterOpenedAt={letterOpenedAt} adminLoginLog={adminLoginLog} />}
+          {view === "dashboard"      && <DashboardView      adminKey={savedKey} letterOpenedAt={letterOpenedAt} adminLoginLog={adminLoginLog} onClearLoginLog={async () => {
+                  await fetch("/api/admin/settings", { method: "PATCH", headers: { "Content-Type": "application/json", Authorization: `Bearer ${savedKey}` }, body: JSON.stringify({ key: "admin_login_log", value: "[]" }) });
+                  setAdminLoginLog([]);
+                }} />}
           {view === "analytics"     && <AnalyticsView     adminKey={savedKey} />}
           {view === "update-history" && <UpdateHistoryView  adminKey={savedKey} />}
           {view === "calendar"      && <CalendarView    adminKey={savedKey} />}

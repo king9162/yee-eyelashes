@@ -74,10 +74,11 @@ const APPT_TIMES = [
 const EMPTY_ADD  = { name:"", phone:"", email:"", service_label:"", date:"", time:"10:00 AM", duration_min:90 };
 const EMPTY_EDIT = { ...EMPTY_ADD, notes:"" };
 
-export default function DashboardView({ adminKey, letterOpenedAt, adminLoginLog }: {
+export default function DashboardView({ adminKey, letterOpenedAt, adminLoginLog, onClearLoginLog }: {
   adminKey: string;
   letterOpenedAt?: string | null;
   adminLoginLog?: { at: string; ip: string; device: string }[];
+  onClearLoginLog?: () => void;
 }) {
   const [bookings,    setBookings]    = useState<DashBooking[]>([]);
   const [clients,     setClients]     = useState<DashClient[]>([]);
@@ -830,8 +831,11 @@ export default function DashboardView({ adminKey, letterOpenedAt, adminLoginLog 
       {/* ── Activity Log ── */}
       {(letterOpenedAt || (adminLoginLog && adminLoginLog.length > 0)) && (
         <div className="mx-4 mb-6 bg-white border border-neutral-100 rounded-2xl overflow-hidden">
-          <div className="px-5 py-3 border-b border-neutral-50">
+          <div className="px-5 py-3 border-b border-neutral-50 flex items-center justify-between">
             <p className="text-[11px] font-semibold text-neutral-400 uppercase tracking-[0.12em]">Activity Log</p>
+            {onClearLoginLog && (
+              <button onClick={onClearLoginLog} className="text-[10px] text-neutral-300 hover:text-red-400 transition-colors">✕ Clear</button>
+            )}
           </div>
           <div className="divide-y divide-neutral-50">
             {letterOpenedAt && (
