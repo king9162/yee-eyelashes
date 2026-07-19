@@ -761,7 +761,7 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
                 </div>
               </div>
             </div>
-            <p className="text-[11px] text-neutral-400 mt-3">Sent 1 day after appointment</p>
+            <p className="text-[11px] text-neutral-400 mt-3">Sent same day as appointment</p>
           </div>
         </div>
 
@@ -799,7 +799,7 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
               </div>
               <p className="text-[9px] text-neutral-400 pl-1">From: (833) 634-5378</p>
             </div>
-            <p className="text-[11px] text-neutral-400 mt-3">Sent 1 day after appointment</p>
+            <p className="text-[11px] text-neutral-400 mt-3">Sent same day as appointment</p>
           </div>
         </div>
 

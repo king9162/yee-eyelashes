@@ -56,8 +56,20 @@ export async function GET(req: NextRequest) {
   const smsSentIds   = new Set((smsSentToday  ?? []).map(a => a.client_id));
   const unsubIds     = new Set((unsubActions  ?? []).map(a => a.client_id));
 
+  // Deduplicate by phone/email (same as My Clients grouping logic)
+  const seenPhones = new Set<string>();
+  const seenEmails = new Set<string>();
+  const dedupedBirthdayClients = (birthdayClients ?? []).filter(c => {
+    const ph = c.phone?.replace(/\D/g, "").slice(-10);
+    if (ph && seenPhones.has(ph)) return false;
+    if (c.email && seenEmails.has(c.email)) return false;
+    if (ph) seenPhones.add(ph);
+    if (c.email) seenEmails.add(c.email);
+    return true;
+  });
+
   type EligibleClient = typeof birthdayClients extends (infer T)[] | null ? T & { shouldEmail: boolean; shouldSms: boolean } : never;
-  const eligible: EligibleClient[] = (birthdayClients ?? []).flatMap(c => {
+  const eligible: EligibleClient[] = dedupedBirthdayClients.flatMap(c => {
     const ph = (c.phone ?? "").replace(/\D/g,"").slice(-10);
     if (ph && blockedPhones.has(ph)) return [];
     const shouldEmail = emailOn && !!c.email && !emailSentIds.has(c.id);

@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     db.from("settings").select("value").eq("key", "review-sms").maybeSingle(),
   ]);
   const emailOn = emailSetting?.value !== "false";
-  const smsOn   = smsSetting?.value !== "false";
+  const smsOn   = smsSetting?.value === "true";
   if (!emailOn && !smsOn) return NextResponse.json({ skipped: true, reason: "disabled" });
 
   const targetDate = todayNY();
@@ -82,7 +82,7 @@ export async function GET(req: NextRequest) {
   const futurePhonesSet = new Set((futureBookings ?? []).map(b => b.phone?.replace(/\D/g,"").slice(-10)).filter(Boolean));
   const futureEmailsSet = new Set((futureBookings ?? []).map(b => b.email).filter(Boolean));
 
-  const reviewLink = process.env.GOOGLE_REVIEW_URL ?? "https://g.page/yee-eyelashes";
+  const reviewLink = process.env.GOOGLE_REVIEW_URL ?? "https://g.page/r/CWoWnxubhGRzEAE/review";
   const smsText = (name: string) =>
     `Hi ${name}! Thank you for your visit at Yee Eyelashes 🌸 We'd love your feedback. Please leave us a Google review: ${reviewLink}  📍 278 Plandome Rd, Manhasset · 516-984-3859`;
 

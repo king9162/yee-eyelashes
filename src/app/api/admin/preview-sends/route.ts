@@ -17,9 +17,9 @@ export async function GET(req: NextRequest) {
   const { data: settingsRows } = await db.from("settings").select("key, value");
   const settings = Object.fromEntries((settingsRows ?? []).map(r => [r.key, r.value]));
   const reviewEmailOn  = settings["review-email"]  !== "false";
-  const reviewSmsOn    = settings["review-sms"]    !== "false";
+  const reviewSmsOn    = settings["review-sms"]    === "true";
   const refillEmailOn  = settings["refill-email"]  !== "false";
-  const refillSmsOn    = settings["refill-sms"]    !== "false";
+  const refillSmsOn    = settings["refill-sms"]    === "true";
   const bdayEmailOn    = settings["birthday-email"] === "true";
   const bdaySmsOn      = settings["birthday-sms"]   === "true";
   const refillDays     = Math.max(1, parseInt(settings["refill_days"] ?? "14") || 14);
@@ -45,6 +45,7 @@ export async function GET(req: NextRequest) {
     { data: manualRefillEmail },
     { data: manualRefillSms },
     { data: unsubActions },
+    { data: blockedActions },
   ] = await Promise.all([
     db.from("clients").select("id, first_name, last_name, phone, email").eq("visit_date", today).not("deleted","eq",true),
     db.from("clients").select("id, first_name, last_name, phone, email").eq("visit_date", refillTarget).not("deleted","eq",true),
@@ -66,6 +67,7 @@ export async function GET(req: NextRequest) {
     db.from("client_actions").select("client_id").eq("action_type","refill-email").gte("sent_at", refillTarget),
     db.from("client_actions").select("client_id").eq("action_type","refill-sms").gte("sent_at", refillTarget),
     db.from("client_actions").select("client_id").eq("action_type","sms-unsubscribed"),
+    db.from("client_actions").select("client_id").eq("action_type","blocked"),
   ]);
 
   const noReviewIds        = new Set((noReviewActions  ?? []).map(a => a.client_id));
@@ -77,6 +79,17 @@ export async function GET(req: NextRequest) {
   const bdayEmailSentIds   = new Set((bdayEmailSent    ?? []).map(a => a.client_id));
   const bdaySmsSentIds     = new Set((bdaySmsSent      ?? []).map(a => a.client_id));
   const unsubIds           = new Set((unsubActions     ?? []).map(a => a.client_id));
+
+  const blockedClientIds   = new Set((blockedActions   ?? []).map(a => a.client_id));
+  // Resolve blocked client IDs → phone digits for cross-row blocking
+  const blockedPhoneSet    = new Set<string>();
+  if (blockedClientIds.size > 0) {
+    const { data: bClients } = await db.from("clients").select("phone").in("id", [...blockedClientIds]);
+    for (const bc of bClients ?? []) {
+      const ph = (bc.phone ?? "").replace(/\D/g, "").slice(-10);
+      if (ph) blockedPhoneSet.add(ph);
+    }
+  }
 
   (manualRefillEmail ?? []).forEach(a => refillEmailSentIds.add(a.client_id));
   (manualRefillSms   ?? []).forEach(a => refillSmsSentIds.add(a.client_id));
@@ -108,6 +121,7 @@ export async function GET(req: NextRequest) {
     if (!`${c.first_name ?? ""} ${c.last_name ?? ""}`.trim()) return [];
     if (noReviewIds.has(c.id)) return [];
     const phone = c.phone?.replace(/\D/g,"").slice(-10);
+    if (phone && blockedPhoneSet.has(phone)) return [];
     if ((phone && cancelledReviewPhones.has(phone)) || (c.email && cancelledReviewEmails.has(c.email))) return [];
     const channels: string[] = [];
     if (reviewEmailOn && c.email && !reviewEmailSentIds.has(c.id)) channels.push("email");
@@ -120,6 +134,7 @@ export async function GET(req: NextRequest) {
     if (!`${c.first_name ?? ""} ${c.last_name ?? ""}`.trim()) return [];
     if (noRefillIds.has(c.id)) return [];
     const phone = c.phone?.replace(/\D/g,"").slice(-10);
+    if (phone && blockedPhoneSet.has(phone)) return [];
     if ((phone && cancelledRefillPhones.has(phone)) || (c.email && cancelledRefillEmails.has(c.email))) return [];
     if ((phone && upcomingPhones.has(phone)) || (c.email && upcomingEmails.has(c.email))) return [];
     const channels: string[] = [];
@@ -129,7 +144,9 @@ export async function GET(req: NextRequest) {
     return [{ id: c.id, first_name: c.first_name, last_name: c.last_name, phone: c.phone, email: c.email, channels }];
   });
 
-  const birthday: ClientRow[] = (bdayClients ?? []).flatMap(c => {
+  const birthday: ClientRow[] = dedup(bdayClients ?? []).flatMap(c => {
+    const phone = c.phone?.replace(/\D/g,"").slice(-10);
+    if (phone && blockedPhoneSet.has(phone)) return [];
     const channels: string[] = [];
     if (bdayEmailOn && c.email && !bdayEmailSentIds.has(c.id)) channels.push("email");
     if (bdaySmsOn   && c.phone && !bdaySmsSentIds.has(c.id) && !unsubIds.has(c.id)) channels.push("sms");

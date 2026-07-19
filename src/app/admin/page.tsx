@@ -8,6 +8,7 @@ import AutomationsView     from "./AutomationsView";
 import ReviewsView         from "./ReviewsView";
 import DashboardView       from "./DashboardView";
 import UpdateHistoryView   from "./UpdateHistoryView";
+import ChangelogView       from "./ChangelogView";
 import PackagesView        from "./PackagesView";
 import AnalyticsView       from "./AnalyticsView";
 import SEOPagesView        from "./SEOPagesView";
@@ -24,7 +25,7 @@ type Booking = {
   date: string; status: string;
   refill_sent_at: string | null; review_sent_at: string | null;
 };
-type View = "dashboard" | "analytics" | "seo-pages" | "update-history" | "calendar" | "bookings" | "clients-main" | "clients-elly" | "automations" | "reviews" | "packages";
+type View = "dashboard" | "analytics" | "seo-pages" | "update-history" | "changelog" | "calendar" | "bookings" | "clients-main" | "clients-elly" | "automations" | "reviews" | "packages";
 
 const EMPTY_CLIENT: Omit<Client,"id"> = {
   visit_date:"", email:"", phone:"", first_name:"", last_name:"",
@@ -37,6 +38,7 @@ const VIEW_LABELS: Record<string, string> = {
   "analytics":      "Report",
   "calendar":       "Calendar",
   "update-history": "Update History",
+  "changelog":      "版本說明",
   "clients-main":   "My Clients",
   "clients-elly":   "Elly's Clients",
   "automations":    "Automations",
@@ -118,6 +120,7 @@ const NAV: { section: string; items: { id: View; label: string }[] }[] = [
     { id: "dashboard",  label: "Dashboard" },
     { id: "analytics",  label: "Report" },
     { id: "seo-pages",  label: "SEO Pages" },
+    { id: "changelog",  label: "版本說明" },
   ]},
   { section: "Appointments", items: [
     { id: "calendar", label: "Calendar" },
@@ -1677,6 +1680,7 @@ export default function AdminPage() {
           {view === "reviews"       && <ReviewsView    adminKey={savedKey} />}
           {view === "packages"      && <PackagesView   adminKey={savedKey} />}
           {view === "seo-pages"     && <SEOPagesView />}
+          {view === "changelog"     && <ChangelogView />}
         </main>
       </div>
 

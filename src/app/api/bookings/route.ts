@@ -99,10 +99,13 @@ export async function POST(req: NextRequest) {
     }
 
     // ── 4. Send confirmation email to client ─────────────────
-    try {
-      await sendConfirmationEmail({ name, phone, email, service, serviceLabel, date, time, notes, lang, bookingId: booking.id });
-    } catch (emailErr) {
-      console.error("Email error (non-fatal):", emailErr);
+    // Skip for admin-created bookings (service="admin") — the PATCH to "confirmed" sends it
+    if (service !== "admin") {
+      try {
+        await sendConfirmationEmail({ name, phone, email, service, serviceLabel, date, time, notes, lang, bookingId: booking.id });
+      } catch (emailErr) {
+        console.error("Email error (non-fatal):", emailErr);
+      }
     }
 
     // ── 5. Notify Betty ───────────────────────────────────────

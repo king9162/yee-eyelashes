@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createHmac } from "crypto";
 import { supabaseAdmin } from "@/lib/supabase";
 import { sendConfirmationEmail, sendBettyNotification, sendBettyCancellationNotification, sendBettyRescheduleNotification } from "@/lib/email";
-import { createCalendarEvent } from "@/lib/google-calendar";
+import { createCalendarEvent, deleteCalendarEvent } from "@/lib/google-calendar";
 import { sendSMS } from "@/lib/sms";
 
 // Square requires raw body for signature verification
@@ -310,8 +310,11 @@ export async function POST(req: NextRequest) {
         })
         .eq("id", booking.id);
 
-      // Create Google Calendar event
+      // Create Google Calendar event (delete stale one first if it exists)
       try {
+        if (booking.calendar_event_id) {
+          await deleteCalendarEvent(booking.calendar_event_id);
+        }
         const durationMin = booking.duration_min ? parseInt(booking.duration_min) : 90;
         const calendarEventId = await createCalendarEvent({
           summary: `${booking.service_label} — ${booking.name}`,

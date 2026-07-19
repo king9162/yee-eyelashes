@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     db.from("settings").select("value").eq("key", "refill-sms").maybeSingle(),
   ]);
   const emailOn = emailSetting?.value !== "false";
-  const smsOn   = smsSetting?.value !== "false";
+  const smsOn   = smsSetting?.value === "true";
   if (!emailOn && !smsOn) return NextResponse.json({ skipped: true, reason: "disabled" });
 
   const { data: daysSetting } = await db.from("settings").select("value").eq("key", "refill_days").maybeSingle();
