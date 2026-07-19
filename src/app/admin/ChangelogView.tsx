@@ -31,7 +31,6 @@ const DAYS: Day[] = [
     changes: [
       { tag: "new",     text: "Betty 改期通知 Email：Square 預約改期時自動發信給 Betty，顯示新舊時間對比" },
       { tag: "new",     text: "Admin 登入記錄：每次登入自動記錄時間、裝置型號、IP 位置，顯示在側欄" },
-      { tag: "new",     text: "信件開啟追蹤：Betty 開啟信件的時間顯示在 Admin 側欄" },
       { tag: "improve", text: "Activity Log 整合進 Dashboard，同時在側欄保留精簡版登入記錄" },
       { tag: "fix",     text: "側欄客戶計數修正（顯示全部 active，非搜尋後的數字）" },
       { tag: "fix",     text: "Admin 導覽列補回遺失的 Calendar / Bookings 項目" },
@@ -43,7 +42,6 @@ const DAYS: Day[] = [
     date: "Jul 15, 2026", label: "2026-07-15",
     changes: [
       { tag: "new",     text: "退款政策頁面上線：顯示在服務頁面底部，格式為行內橫幅" },
-      { tag: "new",     text: "信件頁面（/admin/letter）：Betty 每天可以在這裡看一封特別的信" },
       { tag: "fix",     text: "Send History 日期顯示與排序修正" },
       { tag: "fix",     text: "已改期的預約不再觸發當天的 Review 自動發送" },
       { tag: "improve", text: "退款政策橫幅版面調整：移入服務區塊內部，字體放大" },
