@@ -38,7 +38,7 @@ const VIEW_LABELS: Record<string, string> = {
   "analytics":      "Report",
   "calendar":       "Calendar",
   "update-history": "Update History",
-  "changelog":      "版本說明",
+  "changelog":      "Changelog",
   "clients-main":   "My Clients",
   "clients-elly":   "Elly's Clients",
   "automations":    "Automations",
@@ -113,6 +113,11 @@ const ICONS: Record<string, React.ReactNode> = {
       <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
     </svg>
   ),
+  "Version History": (
+    <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+  ),
 };
 
 const NAV: { section: string; items: { id: View; label: string }[] }[] = [
@@ -120,7 +125,6 @@ const NAV: { section: string; items: { id: View; label: string }[] }[] = [
     { id: "dashboard",  label: "Dashboard" },
     { id: "analytics",  label: "Report" },
     { id: "seo-pages",  label: "SEO Pages" },
-    { id: "changelog",  label: "版本說明" },
   ]},
   { section: "Appointments", items: [
     { id: "calendar", label: "Calendar" },
@@ -134,6 +138,9 @@ const NAV: { section: string; items: { id: View; label: string }[] }[] = [
   { section: "Marketing", items: [
     { id: "automations", label: "Automations" },
     { id: "reviews",     label: "Reviews"      },
+  ]},
+  { section: "Version History", items: [
+    { id: "changelog", label: "Changelog" },
   ]},
 ];
 
