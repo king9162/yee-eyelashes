@@ -277,38 +277,32 @@ export default function RevenueSection({ adminKey }: { adminKey: string }) {
   const REVENUE_START = "2026-07-20";
   const today = todayNY();
 
-  // Group by date, newest first, filter to launch date+
+  // Group by date, filter to launch date+
   const dayMap = new Map<string, Entry[]>();
   for (const e of entries) {
     if (e.date < REVENUE_START) continue;
     if (!dayMap.has(e.date)) dayMap.set(e.date, []);
     dayMap.get(e.date)!.push(e);
   }
-  const allDays: DayGroup[] = Array.from(dayMap.entries())
-    .sort((a, b) => b[0].localeCompare(a[0]))
-    .map(([date, ents]) => ({ date, entries: ents }));
 
-  // TODAY separate; everything else grouped by month
-  const todayGroup = allDays.find(d => d.date === today);
-  const otherDays  = allDays.filter(d => d.date !== today);
-
+  // Group all days by month, sorted ascending within each month
   const monthMap = new Map<string, DayGroup[]>();
-  for (const day of otherDays) {
-    const mk = monthKey(day.date);
+  for (const [date, ents] of dayMap.entries()) {
+    const mk = monthKey(date);
     if (!monthMap.has(mk)) monthMap.set(mk, []);
-    monthMap.get(mk)!.push(day);
+    monthMap.get(mk)!.push({ date, entries: ents });
   }
   const months: MonthGroup[] = Array.from(monthMap.entries())
-    .sort((a, b) => b[0].localeCompare(a[0]))
-    .map(([key, days]) => ({ key, label: monthLabel(key), days }));
+    .sort((a, b) => a[0].localeCompare(b[0])) // July before August
+    .map(([key, days]) => ({
+      key, label: monthLabel(key),
+      days: [...days].sort((a, b) => a.date.localeCompare(b.date)), // oldest first within month
+    }));
 
   // Totals (paid only, from launch date)
   const visibleEntries = entries.filter(e => e.date >= REVENUE_START);
   const totalService = visibleEntries.reduce((s, e) => s + e.amount, 0);
   const totalTips    = visibleEntries.reduce((s, e) => s + e.tip,    0);
-
-  // today card open state
-  const [todayOpen, setTodayOpen] = useState(true);
 
   async function syncSquare() {
     setSyncing(true); setSyncMsg("");
@@ -394,12 +388,6 @@ export default function RevenueSection({ adminKey }: { adminKey: string }) {
         </div>
       ) : (
         <div className="space-y-2">
-          {/* ── TODAY card ── */}
-          {todayGroup && (
-            <DayCard key={todayGroup.date} day={todayGroup} adminKey={adminKey} onRefresh={load}
-              isOpen={todayOpen} onToggle={() => setTodayOpen(p => !p)} onAddEntry={() => {}} />
-          )}
-
           {/* ── Monthly groups ── */}
           {months.map(month => {
             const mService = month.days.reduce((s, d) => s + d.entries.reduce((ss, e) => ss + e.amount, 0), 0);
@@ -432,12 +420,13 @@ export default function RevenueSection({ adminKey }: { adminKey: string }) {
                       const isDOpen = openMonthDays.has(dk);
                       const dSvc    = day.entries.reduce((s, e) => s + e.amount, 0);
                       const dTip    = day.entries.reduce((s, e) => s + e.tip,    0);
+                      const isToday = day.date === today;
                       return (
-                        <div key={day.date}>
+                        <div key={day.date} className={isToday ? "border-l-2 border-[#C9A84C]" : ""}>
                           <button onClick={() => setOpenMonthDays(prev => { const n = new Set(prev); n.has(dk) ? n.delete(dk) : n.add(dk); return n; })}
                             className="w-full px-5 py-3 flex items-center gap-3 text-left hover:bg-neutral-50/50 transition-colors">
-                            <span className="text-[12px] font-semibold text-neutral-500 shrink-0">
-                              {new Date(day.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+                            <span className={`text-[12px] font-semibold shrink-0 ${isToday ? "text-[#C9A84C]" : "text-neutral-500"}`}>
+                              {isToday ? "TODAY · " : ""}{new Date(day.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
                             </span>
                             <span className="flex-1" />
                             <div className="flex items-center gap-2 shrink-0">
