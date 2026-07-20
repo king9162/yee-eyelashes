@@ -246,30 +246,31 @@ export default function RevenueSection({ adminKey }: { adminKey: string }) {
   const [addForm,    setAddForm]    = useState(EMPTY_FORM);
   const [addDate,    setAddDate]    = useState(todayNY());
   const [saving,     setSaving]     = useState(false);
-  // open day cards (default: today + 4 days)
-  const [openDays,   setOpenDays]   = useState<Set<string>>(() =>
-    new Set([todayNY(), todayMinus(1), todayMinus(2), todayMinus(3), todayMinus(4)])
-  );
-  // open month groups
-  const [openMonths, setOpenMonths] = useState<Set<string>>(new Set([monthKey(todayNY())]));
-  // open days within a month group
+  const [openMonths,    setOpenMonths]    = useState<Set<string>>(new Set());
   const [openMonthDays, setOpenMonthDays] = useState<Set<string>>(new Set());
 
   const h = { Authorization: `Bearer ${adminKey}` };
 
   const load = useCallback(async () => {
-    setLoading(true);
     const res = await fetch("/api/admin/revenue", { headers: h });
     const data = await res.json();
     setEntries(Array.isArray(data) ? data : []);
     setLoading(false);
-  }, [adminKey]);
+  }, [adminKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+    const poll = setInterval(load, 30000); // refresh every 30s for cross-device sync
+    return () => clearInterval(poll);
+  }, [load]);
 
-  // Group by date
+  const REVENUE_START = "2026-07-20";
+  const today = todayNY();
+
+  // Group by date, newest first, filter to launch date+
   const dayMap = new Map<string, Entry[]>();
   for (const e of entries) {
+    if (e.date < REVENUE_START) continue;
     if (!dayMap.has(e.date)) dayMap.set(e.date, []);
     dayMap.get(e.date)!.push(e);
   }
@@ -277,15 +278,12 @@ export default function RevenueSection({ adminKey }: { adminKey: string }) {
     .sort((a, b) => b[0].localeCompare(a[0]))
     .map(([date, ents]) => ({ date, entries: ents }));
 
-  const REVENUE_START = "2026-07-20"; // only show entries from launch date onwards
-  const cutoff     = todayMinus(4);
-  const visible    = allDays.filter(d => d.date >= REVENUE_START);
-  const recentDays = visible.filter(d => d.date >= cutoff);
-  const olderDays  = visible.filter(d => d.date <  cutoff);
+  // TODAY separate; everything else grouped by month
+  const todayGroup = allDays.find(d => d.date === today);
+  const otherDays  = allDays.filter(d => d.date !== today);
 
-  // Group older by month
   const monthMap = new Map<string, DayGroup[]>();
-  for (const day of olderDays) {
+  for (const day of otherDays) {
     const mk = monthKey(day.date);
     if (!monthMap.has(mk)) monthMap.set(mk, []);
     monthMap.get(mk)!.push(day);
@@ -294,10 +292,13 @@ export default function RevenueSection({ adminKey }: { adminKey: string }) {
     .sort((a, b) => b[0].localeCompare(a[0]))
     .map(([key, days]) => ({ key, label: monthLabel(key), days }));
 
-  // Totals (from launch date)
+  // Totals (paid only, from launch date)
   const visibleEntries = entries.filter(e => e.date >= REVENUE_START);
   const totalService = visibleEntries.reduce((s, e) => s + e.amount, 0);
   const totalTips    = visibleEntries.reduce((s, e) => s + e.tip,    0);
+
+  // today card open state
+  const [todayOpen, setTodayOpen] = useState(true);
 
   async function syncSquare() {
     setSyncing(true); setSyncMsg("");
@@ -323,7 +324,6 @@ export default function RevenueSection({ adminKey }: { adminKey: string }) {
     if (res.ok) {
       await load();
       setShowAddNew(false); setAddForm(EMPTY_FORM);
-      setOpenDays(prev => new Set([...prev, addDate]));
     }
     setSaving(false);
   }
@@ -384,16 +384,10 @@ export default function RevenueSection({ adminKey }: { adminKey: string }) {
         </div>
       ) : (
         <div className="space-y-2">
-          {/* ── Recent 5 days ── */}
-          {recentDays.length > 0 && (
-            <>
-              {recentDays.map(day => (
-                <DayCard key={day.date} day={day} adminKey={adminKey} onRefresh={load}
-                  isOpen={openDays.has(day.date)}
-                  onToggle={() => setOpenDays(prev => { const n = new Set(prev); n.has(day.date) ? n.delete(day.date) : n.add(day.date); return n; })}
-                  onAddEntry={() => {}} />
-              ))}
-            </>
+          {/* ── TODAY card ── */}
+          {todayGroup && (
+            <DayCard key={todayGroup.date} day={todayGroup} adminKey={adminKey} onRefresh={load}
+              isOpen={todayOpen} onToggle={() => setTodayOpen(p => !p)} onAddEntry={() => {}} />
           )}
 
           {/* ── Monthly groups ── */}
