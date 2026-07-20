@@ -18,8 +18,12 @@ const DAYS: Day[] = [
     changes: [
       { tag: "new",     text: "Revenue 營業額追蹤上線：Zelle / 現金 / 刷卡三種付款方式，可手動記帳，按日展開查看明細" },
       { tag: "new",     text: "Revenue 獨立為側欄項目，位於 Dashboard 與 Report 之間" },
+      { tag: "new",     text: "Revenue 同步 Square：未來預約自動匯入為 $0 待填，Square 付款後自動更新金額" },
+      { tag: "new",     text: "Revenue 跨裝置同步：每 30 秒自動刷新，任何裝置新增記錄立即同步" },
       { tag: "improve", text: "Revenue 數字欄位對齊：服務費 / 小費 / 合計三欄統一排版" },
-      { tag: "improve", text: "Revenue 只顯示今天的紀錄，不顯示歷史舊資料" },
+      { tag: "improve", text: "Revenue 付款方式顯示在金額左側（💛 Zelle $45）" },
+      { tag: "improve", text: "Revenue 按月份分組，七月在上八月在下，每月內由舊到新排列，今天高亮顯示" },
+      { tag: "improve", text: "Revenue 加入 Package 為第四種付款方式" },
       { tag: "improve", text: "Appointments 側欄移除 Calendar，只保留 Bookings" },
     ],
   },
