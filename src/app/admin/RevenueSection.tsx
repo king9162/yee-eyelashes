@@ -124,9 +124,9 @@ function EntryRow({ e, onEdit, onDelete, deleting }: {
 }
 
 // ── Day card ───────────────────────────────────────────────────
-function DayCard({ day, isOpen, onToggle, onAddEntry, adminKey, onRefresh, defaultOpen }: {
+function DayCard({ day, isOpen, onToggle, onAddEntry, adminKey, onRefresh, noHeader }: {
   day: DayGroup; isOpen: boolean; onToggle: () => void;
-  onAddEntry: () => void; adminKey: string; onRefresh: () => void; defaultOpen?: boolean;
+  onAddEntry: () => void; adminKey: string; onRefresh: () => void; noHeader?: boolean;
 }) {
   const [addingHere, setAddingHere] = useState(false);
   const [addForm, setAddForm]       = useState(EMPTY_FORM);
@@ -173,7 +173,7 @@ function DayCard({ day, isOpen, onToggle, onAddEntry, adminKey, onRefresh, defau
   return (
     <div className={`bg-white rounded-xl border overflow-hidden ${isToday ? "border-[#C9A84C]/50" : "border-neutral-200"}`}>
       {/* Header */}
-      <button onClick={onToggle} className="w-full px-5 py-3.5 flex items-center gap-3 text-left hover:bg-neutral-50/50 transition-colors">
+      {!noHeader && <button onClick={onToggle} className="w-full px-5 py-3.5 flex items-center gap-3 text-left hover:bg-neutral-50/50 transition-colors">
         <span className={`text-[11px] font-bold tracking-[0.06em] shrink-0 ${isToday ? "text-[#C9A84C]" : "text-neutral-500"}`}>
           {fmtDayLabel(day.date)}
         </span>
@@ -185,10 +185,10 @@ function DayCard({ day, isOpen, onToggle, onAddEntry, adminKey, onRefresh, defau
           <span className="w-4 text-right text-[11px] text-neutral-300">{day.entries.length}</span>
           <span className={`text-neutral-400 text-[14px] transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}>⌄</span>
         </div>
-      </button>
+      </button>}
 
       {/* Expanded content */}
-      {isOpen && (
+      {(isOpen || noHeader) && (
         <div className="border-t border-neutral-100">
           {day.entries.map(e => (
             editId === e.id ? (
@@ -439,7 +439,7 @@ export default function RevenueSection({ adminKey }: { adminKey: string }) {
                           {isDOpen && (
                             <div className="bg-neutral-50/50">
                               <DayCard day={day} adminKey={adminKey} onRefresh={load}
-                                isOpen={true} onToggle={() => {}} onAddEntry={() => {}} />
+                                isOpen={true} onToggle={() => {}} onAddEntry={() => {}} noHeader />
                             </div>
                           )}
                         </div>
