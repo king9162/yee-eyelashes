@@ -11,11 +11,11 @@ type DayGroup   = { date: string; entries: Entry[] };
 type MonthGroup = { key: string; label: string; days: DayGroup[] };
 
 const METHOD_ICON: Record<string, string> = {
-  cash: "💵", card: "💳", square: "⬛", venmo: "💙", zelle: "💛", other: "•",
+  cash: "💵", card: "💳", zelle: "💛", square: "⬛", venmo: "💙", other: "•",
 };
 const fmt$ = (n: number) => `$${n.toFixed(0)}`;
 const EMPTY_FORM = { client_name: "", service_label: "", amount: "", tip: "", payment_method: "cash", notes: "" };
-const METHODS = ["cash","card","square","venmo","zelle"] as const;
+const METHODS = ["zelle","cash","card"] as const;
 
 function todayMinus(n: number): string {
   const d = new Date(todayNY());
