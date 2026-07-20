@@ -272,14 +272,27 @@ export default function RevenueSection({ adminKey }: { adminKey: string }) {
     .sort((a, b) => b[0].localeCompare(a[0]))
     .map(([date, ents]) => ({ date, entries: ents }));
 
-  const today      = todayNY();
-  const recentDays = allDays.filter(d => d.date >= today);
-  const months: MonthGroup[] = []; // only show from today onwards
+  const REVENUE_START = "2026-07-20"; // only show entries from launch date onwards
+  const cutoff     = todayMinus(4);
+  const visible    = allDays.filter(d => d.date >= REVENUE_START);
+  const recentDays = visible.filter(d => d.date >= cutoff);
+  const olderDays  = visible.filter(d => d.date <  cutoff);
 
-  // Totals (today only)
-  const todayEntries = entries.filter(e => e.date >= today);
-  const totalService = todayEntries.reduce((s, e) => s + e.amount, 0);
-  const totalTips    = todayEntries.reduce((s, e) => s + e.tip,    0);
+  // Group older by month
+  const monthMap = new Map<string, DayGroup[]>();
+  for (const day of olderDays) {
+    const mk = monthKey(day.date);
+    if (!monthMap.has(mk)) monthMap.set(mk, []);
+    monthMap.get(mk)!.push(day);
+  }
+  const months: MonthGroup[] = Array.from(monthMap.entries())
+    .sort((a, b) => b[0].localeCompare(a[0]))
+    .map(([key, days]) => ({ key, label: monthLabel(key), days }));
+
+  // Totals (from launch date)
+  const visibleEntries = entries.filter(e => e.date >= REVENUE_START);
+  const totalService = visibleEntries.reduce((s, e) => s + e.amount, 0);
+  const totalTips    = visibleEntries.reduce((s, e) => s + e.tip,    0);
 
   async function syncSquare() {
     setSyncing(true); setSyncMsg("");
@@ -316,7 +329,7 @@ export default function RevenueSection({ adminKey }: { adminKey: string }) {
           <h3 className="text-[15px] font-bold text-[#1C1C1C]">Revenue</h3>
           {!loading && entries.length > 0 && (
             <p className="text-[11px] text-neutral-400 mt-0.5">
-              Today · <span className="font-semibold text-[#1C1C1C]">{fmt$(totalService)}</span> service
+              All time · <span className="font-semibold text-[#1C1C1C]">{fmt$(totalService)}</span> service
               {totalTips > 0 && <> + <span className="text-[#C9A84C] font-semibold">{fmt$(totalTips)}</span> tips</>}
               {" = "}<span className="font-bold text-[#1C1C1C]">{fmt$(totalService + totalTips)}</span> total
             </p>
