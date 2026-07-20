@@ -130,7 +130,6 @@ const NAV: { section: string; items: { id: View; label: string }[] }[] = [
     { id: "seo-pages",  label: "SEO Pages" },
   ]},
   { section: "Appointments", items: [
-    { id: "calendar", label: "Calendar" },
     { id: "bookings", label: "Bookings" },
   ]},
   { section: "Customers", items: [

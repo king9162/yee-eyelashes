@@ -14,6 +14,16 @@ const TAG_LABEL: Record<Tag, string> = { new: "NEW", fix: "FIX", improve: "+" };
 
 const DAYS: Day[] = [
   {
+    date: "Jul 20, 2026", label: "2026-07-20",
+    changes: [
+      { tag: "new",     text: "Revenue 營業額追蹤上線：Zelle / 現金 / 刷卡三種付款方式，可手動記帳，按日展開查看明細" },
+      { tag: "new",     text: "Revenue 獨立為側欄項目，位於 Dashboard 與 Report 之間" },
+      { tag: "improve", text: "Revenue 數字欄位對齊：服務費 / 小費 / 合計三欄統一排版" },
+      { tag: "improve", text: "Revenue 只顯示今天的紀錄，不顯示歷史舊資料" },
+      { tag: "improve", text: "Appointments 側欄移除 Calendar，只保留 Bookings" },
+    ],
+  },
+  {
     date: "Jul 19, 2026", label: "2026-07-19",
     changes: [
       { tag: "new",     text: "Version History — Apple Store 風格版本更新日誌上線，在側欄獨立成一區" },

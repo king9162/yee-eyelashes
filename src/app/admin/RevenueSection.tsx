@@ -163,11 +163,11 @@ function DayCard({ day, isOpen, onToggle, onAddEntry, adminKey, onRefresh, defau
           {fmtDayLabel(day.date)}
         </span>
         <span className="flex-1" />
-        <div className="flex items-center gap-3 shrink-0">
-          <span className="text-[14px] font-bold text-[#1C1C1C]">{fmt$(dayService)}</span>
-          {dayTips > 0 && <span className="text-[12px] text-[#C9A84C] font-semibold">+{fmt$(dayTips)} tip</span>}
-          <span className="text-[12px] text-neutral-400">= {fmt$(dayService + dayTips)}</span>
-          <span className="text-[11px] text-neutral-300">{day.entries.length}명</span>
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="min-w-[52px] text-right tabular-nums text-[14px] font-bold text-[#1C1C1C]">{fmt$(dayService)}</span>
+          <span className="min-w-[76px] text-right tabular-nums text-[12px] text-[#C9A84C] font-semibold">{dayTips > 0 ? `+${fmt$(dayTips)} tip` : ""}</span>
+          <span className="min-w-[60px] text-right tabular-nums text-[12px] text-neutral-400">= {fmt$(dayService + dayTips)}</span>
+          <span className="w-4 text-right text-[11px] text-neutral-300">{day.entries.length}</span>
           <span className={`text-neutral-400 text-[14px] transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}>⌄</span>
         </div>
       </button>
@@ -272,24 +272,14 @@ export default function RevenueSection({ adminKey }: { adminKey: string }) {
     .sort((a, b) => b[0].localeCompare(a[0]))
     .map(([date, ents]) => ({ date, entries: ents }));
 
-  const cutoff = todayMinus(4); // last 5 days inclusive of today
-  const recentDays = allDays.filter(d => d.date >= cutoff);
-  const olderDays  = allDays.filter(d => d.date <  cutoff);
+  const today      = todayNY();
+  const recentDays = allDays.filter(d => d.date >= today);
+  const months: MonthGroup[] = []; // only show from today onwards
 
-  // Group older by month
-  const monthMap = new Map<string, DayGroup[]>();
-  for (const day of olderDays) {
-    const mk = monthKey(day.date);
-    if (!monthMap.has(mk)) monthMap.set(mk, []);
-    monthMap.get(mk)!.push(day);
-  }
-  const months: MonthGroup[] = Array.from(monthMap.entries())
-    .sort((a, b) => b[0].localeCompare(a[0]))
-    .map(([key, days]) => ({ key, label: monthLabel(key), days }));
-
-  // Totals
-  const totalService = entries.reduce((s, e) => s + e.amount, 0);
-  const totalTips    = entries.reduce((s, e) => s + e.tip,    0);
+  // Totals (today only)
+  const todayEntries = entries.filter(e => e.date >= today);
+  const totalService = todayEntries.reduce((s, e) => s + e.amount, 0);
+  const totalTips    = todayEntries.reduce((s, e) => s + e.tip,    0);
 
   async function syncSquare() {
     setSyncing(true); setSyncMsg("");
@@ -326,7 +316,7 @@ export default function RevenueSection({ adminKey }: { adminKey: string }) {
           <h3 className="text-[15px] font-bold text-[#1C1C1C]">Revenue</h3>
           {!loading && entries.length > 0 && (
             <p className="text-[11px] text-neutral-400 mt-0.5">
-              All time · <span className="font-semibold text-[#1C1C1C]">{fmt$(totalService)}</span> service
+              Today · <span className="font-semibold text-[#1C1C1C]">{fmt$(totalService)}</span> service
               {totalTips > 0 && <> + <span className="text-[#C9A84C] font-semibold">{fmt$(totalTips)}</span> tips</>}
               {" = "}<span className="font-bold text-[#1C1C1C]">{fmt$(totalService + totalTips)}</span> total
             </p>
@@ -402,10 +392,10 @@ export default function RevenueSection({ adminKey }: { adminKey: string }) {
                     <p className="text-[13px] font-bold text-[#1C1C1C]">{month.label}</p>
                     <p className="text-[11px] text-neutral-400 mt-0.5">{mCount} entries · {month.days.length} days</p>
                   </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    <span className="text-[15px] font-bold text-[#1C1C1C]">{fmt$(mService)}</span>
-                    {mTips > 0 && <span className="text-[12px] text-[#C9A84C] font-semibold">+{fmt$(mTips)} tip</span>}
-                    <span className="text-[13px] font-bold text-neutral-500">= {fmt$(mService + mTips)}</span>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="min-w-[52px] text-right tabular-nums text-[15px] font-bold text-[#1C1C1C]">{fmt$(mService)}</span>
+                    <span className="min-w-[76px] text-right tabular-nums text-[12px] text-[#C9A84C] font-semibold">{mTips > 0 ? `+${fmt$(mTips)} tip` : ""}</span>
+                    <span className="min-w-[60px] text-right tabular-nums text-[13px] font-bold text-neutral-500">= {fmt$(mService + mTips)}</span>
                     <span className={`text-neutral-400 text-[14px] transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}>⌄</span>
                   </div>
                 </button>
@@ -426,10 +416,10 @@ export default function RevenueSection({ adminKey }: { adminKey: string }) {
                               {new Date(day.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
                             </span>
                             <span className="flex-1" />
-                            <div className="flex items-center gap-3 shrink-0">
-                              <span className="text-[13px] font-bold text-[#1C1C1C]">{fmt$(dSvc)}</span>
-                              {dTip > 0 && <span className="text-[11px] text-[#C9A84C]">+{fmt$(dTip)} tip</span>}
-                              <span className="text-[11px] text-neutral-300">{day.entries.length}명</span>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className="min-w-[52px] text-right tabular-nums text-[13px] font-bold text-[#1C1C1C]">{fmt$(dSvc)}</span>
+                              <span className="min-w-[76px] text-right tabular-nums text-[11px] text-[#C9A84C]">{dTip > 0 ? `+${fmt$(dTip)} tip` : ""}</span>
+                              <span className="w-4 text-right text-[11px] text-neutral-300">{day.entries.length}</span>
                               <span className={`text-neutral-400 text-[13px] transition-transform duration-200 ${isDOpen ? "rotate-180" : ""}`}>⌄</span>
                             </div>
                           </button>
