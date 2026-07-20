@@ -300,7 +300,9 @@ export default function RevenueSection({ adminKey }: { adminKey: string }) {
       method: "POST", headers: { ...h, "Content-Type": "application/json" }, body: JSON.stringify({}),
     });
     const data = await res.json();
-    setSyncMsg(`Synced ${data.synced ?? 0} new · ${data.skipped ?? 0} already saved`);
+    const parts = [`Synced ${data.synced ?? 0} payments · ${data.bookingsSynced ?? 0} bookings`];
+    if ((data.skipped ?? 0) > 0) parts.push(`${data.skipped} already saved`);
+    setSyncMsg(parts.join(" · "));
     await load();
     setSyncing(false);
     setTimeout(() => setSyncMsg(""), 5000);

@@ -8,7 +8,6 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json().catch(() => ({}));
-  // Default: sync all history from 2024-01-01; pass days=N to limit
   const today   = todayNY();
   const endTime = new Date(today + "T23:59:59-04:00").toISOString();
   let beginTime: string;
@@ -17,11 +16,14 @@ export async function POST(req: NextRequest) {
     startDate.setDate(startDate.getDate() - (parseInt(body.days) || 30));
     beginTime = new Date(startDate.toLocaleDateString("en-CA") + "T00:00:00-04:00").toISOString();
   } else {
-    beginTime = "2024-01-01T00:00:00-05:00"; // sync all history
+    // Default: sync from today (not historical)
+    beginTime = new Date(today + "T00:00:00-04:00").toISOString();
   }
 
-  // Fetch completed payments from Square
+  const db    = supabaseAdmin();
   const token = process.env.SQUARE_ACCESS_TOKEN!;
+
+  // ── 1. Sync completed Square payments from today ────────────────
   let allPayments: Record<string, unknown>[] = [];
   let cursor: string | undefined;
 
@@ -39,9 +41,7 @@ export async function POST(req: NextRequest) {
     cursor = json.cursor;
   } while (cursor);
 
-  const db = supabaseAdmin();
-
-  // Fetch existing square_payment_ids so we don't double-insert
+  // Fetch existing square_payment_ids
   const { data: existing } = await db.from("revenue_entries").select("square_payment_id").not("square_payment_id", "is", null);
   const existingIds = new Set((existing ?? []).map(e => e.square_payment_id));
 
@@ -78,17 +78,15 @@ export async function POST(req: NextRequest) {
     const amount = amountCents / 100;
     const tip    = tipCents    / 100;
 
-    // Skip $0 payments
     if (amount <= 0) { skipped++; continue; }
 
     const createdAt = p.created_at as string;
     const date = new Date(createdAt).toLocaleDateString("en-CA", { timeZone: "America/New_York" });
 
-    // Try to get client name from booking
     const orderId  = p.order_id as string | undefined;
     const booking  = orderId ? orderMap.get(orderId) : undefined;
-    let clientName    = booking?.name ?? "";
-    let serviceLabel  = booking?.service_label ?? "";
+    let clientName   = booking?.name ?? "";
+    let serviceLabel = booking?.service_label ?? "";
 
     if (!clientName && p.customer_id) {
       clientName = await getCustomerName(p.customer_id as string);
@@ -107,5 +105,36 @@ export async function POST(req: NextRequest) {
     synced++;
   }
 
-  return NextResponse.json({ synced, skipped, total: allPayments.length });
+  // ── 2. Import upcoming confirmed bookings as $0 placeholders ────
+  const { data: upcoming } = await db
+    .from("bookings")
+    .select("id, date, name, service_label")
+    .eq("status", "confirmed")
+    .gte("date", today);
+
+  // Get existing revenue entries for today+ to avoid dupes
+  const { data: existingFwd } = await db
+    .from("revenue_entries")
+    .select("date, client_name")
+    .gte("date", today);
+  const existingFwdSet = new Set((existingFwd ?? []).map(e => `${e.date}|${e.client_name}`));
+
+  let bookingsSynced = 0;
+  for (const b of upcoming ?? []) {
+    if (!b.name || !b.date) continue;
+    const key = `${b.date}|${b.name}`;
+    if (existingFwdSet.has(key)) continue;
+    await db.from("revenue_entries").insert({
+      date:          b.date,
+      client_name:   b.name,
+      service_label: b.service_label ?? "",
+      amount:        0,
+      tip:           0,
+      payment_method: "cash",
+    });
+    existingFwdSet.add(key);
+    bookingsSynced++;
+  }
+
+  return NextResponse.json({ synced, skipped, total: allPayments.length, bookingsSynced });
 }
