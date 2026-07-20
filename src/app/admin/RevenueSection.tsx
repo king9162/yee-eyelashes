@@ -11,11 +11,11 @@ type DayGroup   = { date: string; entries: Entry[] };
 type MonthGroup = { key: string; label: string; days: DayGroup[] };
 
 const METHOD_ICON: Record<string, string> = {
-  cash: "💵", card: "💳", zelle: "💛", square: "⬛", venmo: "💙", other: "•",
+  cash: "💵", card: "💳", zelle: "💛", package: "📦", square: "⬛", venmo: "💙", other: "•",
 };
 const fmt$ = (n: number) => `$${n.toFixed(0)}`;
 const EMPTY_FORM = { client_name: "", service_label: "", amount: "", tip: "", payment_method: "cash", notes: "" };
-const METHODS = ["zelle","cash","card"] as const;
+const METHODS = ["zelle","cash","card","package"] as const;
 
 function todayMinus(n: number): string {
   const d = new Date(todayNY());
@@ -86,15 +86,20 @@ function AddForm({ onSave, onCancel, saving, form, setForm }: {
 function EntryRow({ e, onEdit, onDelete, deleting }: {
   e: Entry; onEdit: (e: Entry) => void; onDelete: (id: string) => void; deleting: string | null;
 }) {
+  const needsPayment = e.amount === 0 && !e.square_payment_id;
   return (
-    <div className="flex items-center gap-3 px-5 py-3 border-b border-neutral-50 last:border-b-0 hover:bg-neutral-50/50 transition-colors">
+    <div className={`flex items-center gap-3 px-5 py-3 border-b border-neutral-50 last:border-b-0 transition-colors ${needsPayment ? "bg-amber-50/40 hover:bg-amber-50/60" : "hover:bg-neutral-50/50"}`}>
       <span className="text-[14px] shrink-0" title={e.payment_method}>{METHOD_ICON[e.payment_method] ?? "•"}</span>
       <div className="flex-1 min-w-0">
         <p className="text-[13px] font-semibold text-[#1C1C1C] truncate">{e.client_name}</p>
         {e.service_label && <p className="text-[11px] text-neutral-400 truncate">{e.service_label}</p>}
+        {needsPayment && <p className="text-[10px] text-amber-500 font-semibold mt-0.5">⚠ 填入付款方式與金額</p>}
       </div>
       <div className="text-right shrink-0">
-        <p className="text-[14px] font-bold text-[#1C1C1C]">{fmt$(e.amount)}</p>
+        {needsPayment
+          ? <p className="text-[12px] text-amber-400 font-semibold">待填</p>
+          : <p className="text-[14px] font-bold text-[#1C1C1C]">{fmt$(e.amount)}</p>
+        }
         {e.tip > 0 && <p className="text-[11px] text-[#C9A84C]">+{fmt$(e.tip)} tip</p>}
       </div>
       <div className="flex gap-0.5 shrink-0 ml-1">
