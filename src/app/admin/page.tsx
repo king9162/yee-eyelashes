@@ -12,6 +12,7 @@ import ChangelogView       from "./ChangelogView";
 import PackagesView        from "./PackagesView";
 import AnalyticsView       from "./AnalyticsView";
 import SEOPagesView        from "./SEOPagesView";
+import RevenueSection      from "./RevenueSection";
 
 // ── Types ──────────────────────────────────────────────────────
 type Client = {
@@ -25,7 +26,7 @@ type Booking = {
   date: string; status: string;
   refill_sent_at: string | null; review_sent_at: string | null;
 };
-type View = "dashboard" | "analytics" | "seo-pages" | "update-history" | "changelog" | "calendar" | "bookings" | "clients-main" | "clients-elly" | "automations" | "reviews" | "packages";
+type View = "dashboard" | "revenue" | "analytics" | "seo-pages" | "update-history" | "changelog" | "calendar" | "bookings" | "clients-main" | "clients-elly" | "automations" | "reviews" | "packages";
 
 const EMPTY_CLIENT: Omit<Client,"id"> = {
   visit_date:"", email:"", phone:"", first_name:"", last_name:"",
@@ -35,6 +36,7 @@ const FIELDS = ["first_name","last_name","phone","email","visit_date","birthday"
 
 const VIEW_LABELS: Record<string, string> = {
   "dashboard":      "Dashboard",
+  "revenue":        "Revenue",
   "analytics":      "Report",
   "calendar":       "Calendar",
   "update-history": "Update History",
@@ -123,7 +125,8 @@ const ICONS: Record<string, React.ReactNode> = {
 const NAV: { section: string; items: { id: View; label: string }[] }[] = [
   { section: "Overview", items: [
     { id: "dashboard",  label: "Dashboard" },
-    { id: "analytics",  label: "Report" },
+    { id: "revenue",    label: "Revenue"   },
+    { id: "analytics",  label: "Report"    },
     { id: "seo-pages",  label: "SEO Pages" },
   ]},
   { section: "Appointments", items: [
@@ -1678,6 +1681,7 @@ export default function AdminPage() {
                   await fetch("/api/admin/settings", { method: "PATCH", headers: { "Content-Type": "application/json", Authorization: `Bearer ${savedKey}` }, body: JSON.stringify({ key: "admin_login_log", value: "[]" }) });
                   setAdminLoginLog([]);
                 }} />}
+          {view === "revenue"        && <div className="flex-1 overflow-auto p-4 sm:p-6 bg-neutral-50"><RevenueSection adminKey={savedKey} /></div>}
           {view === "analytics"     && <AnalyticsView     adminKey={savedKey} />}
           {view === "update-history" && <UpdateHistoryView  adminKey={savedKey} />}
           {view === "calendar"      && <CalendarView    adminKey={savedKey} />}
