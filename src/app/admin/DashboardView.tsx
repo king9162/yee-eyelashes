@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import RevenueSection from "./RevenueSection";
 
 type Weather = {
   temp: number;
@@ -691,6 +692,9 @@ export default function DashboardView({ adminKey, letterOpenedAt, adminLoginLog,
           ))}
         </div>
       )}
+
+      {/* Revenue Section */}
+      <RevenueSection adminKey={adminKey} />
 
       {/* ── Edit Appointment Modal ── */}
       {showEdit && (
