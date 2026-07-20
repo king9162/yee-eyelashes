@@ -6,21 +6,14 @@ function auth(req: NextRequest) {
   return req.headers.get("authorization") === `Bearer ${process.env.ADMIN_SECRET_KEY}`;
 }
 
-// GET /api/admin/revenue?days=60
+// GET /api/admin/revenue — returns all entries, newest first
 export async function GET(req: NextRequest) {
   if (!auth(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const days = parseInt(req.nextUrl.searchParams.get("days") ?? "60") || 60;
-  const today = todayNY();
-  const from  = new Date(today);
-  from.setDate(from.getDate() - days);
-  const fromStr = from.toLocaleDateString("en-CA");
 
   const db = supabaseAdmin();
   const { data, error } = await db
     .from("revenue_entries")
     .select("*")
-    .gte("date", fromStr)
     .order("date", { ascending: false })
     .order("created_at", { ascending: true });
 

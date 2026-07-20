@@ -8,13 +8,17 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json().catch(() => ({}));
-  const days = parseInt(body.days ?? "30") || 30;
-
+  // Default: sync all history from 2024-01-01; pass days=N to limit
   const today   = todayNY();
   const endTime = new Date(today + "T23:59:59-04:00").toISOString();
-  const startDate = new Date(today);
-  startDate.setDate(startDate.getDate() - days);
-  const beginTime = new Date(startDate.toLocaleDateString("en-CA") + "T00:00:00-04:00").toISOString();
+  let beginTime: string;
+  if (body.days) {
+    const startDate = new Date(today);
+    startDate.setDate(startDate.getDate() - (parseInt(body.days) || 30));
+    beginTime = new Date(startDate.toLocaleDateString("en-CA") + "T00:00:00-04:00").toISOString();
+  } else {
+    beginTime = "2024-01-01T00:00:00-05:00"; // sync all history
+  }
 
   // Fetch completed payments from Square
   const token = process.env.SQUARE_ACCESS_TOKEN!;
