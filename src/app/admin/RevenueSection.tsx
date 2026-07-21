@@ -451,7 +451,8 @@ export default function RevenueSection({ adminKey }: { adminKey: string }) {
               {historyLogs.map(log => {
                 const who = log.changed_by || "—";
                 const d = log.details as Record<string, unknown> | null;
-                const clientName = (d?.client_name ?? d?.before && (d.before as Record<string,unknown>)?.client_name ?? "") as string;
+                const beforeObj = d?.before as Record<string,unknown> | undefined;
+                const clientName = ((d?.client_name ?? beforeObj?.client_name) ?? "") as string;
                 const actionLabel = log.action === "add" ? "Added" : log.action === "edit" ? "Edited" : "Deleted";
                 const time = new Date(log.changed_at).toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
                 return (
