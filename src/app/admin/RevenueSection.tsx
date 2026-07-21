@@ -74,7 +74,7 @@ function AddForm({ onSave, onCancel, saving, form, setForm }: {
         {METHODS.map(m => (
           <button key={m} onClick={() => setForm({ ...form, payment_method: m })}
             className={`px-3 py-1 text-[11px] font-semibold rounded-full border transition-all ${form.payment_method === m ? "bg-[#1C1C1C] text-white border-[#1C1C1C]" : "border-neutral-200 text-neutral-500 hover:border-neutral-400"}`}>
-            {METHOD_ICON[m]} {m}
+            {METHOD_ICON[m]} {METHOD_LABEL[m]}
           </button>
         ))}
       </div>
@@ -224,7 +224,7 @@ function DayCard({ day, isOpen, onToggle, onAddEntry, adminKey, onRefresh, noHea
                   {METHODS.map(m => (
                     <button key={m} onClick={() => setEditForm(p => ({ ...p, payment_method: m }))}
                       className={`px-2.5 py-1 text-[10px] font-semibold rounded-full border transition-all ${editForm.payment_method === m ? "bg-[#1C1C1C] text-white border-[#1C1C1C]" : "border-neutral-200 text-neutral-400"}`}>
-                      {METHOD_ICON[m]} {m}
+                      {METHOD_ICON[m]} {METHOD_LABEL[m]}
                     </button>
                   ))}
                 </div>
