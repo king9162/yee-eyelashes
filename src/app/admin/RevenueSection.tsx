@@ -103,13 +103,13 @@ function EntryRow({ e, onEdit, onDelete, deleting }: {
         <p className="text-[13px] font-semibold text-[#1C1C1C] truncate">{e.client_name}</p>
         {e.service_label && <p className="text-[11px] text-neutral-400 truncate">{e.service_label}</p>}
         {needsPayment && <p className="text-[10px] text-amber-500 font-semibold mt-0.5">⚠ 填入付款方式與金額</p>}
-        {e.recorded_by && <p className="text-[10px] text-neutral-300 mt-0.5">{e.recorded_by}</p>}
       </div>
       {/* Payment columns — fixed width for vertical alignment */}
       {needsPayment ? (
         <span className="text-[12px] text-amber-400 font-semibold w-28 text-right shrink-0">待填</span>
       ) : (
         <>
+          {e.recorded_by && <span className="text-[10px] text-neutral-300 shrink-0">{e.recorded_by}</span>}
           <span className="w-5 text-center text-[13px] shrink-0">{methodIcon}</span>
           <span className="w-11 text-[11px] text-neutral-400 shrink-0">{methodLabel}</span>
           <div className="w-16 text-right shrink-0">
