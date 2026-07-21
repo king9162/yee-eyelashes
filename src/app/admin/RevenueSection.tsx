@@ -15,14 +15,14 @@ type AuditLog = {
 };
 
 const METHOD_ICON: Record<string, string> = {
-  cash: "💵", card: "💳", zelle: "💛", package: "📦", square: "⬛", venmo: "💙", other: "•",
+  cash: "💵", card: "💳", zelle: "💛", package: "📦", gp: "🟢", square: "⬛", venmo: "💙", other: "•",
 };
 const METHOD_LABEL: Record<string, string> = {
-  cash: "Cash", card: "Card", zelle: "Zelle", package: "Package", square: "Square", venmo: "Venmo", other: "",
+  cash: "Cash", card: "Card", zelle: "Zelle", package: "Package", gp: "GP", square: "Square", venmo: "Venmo", other: "",
 };
 const fmt$ = (n: number) => `$${n.toFixed(0)}`;
 const EMPTY_FORM = { client_name: "", service_label: "", amount: "", tip: "", payment_method: "cash", notes: "" };
-const METHODS = ["zelle","cash","card","package"] as const;
+const METHODS = ["zelle","cash","card","package","gp"] as const;
 
 function todayMinus(n: number): string {
   const d = new Date(todayNY());
