@@ -34,6 +34,12 @@ function fmtDate(d: string | null): string {
   const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   return `${parseInt(day)} ${months[parseInt(m) - 1]} ${y}`;
 }
+function fmtShortDate(d: string | null): string {
+  if (!d) return "";
+  const [, m, day] = d.split("-");
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return `${parseInt(day)} ${months[parseInt(m) - 1]}`;
+}
 
 export default function PackagesView({ adminKey }: { adminKey: string }) {
   const [packages,    setPackages]    = useState<Package[]>([]);
@@ -332,8 +338,10 @@ export default function PackagesView({ adminKey }: { adminKey: string }) {
                                     </svg>
                                   )}
                                 </button>
-                                <span className="text-[9px] font-medium text-[#1C1C1C] whitespace-nowrap">
-                                  {dateVal ? fmtDate(dateVal) : `#${slot}`}
+                                <span
+                                  title={dateVal ? fmtDate(dateVal) : undefined}
+                                  className="text-[9px] font-medium text-[#1C1C1C] text-center leading-tight whitespace-nowrap">
+                                  {dateVal ? fmtShortDate(dateVal) : `#${slot}`}
                                 </span>
                               </div>
                             );
