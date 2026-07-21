@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { todayNY } from "@/lib/date";
 
 type Entry = {
@@ -9,6 +9,10 @@ type Entry = {
 };
 type DayGroup   = { date: string; entries: Entry[] };
 type MonthGroup = { key: string; label: string; days: DayGroup[] };
+type AuditLog = {
+  id: string; entry_id: string | null; action: string; changed_by: string | null;
+  changed_at: string; details: Record<string, unknown> | null;
+};
 
 const METHOD_ICON: Record<string, string> = {
   cash: "💵", card: "💳", zelle: "💛", package: "📦", square: "⬛", venmo: "💙", other: "•",
@@ -17,7 +21,7 @@ const METHOD_LABEL: Record<string, string> = {
   cash: "Cash", card: "Card", zelle: "Zelle", package: "Package", square: "Square", venmo: "Venmo", other: "",
 };
 const fmt$ = (n: number) => `$${n.toFixed(0)}`;
-const EMPTY_FORM = { client_name: "", service_label: "", amount: "", tip: "", payment_method: "cash", notes: "", recorded_by: "" };
+const EMPTY_FORM = { client_name: "", service_label: "", amount: "", tip: "", payment_method: "cash", notes: "" };
 const METHODS = ["zelle","cash","card","package"] as const;
 
 function todayMinus(n: number): string {
@@ -74,9 +78,6 @@ function AddForm({ onSave, onCancel, saving, form, setForm }: {
           </button>
         ))}
       </div>
-      <input value={form.recorded_by} onChange={e => setForm({ ...form, recorded_by: e.target.value })}
-        placeholder="Recorded by (e.g. Betty)"
-        className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:border-[#C9A84C]" />
       <div className="flex gap-2 justify-end pt-0.5">
         <button onClick={onCancel} className="px-3 py-1.5 text-[12px] text-neutral-400 hover:text-neutral-600">Cancel</button>
         <button onClick={onSave} disabled={saving || !form.client_name.trim()}
@@ -130,9 +131,10 @@ function EntryRow({ e, onEdit, onDelete, deleting }: {
 }
 
 // ── Day card ───────────────────────────────────────────────────
-function DayCard({ day, isOpen, onToggle, onAddEntry, adminKey, onRefresh, noHeader }: {
+function DayCard({ day, isOpen, onToggle, onAddEntry, adminKey, onRefresh, noHeader, requestWho }: {
   day: DayGroup; isOpen: boolean; onToggle: () => void;
   onAddEntry: () => void; adminKey: string; onRefresh: () => void; noHeader?: boolean;
+  requestWho: () => Promise<string>;
 }) {
   const [addingHere, setAddingHere] = useState(false);
   const [addForm, setAddForm]       = useState(EMPTY_FORM);
@@ -147,22 +149,24 @@ function DayCard({ day, isOpen, onToggle, onAddEntry, adminKey, onRefresh, noHea
   const isToday    = day.date === todayNY();
 
   async function saveAdd() {
+    const who = await requestWho();
     setSaving(true);
     const res = await fetch("/api/admin/revenue", {
       method: "POST",
       headers: { ...h, "Content-Type": "application/json" },
-      body: JSON.stringify({ date: day.date, ...addForm, amount: parseFloat(addForm.amount) || 0, tip: parseFloat(addForm.tip) || 0 }),
+      body: JSON.stringify({ date: day.date, ...addForm, amount: parseFloat(addForm.amount) || 0, tip: parseFloat(addForm.tip) || 0, changed_by: who }),
     });
     if (res.ok) { await onRefresh(); setAddingHere(false); setAddForm(EMPTY_FORM); }
     setSaving(false);
   }
 
   async function saveEdit(id: string) {
+    const who = await requestWho();
     setSaving(true);
     await fetch(`/api/admin/revenue/${id}`, {
       method: "PATCH",
       headers: { ...h, "Content-Type": "application/json" },
-      body: JSON.stringify({ ...editForm, amount: parseFloat(editForm.amount) || 0, tip: parseFloat(editForm.tip) || 0 }),
+      body: JSON.stringify({ ...editForm, amount: parseFloat(editForm.amount) || 0, tip: parseFloat(editForm.tip) || 0, changed_by: who }),
     });
     await onRefresh();
     setEditId(null);
@@ -171,7 +175,10 @@ function DayCard({ day, isOpen, onToggle, onAddEntry, adminKey, onRefresh, noHea
 
   async function deleteEntry(id: string) {
     setDeleting(id);
-    await fetch(`/api/admin/revenue/${id}`, { method: "DELETE", headers: h });
+    await fetch(`/api/admin/revenue/${id}`, {
+      method: "DELETE", headers: { ...h, "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
     await onRefresh();
     setDeleting(null);
   }
@@ -219,9 +226,6 @@ function DayCard({ day, isOpen, onToggle, onAddEntry, adminKey, onRefresh, noHea
                     </button>
                   ))}
                 </div>
-                <input value={editForm.recorded_by} onChange={ev => setEditForm(p => ({ ...p, recorded_by: ev.target.value }))}
-                  placeholder="Recorded by (e.g. Betty)"
-                  className="col-span-2 border border-neutral-200 rounded-lg px-3 py-1.5 text-[13px] focus:outline-none focus:border-[#C9A84C]" />
                 <div className="flex gap-2 justify-end">
                   <button onClick={() => setEditId(null)} className="text-[12px] text-neutral-400 px-2 py-1">Cancel</button>
                   <button onClick={() => saveEdit(e.id)} disabled={saving}
@@ -232,7 +236,7 @@ function DayCard({ day, isOpen, onToggle, onAddEntry, adminKey, onRefresh, noHea
               </div>
             ) : (
               <EntryRow key={e.id} e={e} deleting={deleting}
-                onEdit={e => { setEditId(e.id); setEditForm({ client_name: e.client_name, service_label: e.service_label, amount: String(e.amount), tip: String(e.tip), payment_method: e.payment_method, notes: e.notes ?? "", recorded_by: e.recorded_by ?? "" }); }}
+                onEdit={e => { setEditId(e.id); setEditForm({ client_name: e.client_name, service_label: e.service_label, amount: String(e.amount), tip: String(e.tip), payment_method: e.payment_method, notes: e.notes ?? "" }); }}
                 onDelete={deleteEntry} />
             )
           ))}
@@ -267,6 +271,31 @@ export default function RevenueSection({ adminKey }: { adminKey: string }) {
   const [saving,     setSaving]     = useState(false);
   const [openMonths,    setOpenMonths]    = useState<Set<string>>(new Set());
   const [openMonthDays, setOpenMonthDays] = useState<Set<string>>(new Set());
+  const [showHistory,   setShowHistory]   = useState(false);
+  const [historyLogs,   setHistoryLogs]   = useState<AuditLog[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  // "Who?" modal
+  const [whoVisible,  setWhoVisible]  = useState(false);
+  const [whoName,     setWhoName]     = useState(() =>
+    typeof window !== "undefined" ? (localStorage.getItem("revenue_who") ?? "") : ""
+  );
+  const whoResolverRef = useRef<((name: string) => void) | null>(null);
+
+  function requestWho(): Promise<string> {
+    return new Promise<string>(resolve => {
+      whoResolverRef.current = resolve;
+      setWhoVisible(true);
+    });
+  }
+
+  function confirmWho() {
+    const name = whoName.trim();
+    if (name) localStorage.setItem("revenue_who", name);
+    whoResolverRef.current?.(name);
+    whoResolverRef.current = null;
+    setWhoVisible(false);
+  }
 
   const h = { Authorization: `Bearer ${adminKey}` };
 
@@ -327,12 +356,21 @@ export default function RevenueSection({ adminKey }: { adminKey: string }) {
     setTimeout(() => setSyncMsg(""), 5000);
   }
 
+  async function loadHistory() {
+    setHistoryLoading(true);
+    const res = await fetch("/api/admin/revenue/history", { headers: h });
+    const data = await res.json();
+    setHistoryLogs(Array.isArray(data) ? data : []);
+    setHistoryLoading(false);
+  }
+
   async function submitAddNew() {
     if (!addForm.client_name.trim()) return;
+    const who = await requestWho();
     setSaving(true);
     const res = await fetch("/api/admin/revenue", {
       method: "POST", headers: { ...h, "Content-Type": "application/json" },
-      body: JSON.stringify({ date: addDate, ...addForm, amount: parseFloat(addForm.amount) || 0, tip: parseFloat(addForm.tip) || 0 }),
+      body: JSON.stringify({ date: addDate, ...addForm, amount: parseFloat(addForm.amount) || 0, tip: parseFloat(addForm.tip) || 0, changed_by: who }),
     });
     if (res.ok) {
       await load();
@@ -357,6 +395,10 @@ export default function RevenueSection({ adminKey }: { adminKey: string }) {
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {syncMsg && <span className="text-[11px] text-green-600">{syncMsg}</span>}
+          <button onClick={() => { setShowHistory(prev => { if (!prev) loadHistory(); return !prev; }) }}
+            className={`px-3 py-1.5 border text-[12px] font-semibold rounded-lg transition-all ${showHistory ? "border-[#C9A84C] text-[#C9A84C]" : "border-neutral-200 text-neutral-500 hover:border-neutral-400"}`}>
+            History
+          </button>
           <button onClick={syncSquare} disabled={syncing}
             className="flex items-center gap-1 px-3 py-1.5 border border-neutral-200 text-[12px] font-semibold text-neutral-500 rounded-lg hover:border-[#C9A84C] hover:text-[#C9A84C] transition-all disabled:opacity-40">
             <svg className={`w-3.5 h-3.5 ${syncing ? "animate-spin" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -370,6 +412,65 @@ export default function RevenueSection({ adminKey }: { adminKey: string }) {
           </button>
         </div>
       </div>
+
+      {/* ── Who? modal ── */}
+      {whoVisible && (
+        <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center px-4">
+          <div className="bg-white rounded-2xl p-6 shadow-xl w-72">
+            <h4 className="text-[15px] font-bold text-[#1C1C1C] mb-1">Who is recording this?</h4>
+            <p className="text-[12px] text-neutral-400 mb-4">Your name will be logged with this entry.</p>
+            <input autoFocus value={whoName} onChange={e => setWhoName(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && confirmWho()}
+              placeholder="e.g. Betty"
+              className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:border-[#C9A84C] mb-3" />
+            <div className="flex gap-2 justify-end">
+              <button onClick={() => { whoResolverRef.current?.(""); whoResolverRef.current = null; setWhoVisible(false); }}
+                className="px-3 py-1.5 text-[12px] text-neutral-400 hover:text-neutral-600">Skip</button>
+              <button onClick={confirmWho}
+                className="px-4 py-1.5 bg-[#1C1C1C] text-white text-[12px] font-semibold rounded-lg hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all">
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── History panel ── */}
+      {showHistory && (
+        <div className="mb-4 bg-white border border-neutral-200 rounded-xl overflow-hidden">
+          <div className="px-5 py-3 border-b border-neutral-100 flex items-center justify-between">
+            <p className="text-[13px] font-bold text-[#1C1C1C]">Change History</p>
+            <button onClick={loadHistory} className="text-[11px] text-neutral-400 hover:text-[#C9A84C]">Refresh</button>
+          </div>
+          {historyLoading ? (
+            <p className="px-5 py-4 text-[12px] text-neutral-400">Loading…</p>
+          ) : historyLogs.length === 0 ? (
+            <p className="px-5 py-4 text-[12px] text-neutral-300">No history yet.</p>
+          ) : (
+            <div className="divide-y divide-neutral-50 max-h-64 overflow-y-auto">
+              {historyLogs.map(log => {
+                const who = log.changed_by || "—";
+                const d = log.details as Record<string, unknown> | null;
+                const clientName = (d?.client_name ?? d?.before && (d.before as Record<string,unknown>)?.client_name ?? "") as string;
+                const actionLabel = log.action === "add" ? "Added" : log.action === "edit" ? "Edited" : "Deleted";
+                const time = new Date(log.changed_at).toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+                return (
+                  <div key={log.id} className="px-5 py-2.5 flex items-center gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[12px] text-[#1C1C1C]">
+                        <span className="font-semibold">{who}</span>
+                        <span className="text-neutral-400"> · {actionLabel}</span>
+                        {clientName ? <span className="text-neutral-500"> · {clientName}</span> : null}
+                      </p>
+                      <p className="text-[10px] text-neutral-300 mt-0.5">{time}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Manual add modal */}
       {showAddNew && (
@@ -448,7 +549,7 @@ export default function RevenueSection({ adminKey }: { adminKey: string }) {
                           {isDOpen && (
                             <div className="bg-neutral-50/50">
                               <DayCard day={day} adminKey={adminKey} onRefresh={load}
-                                isOpen={true} onToggle={() => {}} onAddEntry={() => {}} noHeader />
+                                isOpen={true} onToggle={() => {}} onAddEntry={() => {}} noHeader requestWho={requestWho} />
                             </div>
                           )}
                         </div>

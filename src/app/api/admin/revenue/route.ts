@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
   if (!auth(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const { date, client_name, service_label, amount, tip, payment_method, notes, recorded_by } = body;
+  const { date, client_name, service_label, amount, tip, payment_method, notes, recorded_by, changed_by } = body;
 
   if (!date || !client_name) {
     return NextResponse.json({ error: "date and client_name are required" }, { status: 400 });
@@ -41,9 +41,17 @@ export async function POST(req: NextRequest) {
     tip:             parseFloat(tip)    || 0,
     payment_method:  payment_method ?? "cash",
     notes:           notes ?? null,
-    recorded_by:     recorded_by ?? null,
+    recorded_by:     recorded_by ?? changed_by ?? null,
   }).select().single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  await db.from("revenue_audit_log").insert({
+    entry_id: (data as Record<string, unknown>)?.id ?? null,
+    action: "add",
+    changed_by: changed_by ?? null,
+    details: { client_name: String(client_name).trim(), date, amount: parseFloat(amount) || 0, payment_method: payment_method ?? "cash", service_label: String(service_label ?? "").trim() },
+  });
+
   return NextResponse.json(data);
 }
