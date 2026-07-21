@@ -14,6 +14,21 @@ const TAG_LABEL: Record<Tag, string> = { new: "NEW", fix: "FIX", improve: "+" };
 
 const DAYS: Day[] = [
   {
+    date: "Jul 21, 2026", label: "2026-07-21",
+    changes: [
+      { tag: "new",     text: "Revenue 填表人：Add / Edit / Delete 時彈窗詢問是誰操作，自動記住上次填寫的名字" },
+      { tag: "new",     text: "Revenue History：新增歷史紀錄面板，顯示所有新增／修改／刪除記錄，包含操作人、時間、金額變化" },
+      { tag: "new",     text: "Revenue Delete 確認：刪除前顯示確認橫幅，防止誤刪" },
+      { tag: "new",     text: "Revenue Groupon (GP) 付款方式：新增 Groupon 按鈕，完整顯示 Groupon 名稱" },
+      { tag: "improve", text: "Revenue Package 圖示改為「3×」，更直覺" },
+      { tag: "improve", text: "Revenue 填表人顯示在付款方式圖示左側：粗體大字黑色（Betty · 💛 Zelle $45）" },
+      { tag: "new",     text: "Services 新增 Brow Lamination 眉毛燙染服務：+Tinting+Shaping $130、+Shaping $110" },
+      { tag: "new",     text: "Services Wax 獨立分類：Eyebrow $10、Cheeks $15、Chin $20、Upper Lip $10、Lower Lip $10" },
+      { tag: "improve", text: "Services 價格更新：Lash Lift $79、Tinting $20、Lift+Tinting Combo $99、Color Lash Ext $25" },
+      { tag: "improve", text: "3× Package Session 日期改為短格式（4 Jun），滑鼠移過去顯示完整日期" },
+    ],
+  },
+  {
     date: "Jul 20, 2026", label: "2026-07-20",
     changes: [
       { tag: "new",     text: "Revenue 營業額追蹤上線：Zelle / 現金 / 刷卡三種付款方式，可手動記帳，按日展開查看明細" },
