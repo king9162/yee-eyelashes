@@ -109,7 +109,7 @@ function EntryRow({ e, onEdit, onDelete, deleting }: {
         <span className="text-[12px] text-amber-400 font-semibold w-28 text-right shrink-0">待填</span>
       ) : (
         <>
-          {e.recorded_by && <span className="text-[10px] text-neutral-300 shrink-0">{e.recorded_by}</span>}
+          {e.recorded_by && <span className="text-[13px] font-bold text-[#1C1C1C] shrink-0 mr-1">{e.recorded_by}</span>}
           <span className="w-5 text-center text-[13px] shrink-0">{methodIcon}</span>
           <span className="w-11 text-[11px] text-neutral-400 shrink-0">{methodLabel}</span>
           <div className="w-16 text-right shrink-0">
