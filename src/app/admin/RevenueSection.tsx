@@ -174,10 +174,11 @@ function DayCard({ day, isOpen, onToggle, onAddEntry, adminKey, onRefresh, noHea
   }
 
   async function deleteEntry(id: string) {
+    const who = await requestWho();
     setDeleting(id);
     await fetch(`/api/admin/revenue/${id}`, {
       method: "DELETE", headers: { ...h, "Content-Type": "application/json" },
-      body: JSON.stringify({}),
+      body: JSON.stringify({ changed_by: who }),
     });
     await onRefresh();
     setDeleting(null);
@@ -452,19 +453,40 @@ export default function RevenueSection({ adminKey }: { adminKey: string }) {
                 const who = log.changed_by || "—";
                 const d = log.details as Record<string, unknown> | null;
                 const beforeObj = d?.before as Record<string,unknown> | undefined;
+                const afterObj  = d?.after  as Record<string,unknown> | undefined;
                 const clientName = ((d?.client_name ?? beforeObj?.client_name) ?? "") as string;
                 const actionLabel = log.action === "add" ? "Added" : log.action === "edit" ? "Edited" : "Deleted";
+                const actionColor = log.action === "add" ? "text-green-600" : log.action === "delete" ? "text-red-400" : "text-neutral-400";
                 const time = new Date(log.changed_at).toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+
+                let detail = "";
+                if (log.action === "add") {
+                  const amt = d?.amount as number | undefined;
+                  const pm  = (d?.payment_method as string | undefined) ?? "";
+                  detail = [amt != null ? `$${amt}` : "", METHOD_LABEL[pm] ?? pm].filter(Boolean).join(" · ");
+                } else if (log.action === "edit") {
+                  const bAmt = beforeObj?.amount as number | undefined;
+                  const aAmt = afterObj?.amount  as number | undefined;
+                  const bPm  = (beforeObj?.payment_method as string | undefined) ?? "";
+                  const aPm  = (afterObj?.payment_method  as string | undefined) ?? "";
+                  const amtPart = bAmt != null && aAmt != null && bAmt !== aAmt ? `$${bAmt} → $${aAmt}` : aAmt != null ? `$${aAmt}` : "";
+                  const pmPart  = bPm !== aPm && aPm ? `${METHOD_LABEL[bPm] ?? bPm} → ${METHOD_LABEL[aPm] ?? aPm}` : aPm ? METHOD_LABEL[aPm] ?? aPm : "";
+                  detail = [amtPart, pmPart].filter(Boolean).join(" · ");
+                } else if (log.action === "delete") {
+                  const amt = d?.amount as number | undefined;
+                  const pm  = (d?.payment_method as string | undefined) ?? "";
+                  detail = [amt != null ? `$${amt}` : "", METHOD_LABEL[pm] ?? pm].filter(Boolean).join(" · ");
+                }
+
                 return (
-                  <div key={log.id} className="px-5 py-2.5 flex items-center gap-3">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[12px] text-[#1C1C1C]">
-                        <span className="font-semibold">{who}</span>
-                        <span className="text-neutral-400"> · {actionLabel}</span>
-                        {clientName ? <span className="text-neutral-500"> · {clientName}</span> : null}
-                      </p>
-                      <p className="text-[10px] text-neutral-300 mt-0.5">{time}</p>
-                    </div>
+                  <div key={log.id} className="px-5 py-2.5 border-b border-neutral-50 last:border-b-0">
+                    <p className="text-[12px] text-[#1C1C1C]">
+                      <span className="font-semibold">{who}</span>
+                      <span className={`${actionColor} font-medium`}> · {actionLabel}</span>
+                      {clientName ? <span className="text-neutral-500"> · {clientName}</span> : null}
+                      {detail ? <span className="text-neutral-400"> · {detail}</span> : null}
+                    </p>
+                    <p className="text-[10px] text-neutral-300 mt-0.5">{time}</p>
                   </div>
                 );
               })}
