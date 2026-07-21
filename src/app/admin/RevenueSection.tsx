@@ -136,12 +136,13 @@ function DayCard({ day, isOpen, onToggle, onAddEntry, adminKey, onRefresh, noHea
   onAddEntry: () => void; adminKey: string; onRefresh: () => void; noHeader?: boolean;
   requestWho: () => Promise<string>;
 }) {
-  const [addingHere, setAddingHere] = useState(false);
-  const [addForm, setAddForm]       = useState(EMPTY_FORM);
-  const [saving, setSaving]         = useState(false);
-  const [editId, setEditId]         = useState<string | null>(null);
-  const [editForm, setEditForm]     = useState(EMPTY_FORM);
-  const [deleting, setDeleting]     = useState<string | null>(null);
+  const [addingHere, setAddingHere]       = useState(false);
+  const [addForm, setAddForm]             = useState(EMPTY_FORM);
+  const [saving, setSaving]               = useState(false);
+  const [editId, setEditId]               = useState<string | null>(null);
+  const [editForm, setEditForm]           = useState(EMPTY_FORM);
+  const [deleting, setDeleting]           = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const h = { Authorization: `Bearer ${adminKey}` };
 
   const dayService = day.entries.reduce((s, e) => s + e.amount, 0);
@@ -238,9 +239,32 @@ function DayCard({ day, isOpen, onToggle, onAddEntry, adminKey, onRefresh, noHea
             ) : (
               <EntryRow key={e.id} e={e} deleting={deleting}
                 onEdit={e => { setEditId(e.id); setEditForm({ client_name: e.client_name, service_label: e.service_label, amount: String(e.amount), tip: String(e.tip), payment_method: e.payment_method, notes: e.notes ?? "" }); }}
-                onDelete={deleteEntry} />
+                onDelete={id => setConfirmDeleteId(id)} />
             )
           ))}
+
+          {/* Delete confirmation */}
+          {confirmDeleteId && (() => {
+            const entry = day.entries.find(e => e.id === confirmDeleteId);
+            return (
+              <div className="px-5 py-4 bg-red-50/60 border-t border-red-100 flex items-center justify-between gap-3">
+                <p className="text-[13px] text-[#1C1C1C]">
+                  確定刪除 <span className="font-bold">{entry?.client_name}</span> 的記錄？
+                </p>
+                <div className="flex gap-2 shrink-0">
+                  <button onClick={() => setConfirmDeleteId(null)}
+                    className="px-3 py-1.5 text-[12px] text-neutral-500 border border-neutral-200 rounded-lg hover:border-neutral-400">
+                    取消
+                  </button>
+                  <button onClick={() => { const id = confirmDeleteId; setConfirmDeleteId(null); deleteEntry(id); }}
+                    disabled={deleting === confirmDeleteId}
+                    className="px-3 py-1.5 text-[12px] font-semibold bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-40">
+                    {deleting === confirmDeleteId ? "刪除中…" : "確定刪除"}
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Inline add */}
           {addingHere ? (
