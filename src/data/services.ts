@@ -114,25 +114,25 @@ export const services: ServiceCategory[] = [
     categoryZh: "睫毛護理",
     items: [
       {
-        name: "Lash Lift",
+        name: "Eyelash Lift",
         nameZh: "睫毛燙翹",
         descriptionEn: "Your natural lashes, reimagined. A precision curl that opens the eye, lifts the gaze, and requires zero maintenance for 6–8 weeks. The most effortless upgrade you'll ever make.",
         descriptionZh: "讓天然睫毛煥然一新。精準卷翹讓眼睛更大、眼神更有神，6-8 週零維護。您所能做的最輕鬆的美麗升級。",
-        price: 60,
+        price: 79,
       },
       {
-        name: "Tint",
+        name: "Eyelash Tinting",
         nameZh: "睫毛染色",
         descriptionEn: "Intensify your natural lashes with professional pigment for darker, bolder, more defined results. No mascara. No smudging. Pure effortless definition from morning to night.",
         descriptionZh: "以專業染料深化天然睫毛——更深、更濃、更有輪廓。無需睫毛膏。不會暈染。從早到晚純粹的輕鬆美麗。",
-        price: 30,
+        price: 20,
       },
       {
-        name: "Lash Lift + Tint",
+        name: "Eyelash Lift + Tinting",
         nameZh: "睫毛燙翹加染色",
         descriptionEn: "Our most-booked combo. Lifted, curled, darkened, and defined. Your eyes transformed in under 60 minutes. The ultimate low-maintenance luxury for the modern woman.",
         descriptionZh: "我們最受預約的組合。翹起、捲曲、加深、清晰——60 分鐘內讓雙眼煥然一新。現代女性的極致低維護奢享。",
-        price: 80,
+        price: 99,
         popular: true,
       },
       {
@@ -142,6 +142,16 @@ export const services: ServiceCategory[] = [
         descriptionZh: "使用專業溶劑輕柔卸除，在不損傷天然睫毛的前提下溶解黏合劑。我們始終讓您的天然睫毛在服務後比之前更健康。",
         price: 20,
       },
+      {
+        name: "Brow Lamination + Tinting + Shaping",
+        nameZh: "眉毛塑形燙翹 + 染色 + 修眉",
+        price: 130,
+      },
+      {
+        name: "Brow Lamination + Shaping",
+        nameZh: "眉毛塑形燙翹 + 修眉",
+        price: 110,
+      },
     ],
   },
   {
@@ -150,28 +160,43 @@ export const services: ServiceCategory[] = [
     categoryZh: "加購服務",
     items: [
       {
-        name: "Bottom Lashes",
-        nameZh: "下睫毛",
+        name: "Bottom Lash Extension",
+        nameZh: "下睫毛嫁接",
         price: 30,
       },
       {
-        name: "Colored Lashes",
-        nameZh: "彩色睫毛",
-        price: 15,
+        name: "Color Lash Extension",
+        nameZh: "彩色睫毛嫁接",
+        price: 25,
       },
       {
-        name: "Brow Tint",
+        name: "Eyebrow Tinting",
         nameZh: "眉毛染色",
         price: 30,
       },
       {
-        name: "Eyebrow Wax",
-        nameZh: "眉型蜜蠟",
+        name: "Wax - Eyebrow",
+        nameZh: "蜜蠟 - 眉型",
+        price: 10,
+      },
+      {
+        name: "Wax - Cheeks",
+        nameZh: "蜜蠟 - 臉頰",
         price: 15,
       },
       {
-        name: "Lip or Chin Wax",
-        nameZh: "唇部或下巴蜜蠟",
+        name: "Wax - Chin",
+        nameZh: "蜜蠟 - 下巴",
+        price: 20,
+      },
+      {
+        name: "Wax - Upper Lip",
+        nameZh: "蜜蠟 - 上唇",
+        price: 10,
+      },
+      {
+        name: "Wax - Lower Lip",
+        nameZh: "蜜蠟 - 下唇",
         price: 10,
       },
     ],
