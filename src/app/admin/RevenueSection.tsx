@@ -15,10 +15,10 @@ type AuditLog = {
 };
 
 const METHOD_ICON: Record<string, string> = {
-  cash: "💵", card: "💳", zelle: "💛", package: "📦", gp: "🟢", square: "⬛", venmo: "💙", other: "•",
+  cash: "💵", card: "💳", zelle: "💛", package: "3×", gp: "🟢", square: "⬛", venmo: "💙", other: "•",
 };
 const METHOD_LABEL: Record<string, string> = {
-  cash: "Cash", card: "Card", zelle: "Zelle", package: "Package", gp: "GP", square: "Square", venmo: "Venmo", other: "",
+  cash: "Cash", card: "Card", zelle: "Zelle", package: "Package", gp: "Groupon", square: "Square", venmo: "Venmo", other: "",
 };
 const fmt$ = (n: number) => `$${n.toFixed(0)}`;
 const EMPTY_FORM = { client_name: "", service_label: "", amount: "", tip: "", payment_method: "cash", notes: "" };
@@ -111,7 +111,7 @@ function EntryRow({ e, onEdit, onDelete, deleting }: {
         <>
           {e.recorded_by && <span className="text-[13px] font-bold text-[#1C1C1C] shrink-0 mr-1">{e.recorded_by}</span>}
           <span className="w-5 text-center text-[13px] shrink-0">{methodIcon}</span>
-          <span className="w-11 text-[11px] text-neutral-400 shrink-0">{methodLabel}</span>
+          <span className="w-14 text-[11px] text-neutral-400 shrink-0">{methodLabel}</span>
           <div className="w-16 text-right shrink-0">
             <p className="text-[14px] font-bold text-[#1C1C1C] tabular-nums">{fmt$(e.amount)}</p>
             {e.tip > 0 && <p className="text-[11px] text-[#C9A84C] tabular-nums">+{fmt$(e.tip)}</p>}
