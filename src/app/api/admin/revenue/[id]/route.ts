@@ -17,6 +17,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (body.tip           !== undefined) update.tip            = parseFloat(body.tip)    || 0;
   if (body.payment_method !== undefined) update.payment_method = body.payment_method;
   if (body.notes         !== undefined) update.notes          = body.notes ?? null;
+  if (body.recorded_by   !== undefined) update.recorded_by    = body.recorded_by ?? null;
   if (body.date          !== undefined) update.date           = body.date;
 
   const db = supabaseAdmin();

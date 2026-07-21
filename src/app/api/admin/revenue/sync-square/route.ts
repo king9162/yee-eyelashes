@@ -123,11 +123,13 @@ export async function POST(req: NextRequest) {
         payment_method:    "square",
         square_payment_id: paymentId,
         service_label:     serviceLabel || existing.service_label,
+        recorded_by:       "Square",
       }).eq("id", existing.id);
     } else {
       await db.from("revenue_entries").insert({
         date, client_name: clientName, service_label: serviceLabel,
         amount, tip, payment_method: "square", square_payment_id: paymentId,
+        recorded_by: "Square",
       });
     }
     synced++;

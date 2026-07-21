@@ -5,7 +5,7 @@ import { todayNY } from "@/lib/date";
 type Entry = {
   id: string; date: string; client_name: string; service_label: string;
   amount: number; tip: number; payment_method: string;
-  square_payment_id?: string | null; notes?: string | null;
+  square_payment_id?: string | null; notes?: string | null; recorded_by?: string | null;
 };
 type DayGroup   = { date: string; entries: Entry[] };
 type MonthGroup = { key: string; label: string; days: DayGroup[] };
@@ -17,7 +17,7 @@ const METHOD_LABEL: Record<string, string> = {
   cash: "Cash", card: "Card", zelle: "Zelle", package: "Package", square: "Square", venmo: "Venmo", other: "",
 };
 const fmt$ = (n: number) => `$${n.toFixed(0)}`;
-const EMPTY_FORM = { client_name: "", service_label: "", amount: "", tip: "", payment_method: "cash", notes: "" };
+const EMPTY_FORM = { client_name: "", service_label: "", amount: "", tip: "", payment_method: "cash", notes: "", recorded_by: "" };
 const METHODS = ["zelle","cash","card","package"] as const;
 
 function todayMinus(n: number): string {
@@ -74,6 +74,9 @@ function AddForm({ onSave, onCancel, saving, form, setForm }: {
           </button>
         ))}
       </div>
+      <input value={form.recorded_by} onChange={e => setForm({ ...form, recorded_by: e.target.value })}
+        placeholder="Recorded by (e.g. Betty)"
+        className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:border-[#C9A84C]" />
       <div className="flex gap-2 justify-end pt-0.5">
         <button onClick={onCancel} className="px-3 py-1.5 text-[12px] text-neutral-400 hover:text-neutral-600">Cancel</button>
         <button onClick={onSave} disabled={saving || !form.client_name.trim()}
@@ -93,26 +96,29 @@ function EntryRow({ e, onEdit, onDelete, deleting }: {
   const methodIcon  = METHOD_ICON[e.payment_method] ?? "•";
   const methodLabel = METHOD_LABEL[e.payment_method] ?? e.payment_method;
   return (
-    <div className={`flex items-center gap-3 px-5 py-3 border-b border-neutral-50 last:border-b-0 transition-colors ${needsPayment ? "bg-amber-50/40 hover:bg-amber-50/60" : "hover:bg-neutral-50/50"}`}>
+    <div className={`flex items-center gap-2 px-4 py-3 border-b border-neutral-50 last:border-b-0 transition-colors ${needsPayment ? "bg-amber-50/40 hover:bg-amber-50/60" : "hover:bg-neutral-50/50"}`}>
+      {/* Client info */}
       <div className="flex-1 min-w-0">
         <p className="text-[13px] font-semibold text-[#1C1C1C] truncate">{e.client_name}</p>
         {e.service_label && <p className="text-[11px] text-neutral-400 truncate">{e.service_label}</p>}
         {needsPayment && <p className="text-[10px] text-amber-500 font-semibold mt-0.5">⚠ 填入付款方式與金額</p>}
+        {e.recorded_by && <p className="text-[10px] text-neutral-300 mt-0.5">{e.recorded_by}</p>}
       </div>
-      <div className="flex items-center gap-2 shrink-0">
-        {needsPayment ? (
-          <p className="text-[12px] text-amber-400 font-semibold">待填</p>
-        ) : (
-          <>
-            <span className="text-[11px] text-neutral-400 font-medium">{methodIcon} {methodLabel}</span>
-            <div className="text-right">
-              <p className="text-[14px] font-bold text-[#1C1C1C]">{fmt$(e.amount)}</p>
-              {e.tip > 0 && <p className="text-[11px] text-[#C9A84C]">+{fmt$(e.tip)} tip</p>}
-            </div>
-          </>
-        )}
-      </div>
-      <div className="flex gap-0.5 shrink-0 ml-1">
+      {/* Payment columns — fixed width for vertical alignment */}
+      {needsPayment ? (
+        <span className="text-[12px] text-amber-400 font-semibold w-28 text-right shrink-0">待填</span>
+      ) : (
+        <>
+          <span className="w-5 text-center text-[13px] shrink-0">{methodIcon}</span>
+          <span className="w-11 text-[11px] text-neutral-400 shrink-0">{methodLabel}</span>
+          <div className="w-16 text-right shrink-0">
+            <p className="text-[14px] font-bold text-[#1C1C1C] tabular-nums">{fmt$(e.amount)}</p>
+            {e.tip > 0 && <p className="text-[11px] text-[#C9A84C] tabular-nums">+{fmt$(e.tip)}</p>}
+          </div>
+        </>
+      )}
+      {/* Actions */}
+      <div className="flex gap-0.5 shrink-0">
         <button onClick={() => onEdit(e)} className="text-[11px] text-neutral-300 hover:text-neutral-600 px-1.5 py-1 transition-colors">Edit</button>
         <button onClick={() => onDelete(e.id)} disabled={deleting === e.id}
           className="text-[11px] text-neutral-300 hover:text-red-400 px-1.5 py-1 transition-colors">
@@ -213,6 +219,9 @@ function DayCard({ day, isOpen, onToggle, onAddEntry, adminKey, onRefresh, noHea
                     </button>
                   ))}
                 </div>
+                <input value={editForm.recorded_by} onChange={ev => setEditForm(p => ({ ...p, recorded_by: ev.target.value }))}
+                  placeholder="Recorded by (e.g. Betty)"
+                  className="col-span-2 border border-neutral-200 rounded-lg px-3 py-1.5 text-[13px] focus:outline-none focus:border-[#C9A84C]" />
                 <div className="flex gap-2 justify-end">
                   <button onClick={() => setEditId(null)} className="text-[12px] text-neutral-400 px-2 py-1">Cancel</button>
                   <button onClick={() => saveEdit(e.id)} disabled={saving}
@@ -223,7 +232,7 @@ function DayCard({ day, isOpen, onToggle, onAddEntry, adminKey, onRefresh, noHea
               </div>
             ) : (
               <EntryRow key={e.id} e={e} deleting={deleting}
-                onEdit={e => { setEditId(e.id); setEditForm({ client_name: e.client_name, service_label: e.service_label, amount: String(e.amount), tip: String(e.tip), payment_method: e.payment_method, notes: e.notes ?? "" }); }}
+                onEdit={e => { setEditId(e.id); setEditForm({ client_name: e.client_name, service_label: e.service_label, amount: String(e.amount), tip: String(e.tip), payment_method: e.payment_method, notes: e.notes ?? "", recorded_by: e.recorded_by ?? "" }); }}
                 onDelete={deleteEntry} />
             )
           ))}

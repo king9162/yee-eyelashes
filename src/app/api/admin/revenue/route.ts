@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
   if (!auth(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const { date, client_name, service_label, amount, tip, payment_method, notes } = body;
+  const { date, client_name, service_label, amount, tip, payment_method, notes, recorded_by } = body;
 
   if (!date || !client_name) {
     return NextResponse.json({ error: "date and client_name are required" }, { status: 400 });
@@ -41,6 +41,7 @@ export async function POST(req: NextRequest) {
     tip:             parseFloat(tip)    || 0,
     payment_method:  payment_method ?? "cash",
     notes:           notes ?? null,
+    recorded_by:     recorded_by ?? null,
   }).select().single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
