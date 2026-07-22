@@ -92,15 +92,27 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
 
+  // Fetch booking info before update (needed for revenue cleanup)
+  const { data: bookingInfo } = await db.from("bookings").select("date, name, calendar_event_id, square_booking_id").eq("id", id).single();
+
   const { error } = await db.from("bookings").update({ status }).eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // When cancelled: delete $0 revenue placeholder for this booking
+  if (status === "cancelled" && bookingInfo?.date && bookingInfo?.name) {
+    await db.from("revenue_entries")
+      .delete()
+      .eq("date", bookingInfo.date)
+      .eq("client_name", bookingInfo.name)
+      .eq("amount", 0)
+      .is("square_payment_id", null);
+  }
 
   // Delete calendar + Square when cancelled (skip if admin-only cancel)
   if (status === "cancelled" && !body.skipSquare) {
     try {
-      const { data: booking } = await db.from("bookings").select("calendar_event_id, square_booking_id").eq("id", id).single();
-      if (booking?.calendar_event_id) await deleteCalendarEvent(booking.calendar_event_id);
-      if (booking?.square_booking_id) await cancelSquareBooking(booking.square_booking_id);
+      if (bookingInfo?.calendar_event_id) await deleteCalendarEvent(bookingInfo.calendar_event_id);
+      if (bookingInfo?.square_booking_id) await cancelSquareBooking(bookingInfo.square_booking_id);
     } catch { /* non-fatal */ }
   }
 

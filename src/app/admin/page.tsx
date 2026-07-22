@@ -431,6 +431,28 @@ export default function AdminPage() {
     return () => document.removeEventListener("mousedown", handler);
   }, [showEditMenu]);
 
+  // Partner lock: re-lock after 1 min of inactivity on Revenue / Settlement pages
+  useEffect(() => {
+    if (!partnerUnlocked || (view !== "revenue" && view !== "expenses")) return;
+    let timer: ReturnType<typeof setTimeout>;
+    function reset() {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        sessionStorage.removeItem("partner_unlocked");
+        setPartnerUnlocked(false);
+        setPartnerPin("");
+        setPartnerPinError("");
+      }, 60_000);
+    }
+    const events = ["scroll", "click", "keydown", "mousemove", "touchstart"] as const;
+    events.forEach(e => document.addEventListener(e, reset, true));
+    reset();
+    return () => {
+      clearTimeout(timer);
+      events.forEach(e => document.removeEventListener(e, reset, true));
+    };
+  }, [partnerUnlocked, view]); // eslint-disable-line react-hooks/exhaustive-deps
+
   async function login(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);

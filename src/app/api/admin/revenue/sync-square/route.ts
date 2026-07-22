@@ -12,6 +12,23 @@ export async function POST(req: NextRequest) {
   const db      = supabaseAdmin();
   const token   = process.env.SQUARE_ACCESS_TOKEN!;
 
+  // ── Step 0: Remove $0 placeholders for cancelled bookings ──────────────────
+  const { data: cancelledBookings } = await db
+    .from("bookings")
+    .select("date, name")
+    .eq("status", "cancelled")
+    .gte("date", today);
+
+  for (const b of cancelledBookings ?? []) {
+    if (!b.date || !b.name) continue;
+    await db.from("revenue_entries")
+      .delete()
+      .eq("date", b.date)
+      .eq("client_name", b.name)
+      .eq("amount", 0)
+      .is("square_payment_id", null);
+  }
+
   // ── Step 1: Import ALL confirmed bookings (today + future) as $0 placeholders ──
   const { data: upcomingBookings } = await db
     .from("bookings")
