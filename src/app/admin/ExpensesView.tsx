@@ -4,11 +4,11 @@ import { useState, useEffect, useCallback, useRef } from "react";
 // ── Category definitions ───────────────────────────────────────
 const CATEGORY_GROUPS: { group: string; items: string[] }[] = [
   { group: "固定支出",    items: ["房租","電費","水費","網路費","電話費","保險"] },
-  { group: "行銷",        items: ["Google 廣告","Meta 廣告","Yelp 廣告","Groupon","SEO 優化","印刷 / 行銷材料"] },
+  { group: "行銷",        items: ["Google 廣告"] },
   { group: "軟體 / 訂閱", items: ["Square","Twilio","OpenPhone","Google Workspace","網域","Vercel","Supabase","Resend","Cloudflare","Canva","ChatGPT","Cursor","Figma"] },
   { group: "業務營運",    items: ["辦公用品","清潔用品","茶水零食","美容用品","睫毛材料","紋繡材料","耗材","洗衣費","設備採購","維修保養"] },
-  { group: "財務",        items: ["銀行手續費","刷卡手續費","會計費","稅款","營業執照"] },
-  { group: "薪資",        items: ["員工薪資","佣金","承包商費用"] },
+  { group: "財務",        items: ["稅款","營業執照"] },
+  { group: "薪資",        items: ["員工薪資","佣金"] },
   { group: "其他",        items: ["交通費","停車費","運費","雜費"] },
 ];
 const ALL_CATEGORIES = CATEGORY_GROUPS.flatMap(g => g.items);
