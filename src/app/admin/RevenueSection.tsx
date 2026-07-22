@@ -102,7 +102,6 @@ function EntryRow({ e, onEdit, onDelete, deleting }: {
   const needsPayment = e.amount === 0 && !e.square_payment_id && e.payment_method !== "gp";
   const methodIcon  = METHOD_ICON[e.payment_method] ?? "•";
   const methodLabel = METHOD_LABEL[e.payment_method] ?? e.payment_method;
-  const upgrade     = parseFloat(e.notes ?? "") || 0;
   return (
     <div className={`flex items-center gap-2 px-4 py-3 border-b border-neutral-50 last:border-b-0 transition-colors ${needsPayment ? "bg-amber-50/40 hover:bg-amber-50/60" : "hover:bg-neutral-50/50"}`}>
       {/* Client info */}
@@ -119,10 +118,9 @@ function EntryRow({ e, onEdit, onDelete, deleting }: {
           {e.recorded_by && <span className="text-[13px] font-bold text-[#1C1C1C] shrink-0 mr-1">{e.recorded_by}</span>}
           <span className="w-5 text-center text-[13px] shrink-0">{methodIcon}</span>
           <span className="w-14 text-[11px] text-neutral-400 shrink-0">{methodLabel}</span>
-          <div className="w-20 text-right shrink-0">
+          <div className="w-16 text-right shrink-0">
             <p className="text-[14px] font-bold text-[#1C1C1C] tabular-nums">{fmt$(e.amount)}</p>
-            {e.tip > 0 && <p className="text-[11px] text-[#C9A84C] tabular-nums">+{fmt$(e.tip)} tip</p>}
-            {upgrade > 0 && <p className="text-[11px] text-green-600 tabular-nums">+{fmt$(upgrade)} upg</p>}
+            {e.tip > 0 && <p className="text-[11px] text-[#C9A84C] tabular-nums">+{fmt$(e.tip)}</p>}
           </div>
         </>
       )}
@@ -160,10 +158,12 @@ function DayCard({ day, isOpen, onToggle, onAddEntry, adminKey, onRefresh, noHea
   async function saveAdd() {
     const who = await requestWho();
     setSaving(true);
+    const baseAmt = parseFloat(addForm.amount) || 0;
+    const upgrade = parseFloat(addForm.notes) || 0;
     const res = await fetch("/api/admin/revenue", {
       method: "POST",
       headers: { ...h, "Content-Type": "application/json" },
-      body: JSON.stringify({ date: day.date, ...addForm, amount: parseFloat(addForm.amount) || 0, tip: parseFloat(addForm.tip) || 0, changed_by: who }),
+      body: JSON.stringify({ date: day.date, ...addForm, amount: baseAmt + upgrade, tip: parseFloat(addForm.tip) || 0, notes: null, changed_by: who }),
     });
     if (res.ok) { await onRefresh(); setAddingHere(false); setAddForm(EMPTY_FORM); }
     setSaving(false);
@@ -172,10 +172,12 @@ function DayCard({ day, isOpen, onToggle, onAddEntry, adminKey, onRefresh, noHea
   async function saveEdit(id: string) {
     const who = await requestWho();
     setSaving(true);
+    const baseAmt = parseFloat(editForm.amount) || 0;
+    const upgrade = parseFloat(editForm.notes) || 0;
     await fetch(`/api/admin/revenue/${id}`, {
       method: "PATCH",
       headers: { ...h, "Content-Type": "application/json" },
-      body: JSON.stringify({ ...editForm, amount: parseFloat(editForm.amount) || 0, tip: parseFloat(editForm.tip) || 0, changed_by: who }),
+      body: JSON.stringify({ ...editForm, amount: baseAmt + upgrade, tip: parseFloat(editForm.tip) || 0, notes: null, changed_by: who }),
     });
     await onRefresh();
     setEditId(null);
@@ -251,7 +253,7 @@ function DayCard({ day, isOpen, onToggle, onAddEntry, adminKey, onRefresh, noHea
               </div>
             ) : (
               <EntryRow key={e.id} e={e} deleting={deleting}
-                onEdit={e => { setEditId(e.id); setEditForm({ client_name: e.client_name, service_label: e.service_label, amount: String(e.amount), tip: String(e.tip), payment_method: e.payment_method, notes: e.notes ?? "" }); }}
+                onEdit={e => { setEditId(e.id); setEditForm({ client_name: e.client_name, service_label: e.service_label, amount: String(e.amount), tip: String(e.tip), payment_method: e.payment_method, notes: "" }); }}
                 onDelete={id => setConfirmDeleteId(id)} />
             )
           ))}
@@ -406,9 +408,11 @@ export default function RevenueSection({ adminKey }: { adminKey: string }) {
     if (!addForm.client_name.trim()) return;
     const who = await requestWho();
     setSaving(true);
+    const baseAmt2 = parseFloat(addForm.amount) || 0;
+    const upgrade2 = parseFloat(addForm.notes) || 0;
     const res = await fetch("/api/admin/revenue", {
       method: "POST", headers: { ...h, "Content-Type": "application/json" },
-      body: JSON.stringify({ date: addDate, ...addForm, amount: parseFloat(addForm.amount) || 0, tip: parseFloat(addForm.tip) || 0, changed_by: who }),
+      body: JSON.stringify({ date: addDate, ...addForm, amount: baseAmt2 + upgrade2, tip: parseFloat(addForm.tip) || 0, notes: null, changed_by: who }),
     });
     if (res.ok) {
       await load();
