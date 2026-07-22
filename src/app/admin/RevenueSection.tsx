@@ -69,11 +69,12 @@ function AddForm({ onSave, onCancel, saving, form, setForm }: {
             placeholder="0" type="number" min="0" step="1"
             className="w-full border border-neutral-200 rounded-lg pl-10 pr-3 py-2 text-[13px] focus:outline-none focus:border-[#C9A84C]" />
         </div>
-        <button
-          onClick={() => setForm({ ...form, tip: String((parseFloat(form.tip) || 0) + 20) })}
-          className="shrink-0 px-3 py-2 text-[11px] font-semibold border border-neutral-200 rounded-lg text-neutral-500 hover:border-[#C9A84C] hover:text-[#C9A84C] transition-all whitespace-nowrap">
-          Upgrade +$20
-        </button>
+        <div className="relative flex-1">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[12px] text-neutral-400">upgrade $</span>
+          <input value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })}
+            placeholder="0" type="number" min="0" step="1"
+            className="w-full border border-neutral-200 rounded-lg pl-16 pr-3 py-2 text-[13px] focus:outline-none focus:border-[#C9A84C]" />
+        </div>
       </div>
       <div className="flex gap-1.5 flex-wrap">
         {METHODS.map(m => (
@@ -101,6 +102,7 @@ function EntryRow({ e, onEdit, onDelete, deleting }: {
   const needsPayment = e.amount === 0 && !e.square_payment_id && e.payment_method !== "gp";
   const methodIcon  = METHOD_ICON[e.payment_method] ?? "•";
   const methodLabel = METHOD_LABEL[e.payment_method] ?? e.payment_method;
+  const upgrade     = parseFloat(e.notes ?? "") || 0;
   return (
     <div className={`flex items-center gap-2 px-4 py-3 border-b border-neutral-50 last:border-b-0 transition-colors ${needsPayment ? "bg-amber-50/40 hover:bg-amber-50/60" : "hover:bg-neutral-50/50"}`}>
       {/* Client info */}
@@ -117,9 +119,10 @@ function EntryRow({ e, onEdit, onDelete, deleting }: {
           {e.recorded_by && <span className="text-[13px] font-bold text-[#1C1C1C] shrink-0 mr-1">{e.recorded_by}</span>}
           <span className="w-5 text-center text-[13px] shrink-0">{methodIcon}</span>
           <span className="w-14 text-[11px] text-neutral-400 shrink-0">{methodLabel}</span>
-          <div className="w-16 text-right shrink-0">
+          <div className="w-20 text-right shrink-0">
             <p className="text-[14px] font-bold text-[#1C1C1C] tabular-nums">{fmt$(e.amount)}</p>
-            {e.tip > 0 && <p className="text-[11px] text-[#C9A84C] tabular-nums">+{fmt$(e.tip)}</p>}
+            {e.tip > 0 && <p className="text-[11px] text-[#C9A84C] tabular-nums">+{fmt$(e.tip)} tip</p>}
+            {upgrade > 0 && <p className="text-[11px] text-green-600 tabular-nums">+{fmt$(upgrade)} upg</p>}
           </div>
         </>
       )}
@@ -225,10 +228,9 @@ function DayCard({ day, isOpen, onToggle, onAddEntry, adminKey, onRefresh, noHea
                     <div className="relative flex-1"><span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-[12px]">tip $</span>
                       <input value={editForm.tip} onChange={ev => setEditForm(p => ({ ...p, tip: ev.target.value }))} type="number" min="0"
                         className="w-full border border-neutral-200 rounded-lg pl-10 pr-3 py-1.5 text-[13px] focus:outline-none focus:border-[#C9A84C]" /></div>
-                    <button onClick={() => setEditForm(p => ({ ...p, tip: String((parseFloat(p.tip) || 0) + 20) }))}
-                      className="shrink-0 px-2.5 py-1.5 text-[11px] font-semibold border border-neutral-200 rounded-lg text-neutral-500 hover:border-[#C9A84C] hover:text-[#C9A84C] transition-all whitespace-nowrap">
-                      Upgrade +$20
-                    </button>
+                    <div className="relative flex-1"><span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-[12px]">upgrade $</span>
+                      <input value={editForm.notes} onChange={ev => setEditForm(p => ({ ...p, notes: ev.target.value }))} type="number" min="0"
+                        className="w-full border border-neutral-200 rounded-lg pl-16 pr-3 py-1.5 text-[13px] focus:outline-none focus:border-[#C9A84C]" /></div>
                   </div>
                 </div>
                 <div className="flex gap-1.5 flex-wrap">
@@ -454,16 +456,14 @@ export default function RevenueSection({ adminKey }: { adminKey: string }) {
         <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center px-4">
           <div className="bg-white rounded-2xl p-6 shadow-xl w-72">
             <h4 className="text-[15px] font-bold text-[#1C1C1C] mb-1">Who is recording this?</h4>
-            <p className="text-[12px] text-neutral-400 mb-4">Your name will be logged with this entry.</p>
+            <p className="text-[12px] text-neutral-400 mb-4">必須填寫名字才能繼續。</p>
             <input autoFocus value={whoName} onChange={e => setWhoName(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && confirmWho()}
+              onKeyDown={e => e.key === "Enter" && whoName.trim() && confirmWho()}
               placeholder="e.g. Betty"
               className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:border-[#C9A84C] mb-3" />
             <div className="flex gap-2 justify-end">
-              <button onClick={() => { whoResolverRef.current?.(""); whoResolverRef.current = null; setWhoVisible(false); }}
-                className="px-3 py-1.5 text-[12px] text-neutral-400 hover:text-neutral-600">Skip</button>
-              <button onClick={confirmWho}
-                className="px-4 py-1.5 bg-[#1C1C1C] text-white text-[12px] font-semibold rounded-lg hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all">
+              <button onClick={confirmWho} disabled={!whoName.trim()}
+                className="w-full px-4 py-2 bg-[#1C1C1C] text-white text-[13px] font-semibold rounded-lg hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all disabled:opacity-30 disabled:cursor-not-allowed">
                 Confirm
               </button>
             </div>
