@@ -36,7 +36,7 @@ type DashBooking = {
   service_label: string; time: string; phone: string; email: string;
   duration_min?: number; notes?: string;
 };
-type DashClient  = { id: string; visit_date: string; phone: string; email: string; owner: string; notes: string; first_name: string; last_name: string; birthday?: string };
+type DashClient  = { id: string; visit_date: string; phone: string; email: string; owner: string; notes: string; first_name: string; last_name: string; birthday?: string; deleted?: boolean };
 type DashReview  = { id: string; rating: number; deleted_from_google?: boolean };
 
 function parseTimeMin(t: string): number {
