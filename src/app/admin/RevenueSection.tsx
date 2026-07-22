@@ -48,7 +48,6 @@ function AddForm({ onSave, onCancel, saving, form, setForm }: {
   onSave: () => void; onCancel: () => void; saving: boolean;
   form: typeof EMPTY_FORM; setForm: (f: typeof EMPTY_FORM) => void;
 }) {
-  const isGP = form.payment_method === "gp";
   return (
     <div className="space-y-2.5 pt-1">
       <input value={form.client_name} onChange={e => setForm({ ...form, client_name: e.target.value })}
@@ -57,30 +56,28 @@ function AddForm({ onSave, onCancel, saving, form, setForm }: {
       <input value={form.service_label} onChange={e => setForm({ ...form, service_label: e.target.value })}
         placeholder="Service (e.g. New Set 120pcs)"
         className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:border-[#C9A84C]" />
-      <div className="grid grid-cols-2 gap-2">
-        <div className="relative">
+      <div className="flex gap-2">
+        <div className="relative flex-1">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-neutral-400">$</span>
           <input value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })}
-            placeholder={isGP ? "Groupon value" : "0"} type="number" min="0" step="5"
+            placeholder="0" type="number" min="0" step="5"
             className="w-full border border-neutral-200 rounded-lg pl-6 pr-3 py-2 text-[13px] focus:outline-none focus:border-[#C9A84C]" />
         </div>
-        <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[12px] text-neutral-400">{isGP ? "upgrade $" : "tip $"}</span>
+        <div className="relative flex-1">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[12px] text-neutral-400">tip $</span>
           <input value={form.tip} onChange={e => setForm({ ...form, tip: e.target.value })}
-            placeholder={isGP ? "20" : "0"} type="number" min="0" step="1"
-            className={`w-full border rounded-lg pl-14 pr-3 py-2 text-[13px] focus:outline-none focus:border-[#C9A84C] ${isGP ? "border-[#C9A84C]/40 bg-amber-50/30" : "border-neutral-200"}`} />
+            placeholder="0" type="number" min="0" step="1"
+            className="w-full border border-neutral-200 rounded-lg pl-10 pr-3 py-2 text-[13px] focus:outline-none focus:border-[#C9A84C]" />
         </div>
+        <button
+          onClick={() => setForm({ ...form, tip: String((parseFloat(form.tip) || 0) + 20) })}
+          className="shrink-0 px-3 py-2 text-[11px] font-semibold border border-neutral-200 rounded-lg text-neutral-500 hover:border-[#C9A84C] hover:text-[#C9A84C] transition-all whitespace-nowrap">
+          Upgrade +$20
+        </button>
       </div>
-      {isGP && (
-        <p className="text-[11px] text-neutral-400">🟢 Groupon — 右側填 Material Upgrade 費用（如換毛 +$20），不升級填 0</p>
-      )}
       <div className="flex gap-1.5 flex-wrap">
         {METHODS.map(m => (
-          <button key={m} onClick={() => setForm({
-            ...form,
-            payment_method: m,
-            tip: m === "gp" && !form.tip ? "20" : form.tip,
-          })}
+          <button key={m} onClick={() => setForm({ ...form, payment_method: m })}
             className={`px-3 py-1 text-[11px] font-semibold rounded-full border transition-all ${form.payment_method === m ? "bg-[#1C1C1C] text-white border-[#1C1C1C]" : "border-neutral-200 text-neutral-500 hover:border-neutral-400"}`}>
             {METHOD_ICON[m]} {METHOD_LABEL[m]}
           </button>
@@ -122,7 +119,7 @@ function EntryRow({ e, onEdit, onDelete, deleting }: {
           <span className="w-14 text-[11px] text-neutral-400 shrink-0">{methodLabel}</span>
           <div className="w-16 text-right shrink-0">
             <p className="text-[14px] font-bold text-[#1C1C1C] tabular-nums">{fmt$(e.amount)}</p>
-            {e.tip > 0 && <p className="text-[11px] text-[#C9A84C] tabular-nums">+{fmt$(e.tip)} {e.payment_method === "gp" ? "upg" : "tip"}</p>}
+            {e.tip > 0 && <p className="text-[11px] text-[#C9A84C] tabular-nums">+{fmt$(e.tip)}</p>}
           </div>
         </>
       )}
@@ -216,17 +213,23 @@ function DayCard({ day, isOpen, onToggle, onAddEntry, adminKey, onRefresh, noHea
           {day.entries.map(e => (
             editId === e.id ? (
               <div key={e.id} className="px-5 py-3 border-b border-neutral-50 space-y-2">
-                <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-2">
                   <input value={editForm.client_name} onChange={ev => setEditForm(p => ({ ...p, client_name: ev.target.value }))}
-                    className="col-span-2 border border-neutral-200 rounded-lg px-3 py-1.5 text-[13px] focus:outline-none focus:border-[#C9A84C]" />
+                    className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-[13px] focus:outline-none focus:border-[#C9A84C]" />
                   <input value={editForm.service_label} onChange={ev => setEditForm(p => ({ ...p, service_label: ev.target.value }))}
-                    placeholder="Service" className="col-span-2 border border-neutral-200 rounded-lg px-3 py-1.5 text-[13px] focus:outline-none focus:border-[#C9A84C]" />
-                  <div className="relative"><span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-[13px]">$</span>
-                    <input value={editForm.amount} onChange={ev => setEditForm(p => ({ ...p, amount: ev.target.value }))} type="number" min="0"
-                      className="w-full border border-neutral-200 rounded-lg pl-6 pr-3 py-1.5 text-[13px] focus:outline-none focus:border-[#C9A84C]" /></div>
-                  <div className="relative"><span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-[12px]">{editForm.payment_method === "gp" ? "upgrade $" : "tip $"}</span>
-                    <input value={editForm.tip} onChange={ev => setEditForm(p => ({ ...p, tip: ev.target.value }))} type="number" min="0"
-                      className="w-full border border-neutral-200 rounded-lg pl-14 pr-3 py-1.5 text-[13px] focus:outline-none focus:border-[#C9A84C]" /></div>
+                    placeholder="Service" className="w-full border border-neutral-200 rounded-lg px-3 py-1.5 text-[13px] focus:outline-none focus:border-[#C9A84C]" />
+                  <div className="flex gap-2">
+                    <div className="relative flex-1"><span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-[13px]">$</span>
+                      <input value={editForm.amount} onChange={ev => setEditForm(p => ({ ...p, amount: ev.target.value }))} type="number" min="0"
+                        className="w-full border border-neutral-200 rounded-lg pl-6 pr-3 py-1.5 text-[13px] focus:outline-none focus:border-[#C9A84C]" /></div>
+                    <div className="relative flex-1"><span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-[12px]">tip $</span>
+                      <input value={editForm.tip} onChange={ev => setEditForm(p => ({ ...p, tip: ev.target.value }))} type="number" min="0"
+                        className="w-full border border-neutral-200 rounded-lg pl-10 pr-3 py-1.5 text-[13px] focus:outline-none focus:border-[#C9A84C]" /></div>
+                    <button onClick={() => setEditForm(p => ({ ...p, tip: String((parseFloat(p.tip) || 0) + 20) }))}
+                      className="shrink-0 px-2.5 py-1.5 text-[11px] font-semibold border border-neutral-200 rounded-lg text-neutral-500 hover:border-[#C9A84C] hover:text-[#C9A84C] transition-all whitespace-nowrap">
+                      Upgrade +$20
+                    </button>
+                  </div>
                 </div>
                 <div className="flex gap-1.5 flex-wrap">
                   {METHODS.map(m => (
