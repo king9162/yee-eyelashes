@@ -28,8 +28,12 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Get effective UI password: settings override, else env var
+  const { data: pwRow } = await db.from("settings").select("value").eq("key", "ui_password").maybeSingle();
+  const expectedPassword = pwRow?.value ?? process.env.ADMIN_SECRET_KEY ?? "";
+
   // Validate password
-  if (password !== process.env.ADMIN_SECRET_KEY) {
+  if (password !== expectedPassword) {
     const prev = rl?.value
       ? (JSON.parse(rl.value) as { attempts: number })
       : { attempts: 0 };
@@ -54,11 +58,12 @@ export async function POST(req: NextRequest) {
   const entry = { at: new Date().toISOString(), ip: ip.split(".").slice(0, 2).join(".") + ".*.*", device };
   const { data: logRow } = await db.from("settings").select("value").eq("key", "admin_login_log").maybeSingle();
   const existing: typeof entry[] = logRow?.value ? JSON.parse(logRow.value) : [];
-  const updated = [...existing, entry].slice(-20); // keep last 20
+  const updated = [...existing, entry].slice(-20);
   await db.from("settings").upsert(
     { key: "admin_login_log", value: JSON.stringify(updated), updated_at: new Date().toISOString() },
     { onConflict: "key" }
   );
 
-  return NextResponse.json({ ok: true });
+  // Return the real API key so client always uses the correct Bearer token
+  return NextResponse.json({ ok: true, adminKey: process.env.ADMIN_SECRET_KEY });
 }

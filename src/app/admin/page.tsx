@@ -198,6 +198,24 @@ export default function AdminPage() {
   const [mergeTarget, setMergeTarget] = useState<{ client: Client; visits: { id: string; date: string; notes: string }[] } | null>(null);
   const [adminLoginLog, setAdminLoginLog] = useState<{ at: string; ip: string; device: string }[]>([]);
 
+  // Change-password mode (login screen)
+  const [changePwMode, setChangePwMode] = useState(false);
+  const [cpCurrent, setCpCurrent]       = useState("");
+  const [cpNew, setCpNew]               = useState("");
+  const [cpManagerPin, setCpManagerPin] = useState("");
+  const [cpError, setCpError]           = useState("");
+  const [cpSuccess, setCpSuccess]       = useState(false);
+  const [cpLoading, setCpLoading]       = useState(false);
+
+  // Partner lock (Revenue + Partner Settlement)
+  const [partnerUnlocked, setPartnerUnlocked] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return sessionStorage.getItem("partner_unlocked") === "1";
+  });
+  const [partnerPin, setPartnerPin]         = useState("");
+  const [partnerPinError, setPartnerPinError] = useState("");
+  const [partnerPinLoading, setPartnerPinLoading] = useState(false);
+
   const loadActions = useCallback(async (secret: string) => {
     try {
       const res = await fetch("/api/admin/client-actions", {
@@ -427,10 +445,46 @@ export default function AdminPage() {
       setLoading(false);
       return;
     }
-    sessionStorage.setItem("admin_key", key);
+    const data = await res.json();
+    const adminKey = data.adminKey ?? key;
+    sessionStorage.setItem("admin_key", adminKey);
     sessionStorage.setItem("admin_expiry", String(Date.now() + 8 * 60 * 60 * 1000));
-    await fetchClients(key);
+    await fetchClients(adminKey);
     setLoading(false);
+  }
+
+  async function changePassword(e: React.FormEvent) {
+    e.preventDefault();
+    setCpError(""); setCpLoading(true);
+    const res = await fetch("/api/admin/change-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ currentPassword: cpCurrent, newPassword: cpNew, adminPin: cpManagerPin }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setCpLoading(false);
+    if (!res.ok) { setCpError(data.error ?? "Error"); return; }
+    setCpSuccess(true);
+    setCpCurrent(""); setCpNew(""); setCpManagerPin("");
+  }
+
+  async function verifyPartnerPin() {
+    if (!partnerPin.trim()) return;
+    setPartnerPinLoading(true); setPartnerPinError("");
+    const savedKey = sessionStorage.getItem("admin_key") ?? "";
+    const res = await fetch("/api/admin/partner-pin", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${savedKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ pin: partnerPin }),
+    });
+    setPartnerPinLoading(false);
+    if (res.ok) {
+      sessionStorage.setItem("partner_unlocked", "1");
+      setPartnerUnlocked(true);
+      setPartnerPin("");
+    } else {
+      setPartnerPinError("密碼錯誤");
+    }
   }
 
   async function saveNewClient() {
@@ -704,15 +758,58 @@ export default function AdminPage() {
           <div className="text-center mb-10">
             <h1 className="text-[2rem] font-bold text-[#1C1C1C]" style={{ fontFamily: "var(--font-montserrat), sans-serif", fontWeight: 700 }}>Admin</h1>
           </div>
-          <form onSubmit={login} className="space-y-4">
-            <input type="password" value={key} onChange={e => setKey(e.target.value)}
-              placeholder="Enter admin password"
-              className="w-full bg-white border border-neutral-200 px-4 py-3.5 text-[13px] text-[#1C1C1C] rounded-xl focus:outline-none focus:border-[#C9A84C] transition-colors" />
-            <button type="submit" disabled={loading}
-              className="w-full py-4 bg-[#1C1C1C] text-white text-[10px] uppercase tracking-[0.25em] rounded-xl hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all">
-              {loading ? "Verifying..." : "Login"}
-            </button>
-          </form>
+
+          {!changePwMode ? (
+            <>
+              <form onSubmit={login} className="space-y-4">
+                <input type="password" value={key} onChange={e => setKey(e.target.value)}
+                  placeholder="Enter admin password"
+                  className="w-full bg-white border border-neutral-200 px-4 py-3.5 text-[13px] text-[#1C1C1C] rounded-xl focus:outline-none focus:border-[#C9A84C] transition-colors" />
+                <button type="submit" disabled={loading}
+                  className="w-full py-4 bg-[#1C1C1C] text-white text-[10px] uppercase tracking-[0.25em] rounded-xl hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all">
+                  {loading ? "Verifying..." : "Login"}
+                </button>
+              </form>
+              <div className="text-center mt-5">
+                <button onClick={() => { setChangePwMode(true); setCpError(""); setCpSuccess(false); }}
+                  className="text-[11px] text-neutral-400 hover:text-neutral-600 underline underline-offset-2 transition-colors">
+                  修改密碼
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="space-y-4">
+              <h2 className="text-center text-[13px] font-semibold text-[#1C1C1C] mb-6">修改登入密碼</h2>
+              {cpSuccess ? (
+                <div className="text-center space-y-4">
+                  <p className="text-green-600 text-[13px] font-semibold">密碼已更新！</p>
+                  <button onClick={() => { setChangePwMode(false); setCpSuccess(false); }}
+                    className="text-[11px] text-neutral-400 hover:text-neutral-600 underline">返回登入</button>
+                </div>
+              ) : (
+                <form onSubmit={changePassword} className="space-y-3">
+                  <input type="password" value={cpCurrent} onChange={e => setCpCurrent(e.target.value)}
+                    placeholder="目前密碼"
+                    className="w-full bg-white border border-neutral-200 px-4 py-3.5 text-[13px] rounded-xl focus:outline-none focus:border-[#C9A84C]" />
+                  <input type="password" value={cpNew} onChange={e => setCpNew(e.target.value)}
+                    placeholder="新密碼"
+                    className="w-full bg-white border border-neutral-200 px-4 py-3.5 text-[13px] rounded-xl focus:outline-none focus:border-[#C9A84C]" />
+                  <input type="password" value={cpManagerPin} onChange={e => setCpManagerPin(e.target.value)}
+                    placeholder="管理者密碼"
+                    className="w-full bg-white border border-neutral-200 px-4 py-3.5 text-[13px] rounded-xl focus:outline-none focus:border-[#C9A84C]" />
+                  {cpError && <p className="text-red-500 text-[12px] text-center">{cpError}</p>}
+                  <button type="submit" disabled={cpLoading || !cpCurrent || !cpNew || !cpManagerPin}
+                    className="w-full py-4 bg-[#1C1C1C] text-white text-[10px] uppercase tracking-[0.25em] rounded-xl hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all disabled:opacity-40">
+                    {cpLoading ? "儲存中…" : "儲存新密碼"}
+                  </button>
+                  <div className="text-center">
+                    <button type="button" onClick={() => setChangePwMode(false)}
+                      className="text-[11px] text-neutral-400 hover:text-neutral-600 underline">返回登入</button>
+                  </div>
+                </form>
+              )}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -1768,8 +1865,40 @@ export default function AdminPage() {
                   await fetch("/api/admin/settings", { method: "PATCH", headers: { "Content-Type": "application/json", Authorization: `Bearer ${savedKey}` }, body: JSON.stringify({ key: "admin_login_log", value: "[]" }) });
                   setAdminLoginLog([]);
                 }} />}
-          {view === "revenue"        && <div className="flex-1 overflow-auto p-4 sm:p-6 bg-neutral-50"><RevenueSection adminKey={savedKey} /></div>}
-          {view === "expenses"       && <ExpensesView      adminKey={savedKey} />}
+          {view === "revenue"        && (!partnerUnlocked ? (
+            <div className="flex-1 flex items-center justify-center bg-neutral-50">
+              <div className="bg-white rounded-2xl p-8 shadow-sm border border-neutral-200 w-72 text-center">
+                <p className="text-[15px] font-bold text-[#1C1C1C] mb-1">Revenue</p>
+                <p className="text-[12px] text-neutral-400 mb-5">請輸入授權密碼</p>
+                <input autoFocus type="password" value={partnerPin} onChange={e => { setPartnerPin(e.target.value); setPartnerPinError(""); }}
+                  onKeyDown={e => e.key === "Enter" && verifyPartnerPin()}
+                  placeholder="授權密碼"
+                  className="w-full border border-neutral-200 rounded-xl px-4 py-2.5 text-[14px] text-center focus:outline-none focus:border-[#C9A84C] mb-3" />
+                {partnerPinError && <p className="text-red-500 text-[12px] mb-2">{partnerPinError}</p>}
+                <button onClick={verifyPartnerPin} disabled={!partnerPin.trim() || partnerPinLoading}
+                  className="w-full py-2.5 bg-[#1C1C1C] text-white text-[12px] font-semibold rounded-xl hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all disabled:opacity-30">
+                  {partnerPinLoading ? "驗證中…" : "確認"}
+                </button>
+              </div>
+            </div>
+          ) : <div className="flex-1 overflow-auto p-4 sm:p-6 bg-neutral-50"><RevenueSection adminKey={savedKey} /></div>)}
+          {view === "expenses"       && (!partnerUnlocked ? (
+            <div className="flex-1 flex items-center justify-center bg-neutral-50">
+              <div className="bg-white rounded-2xl p-8 shadow-sm border border-neutral-200 w-72 text-center">
+                <p className="text-[15px] font-bold text-[#1C1C1C] mb-1">合夥人結算</p>
+                <p className="text-[12px] text-neutral-400 mb-5">請輸入授權密碼</p>
+                <input autoFocus type="password" value={partnerPin} onChange={e => { setPartnerPin(e.target.value); setPartnerPinError(""); }}
+                  onKeyDown={e => e.key === "Enter" && verifyPartnerPin()}
+                  placeholder="授權密碼"
+                  className="w-full border border-neutral-200 rounded-xl px-4 py-2.5 text-[14px] text-center focus:outline-none focus:border-[#C9A84C] mb-3" />
+                {partnerPinError && <p className="text-red-500 text-[12px] mb-2">{partnerPinError}</p>}
+                <button onClick={verifyPartnerPin} disabled={!partnerPin.trim() || partnerPinLoading}
+                  className="w-full py-2.5 bg-[#1C1C1C] text-white text-[12px] font-semibold rounded-xl hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all disabled:opacity-30">
+                  {partnerPinLoading ? "驗證中…" : "確認"}
+                </button>
+              </div>
+            </div>
+          ) : <ExpensesView adminKey={savedKey} />)}
           {view === "analytics"     && <AnalyticsView     adminKey={savedKey} />}
           {view === "update-history" && <UpdateHistoryView  adminKey={savedKey} />}
           {view === "calendar"      && <CalendarView    adminKey={savedKey} />}
