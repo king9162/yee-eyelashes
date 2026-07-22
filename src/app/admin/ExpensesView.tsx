@@ -34,13 +34,15 @@ function monthLabel(mk: string) {
 }
 
 // ── Month Picker ───────────────────────────────────────────────
-const MONTH_YEARS = [
-  { year: 2026, months: [7, 8, 9, 10, 11, 12] },
-  { year: 2027, months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] },
-];
+const YEAR_MONTHS: Record<number, number[]> = {
+  2026: [7, 8, 9, 10, 11, 12],
+  2027: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+  2028: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+};
 
 function MonthPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const [open, setOpen] = useState(false);
+  const [hoverYear, setHoverYear] = useState<number>(() => parseInt(value.split("-")[0]));
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -51,39 +53,47 @@ function MonthPicker({ value, onChange }: { value: string; onChange: (v: string)
     return () => document.removeEventListener("mousedown", handle);
   }, [open]);
 
-  function mk(year: number, month: number) {
-    return `${year}-${String(month).padStart(2, "0")}`;
-  }
+  const months = YEAR_MONTHS[hoverYear] ?? [];
 
   return (
     <div className="relative" ref={ref}>
-      <button onClick={() => setOpen(o => !o)}
+      <button onClick={() => { setHoverYear(parseInt(value.split("-")[0])); setOpen(o => !o); }}
         className="flex items-center gap-1.5 border border-neutral-200 rounded-lg px-3 py-1.5 text-[12px] font-semibold text-[#1C1C1C] hover:border-neutral-400 transition-colors focus:outline-none">
         {monthLabel(value)}
         <span className="text-neutral-400 text-[10px]">▾</span>
       </button>
       {open && (
-        <div className="absolute z-30 top-full mt-1 right-0 bg-[#1C1C1C] rounded-2xl shadow-2xl p-3 flex gap-1">
-          {MONTH_YEARS.map(({ year, months }) => (
-            <div key={year} className="min-w-[72px]">
-              <p className="text-[10px] text-neutral-500 font-semibold text-center mb-1.5 px-1">{year}年</p>
-              <div className="space-y-0.5">
-                {months.map(m => {
-                  const key = mk(year, m);
-                  const selected = key === value;
-                  return (
-                    <button key={key} onClick={() => { onChange(key); setOpen(false); }}
-                      className={`w-full text-left pl-2 pr-3 py-1.5 rounded-lg text-[13px] flex items-center gap-1.5 transition-colors ${
-                        selected ? "bg-white/15 text-white font-semibold" : "text-neutral-400 hover:bg-white/8 hover:text-white"
-                      }`}>
-                      <span className="w-3 text-[11px] shrink-0">{selected ? "✓" : ""}</span>
-                      {m}月
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
+        <div className="absolute z-30 top-full mt-1 right-0 bg-[#1C1C1C] rounded-2xl shadow-2xl flex overflow-hidden">
+          {/* Year column */}
+          <div className="py-2 border-r border-white/10 min-w-[80px]">
+            {[2026, 2027, 2028].map(y => (
+              <button key={y}
+                onMouseEnter={() => setHoverYear(y)}
+                onClick={() => setHoverYear(y)}
+                className={`w-full flex items-center justify-between px-4 py-2.5 text-[13px] transition-colors ${
+                  hoverYear === y ? "text-white bg-white/10" : "text-neutral-500 hover:text-neutral-300"
+                }`}>
+                <span>{y}年</span>
+                <span className="text-[11px] opacity-60">›</span>
+              </button>
+            ))}
+          </div>
+          {/* Month column */}
+          <div className="py-2 min-w-[72px]">
+            {months.map(m => {
+              const key = `${hoverYear}-${String(m).padStart(2, "0")}`;
+              const selected = key === value;
+              return (
+                <button key={key} onClick={() => { onChange(key); setOpen(false); }}
+                  className={`w-full flex items-center gap-2 px-4 py-2 text-[13px] transition-colors ${
+                    selected ? "text-white font-semibold" : "text-neutral-400 hover:text-white"
+                  }`}>
+                  <span className="w-3 text-[11px] shrink-0">{selected ? "✓" : ""}</span>
+                  {m}月
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>
