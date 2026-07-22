@@ -305,6 +305,7 @@ export default function DashboardView({ adminKey, letterOpenedAt, adminLoginLog,
   const firstVisitMap = new Map<string, string>(); // key → earliest visit date
   for (const c of clients) {
     if (c.owner === "elly") continue;
+    if (c.deleted) continue;
     const k = normP(c.phone ?? "") || c.email || c.id;
     seen.add(k);
     if (!visitDatesMap.has(k)) visitDatesMap.set(k, new Set());

@@ -190,6 +190,9 @@ export default function AdminPage() {
   const [clientTab,     setClientTab]     = useState<"active" | "deleted">("active");
   const [tracking, setTracking] = useState<Record<string, Record<string, string>>>({});
   const [letterOpenedAt, setLetterOpenedAt] = useState<string | null>(null);
+  const [mergeFrom, setMergeFrom] = useState<{ client: Client; visits: { id: string; date: string; notes: string }[] } | null>(null);
+  const [mergeSearch, setMergeSearch] = useState("");
+  const [mergeTarget, setMergeTarget] = useState<{ client: Client; visits: { id: string; date: string; notes: string }[] } | null>(null);
   const [adminLoginLog, setAdminLoginLog] = useState<{ at: string; ip: string; device: string }[]>([]);
 
   const loadActions = useCallback(async (secret: string) => {
@@ -449,6 +452,21 @@ export default function AdminPage() {
     });
     if (res.ok) { const c = await res.json(); setClients(prev => prev.map(x => x.id === id ? c : x)); }
     setEditingClient(null); setClientSaving(false);
+  }
+
+  async function doMerge() {
+    if (!mergeFrom || !mergeTarget) return;
+    const savedKey = sessionStorage.getItem("admin_key") ?? "";
+    const mergeIds = mergeFrom.visits.map(v => v.id);
+    await fetch("/api/admin/merge-clients", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${savedKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ keepId: mergeTarget.client.id, mergeIds }),
+    });
+    setMergeFrom(null);
+    setMergeTarget(null);
+    setMergeSearch("");
+    fetchClients(savedKey);
   }
 
   async function deleteClient(id: string) {
@@ -1623,6 +1641,12 @@ export default function AdminPage() {
                                           <button onClick={() => { setOpenDropdown(null); deleteClientGroup(visits.map(v => v.id), c.phone, c.email); }}
                                             className="flex-1 text-[11px] font-medium py-1.5 bg-neutral-100 text-neutral-400 border border-neutral-200 rounded-lg hover:bg-neutral-200 transition-colors">Del</button>
                                         </div>
+                                        <div className="px-3 pb-3">
+                                          <button onClick={() => { setOpenDropdown(null); setMergeFrom({ client: c, visits }); setMergeSearch(""); setMergeTarget(null); }}
+                                            className="w-full text-[11px] font-medium py-1.5 bg-amber-50 text-amber-600 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors">
+                                            ⇢ Merge into...
+                                          </button>
+                                        </div>
                                         <div className="px-4 pb-2">
                                           <button onClick={() => setOpenDropdown(null)} className="text-[10px] text-neutral-300 hover:text-neutral-500">Close</button>
                                         </div>
@@ -1647,6 +1671,67 @@ export default function AdminPage() {
 
   return (
     <div className="admin-panel h-screen flex flex-col bg-neutral-50 overflow-hidden">
+
+      {/* Merge modal */}
+      {mergeFrom && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center px-4">
+          <div className="bg-white rounded-2xl p-6 shadow-xl w-[420px] max-h-[80vh] flex flex-col">
+            <h4 className="text-[15px] font-bold text-[#1C1C1C] mb-1">
+              Merge "{mergeFrom.client.first_name} {mergeFrom.client.last_name}".into...
+            </h4>
+            <p className="text-[12px] text-neutral-400 mb-3">選擇要合併進去的客人記錄（主要保留的那個）</p>
+            <input
+              autoFocus
+              value={mergeSearch}
+              onChange={e => { setMergeSearch(e.target.value); setMergeTarget(null); }}
+              placeholder="Search name..."
+              className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:border-[#C9A84C] mb-3"
+            />
+            <div className="flex-1 overflow-y-auto space-y-1 mb-4">
+              {buildClientGroups(clients)
+                .filter(g =>
+                  g.client.id !== mergeFrom.client.id &&
+                  mergeSearch.trim() &&
+                  `${g.client.first_name} ${g.client.last_name}`.toLowerCase().includes(mergeSearch.toLowerCase())
+                )
+                .slice(0, 10)
+                .map(g => {
+                  const label = `${g.client.first_name} ${g.client.last_name}`.trim();
+                  const isSelected = mergeTarget?.client.id === g.client.id;
+                  return (
+                    <button key={g.client.id} onClick={() => setMergeTarget(g)}
+                      className={`w-full text-left px-3 py-2.5 rounded-lg border text-[13px] transition-all ${isSelected ? "border-[#C9A84C] bg-amber-50 text-[#1C1C1C] font-semibold" : "border-neutral-200 hover:border-neutral-400 text-neutral-600"}`}>
+                      {label || "(no name)"}
+                      <span className="text-[11px] text-neutral-400 ml-2">{g.visits.length} visit{g.visits.length !== 1 ? "s" : ""}</span>
+                    </button>
+                  );
+                })}
+              {mergeSearch.trim() && buildClientGroups(clients).filter(g =>
+                g.client.id !== mergeFrom.client.id &&
+                `${g.client.first_name} ${g.client.last_name}`.toLowerCase().includes(mergeSearch.toLowerCase())
+              ).length === 0 && (
+                <p className="text-[12px] text-neutral-300 px-2">No clients found</p>
+              )}
+            </div>
+            {mergeTarget && (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-3 text-[12px] text-amber-700">
+                將 <strong>{mergeFrom.client.first_name}</strong> 的 {mergeFrom.visits.length} 筆記錄合併進 <strong>{mergeTarget.client.first_name} {mergeTarget.client.last_name}</strong>。合併後原記錄將消失。
+              </div>
+            )}
+            <div className="flex gap-2">
+              <button onClick={() => { setMergeFrom(null); setMergeTarget(null); setMergeSearch(""); }}
+                className="flex-1 px-3 py-2 text-[12px] border border-neutral-200 rounded-lg text-neutral-500 hover:border-neutral-400">
+                Cancel
+              </button>
+              <button onClick={doMerge} disabled={!mergeTarget}
+                className="flex-1 px-3 py-2 text-[12px] font-semibold bg-[#1C1C1C] text-white rounded-lg hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all disabled:opacity-30">
+                Confirm Merge
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* New data toast */}
       {newDataToast && (
         <div className="fixed top-4 right-4 z-50 flex items-center gap-3 bg-[#1C1C1C] text-white px-5 py-3 shadow-lg">
