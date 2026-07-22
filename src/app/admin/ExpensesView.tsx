@@ -181,8 +181,9 @@ export default function ExpensesView({ adminKey }: { adminKey: string }) {
   useEffect(() => { load(); }, [load]);
 
   // ── Summaries ──────────────────────────────────────────────
+  // July 2026 started 7/20 (partner join date); all other months count full month
   const monthRevenue = revenue
-    .filter(e => e.date.startsWith(month))
+    .filter(e => month === "2026-07" ? e.date >= "2026-07-20" : e.date.startsWith(month))
     .reduce((s, e) => s + e.amount + e.tip, 0);
 
   const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0);
@@ -262,10 +263,13 @@ export default function ExpensesView({ adminKey }: { adminKey: string }) {
           <p className="text-[11px] text-neutral-400 mt-0.5">支出 · 淨利 · 分潤計算</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <select value={month} onChange={e => setMonth(e.target.value)}
-            className="border border-neutral-200 rounded-lg px-3 py-1.5 text-[12px] font-semibold text-[#1C1C1C] focus:outline-none focus:border-[#C9A84C]">
-            {months.map(m => <option key={m} value={m}>{monthLabel(m)}</option>)}
-          </select>
+          <div className="relative">
+            <select value={month} onChange={e => setMonth(e.target.value)}
+              className="appearance-none border border-neutral-200 rounded-lg px-3 py-1.5 pr-7 text-[12px] font-semibold text-[#1C1C1C] focus:outline-none focus:border-[#C9A84C]">
+              {months.map(m => <option key={m} value={m}>{monthLabel(m)}</option>)}
+            </select>
+            <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 text-[10px] pointer-events-none">▾</span>
+          </div>
           <button onClick={() => { setShowForm(true); setForm({ ...EMPTY_FORM, date: `${month}-${new Date().getDate().toString().padStart(2,"0")}` }); }}
             className="flex items-center gap-1 px-3 py-1.5 bg-[#1C1C1C] text-white text-[12px] font-bold rounded-lg hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all">
             <span className="text-[16px] leading-none font-light">+</span> 新增支出
