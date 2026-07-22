@@ -29,17 +29,65 @@ type RevenueEntry = { date: string; amount: number; tip: number };
 
 const EMPTY_FORM = { date: "", category: "", vendor: "", description: "", amount: "", payment_method: "bank", notes: "" };
 
-// Fixed business year: July → December 2026
-function businessMonths(): string[] {
-  const months: string[] = [];
-  for (let m = 12; m >= 7; m--) {
-    months.push(`2026-${String(m).padStart(2, "0")}`);
-  }
-  return months;
-}
-
 function monthLabel(mk: string) {
   return new Date(`${mk}-01T12:00:00`).toLocaleDateString("zh-TW", { month: "long", year: "numeric" });
+}
+
+// ── Month Picker ───────────────────────────────────────────────
+const MONTH_YEARS = [
+  { year: 2026, months: [7, 8, 9, 10, 11, 12] },
+  { year: 2027, months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] },
+];
+
+function MonthPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handle(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    if (open) document.addEventListener("mousedown", handle);
+    return () => document.removeEventListener("mousedown", handle);
+  }, [open]);
+
+  function mk(year: number, month: number) {
+    return `${year}-${String(month).padStart(2, "0")}`;
+  }
+
+  return (
+    <div className="relative" ref={ref}>
+      <button onClick={() => setOpen(o => !o)}
+        className="flex items-center gap-1.5 border border-neutral-200 rounded-lg px-3 py-1.5 text-[12px] font-semibold text-[#1C1C1C] hover:border-neutral-400 transition-colors focus:outline-none">
+        {monthLabel(value)}
+        <span className="text-neutral-400 text-[10px]">▾</span>
+      </button>
+      {open && (
+        <div className="absolute z-30 top-full mt-1 right-0 bg-[#1C1C1C] rounded-2xl shadow-2xl p-3 flex gap-1">
+          {MONTH_YEARS.map(({ year, months }) => (
+            <div key={year} className="min-w-[72px]">
+              <p className="text-[10px] text-neutral-500 font-semibold text-center mb-1.5 px-1">{year}年</p>
+              <div className="space-y-0.5">
+                {months.map(m => {
+                  const key = mk(year, m);
+                  const selected = key === value;
+                  return (
+                    <button key={key} onClick={() => { onChange(key); setOpen(false); }}
+                      className={`w-full text-left pl-2 pr-3 py-1.5 rounded-lg text-[13px] flex items-center gap-1.5 transition-colors ${
+                        selected ? "bg-white/15 text-white font-semibold" : "text-neutral-400 hover:bg-white/8 hover:text-white"
+                      }`}>
+                      <span className="w-3 text-[11px] shrink-0">{selected ? "✓" : ""}</span>
+                      {m}月
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 function currentMonth() {
@@ -227,8 +275,6 @@ export default function ExpensesView({ adminKey }: { adminKey: string }) {
     setConfirmDel(null);
   }
 
-  const months = businessMonths();
-
   return (
     <div className="flex-1 overflow-auto bg-neutral-50">
 
@@ -263,13 +309,7 @@ export default function ExpensesView({ adminKey }: { adminKey: string }) {
           <p className="text-[11px] text-neutral-400 mt-0.5">支出 · 淨利 · 分潤計算</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <div className="relative">
-            <select value={month} onChange={e => setMonth(e.target.value)}
-              className="appearance-none border border-neutral-200 rounded-lg px-3 py-1.5 pr-7 text-[12px] font-semibold text-[#1C1C1C] focus:outline-none focus:border-[#C9A84C]">
-              {months.map(m => <option key={m} value={m}>{monthLabel(m)}</option>)}
-            </select>
-            <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 text-[10px] pointer-events-none">▾</span>
-          </div>
+          <MonthPicker value={month} onChange={setMonth} />
           <button onClick={() => { setShowForm(true); setForm({ ...EMPTY_FORM, date: `${month}-${new Date().getDate().toString().padStart(2,"0")}` }); }}
             className="flex items-center gap-1 px-3 py-1.5 bg-[#1C1C1C] text-white text-[12px] font-bold rounded-lg hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all">
             <span className="text-[16px] leading-none font-light">+</span> 新增支出
