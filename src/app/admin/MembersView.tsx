@@ -28,6 +28,18 @@ type Transaction = {
   created_at: string;
 };
 
+type LashRecord = {
+  id: string;
+  service_date: string;
+  service_type: string | null;
+  material: string | null;
+  style: string | null;
+  length: string | null;
+  curl: string | null;
+  lash_count: number | null;
+  technician_notes: string | null;
+};
+
 type MemberCoupon = {
   id: string;
   status: string;
@@ -90,6 +102,13 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
   const [relinking, setRelinking] = useState(false);
   const [relinkMsg, setRelinkMsg] = useState("");
 
+  // Lash record
+  const [lashRecords, setLashRecords] = useState<LashRecord[]>([]);
+  const [showLashForm, setShowLashForm] = useState(false);
+  const [lashForm, setLashForm] = useState({ service_date: new Date().toLocaleDateString("en-CA"), service_type: "", material: "", style: "", length: "", curl: "", lash_count: "", technician_notes: "", client_requests: "" });
+  const [savingLash, setSavingLash] = useState(false);
+  const [lashMsg, setLashMsg] = useState("");
+
   // Seed coupons
   const [seeding, setSeeding] = useState(false);
 
@@ -126,14 +145,36 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
     setSelected(m);
     setDetail(null);
     setDetailLoading(true);
-    setAwardMsg("");
-    setIssueMsg("");
-    const res = await fetch(`/api/admin/members/${m.id}`, {
-      headers: { Authorization: `Bearer ${adminKey}` },
-    });
-    const data = await res.json();
+    setAwardMsg(""); setIssueMsg(""); setRelinkMsg(""); setLashMsg("");
+    setShowLashForm(false);
+
+    const [detailRes, lashRes] = await Promise.all([
+      fetch(`/api/admin/members/${m.id}`, { headers: { Authorization: `Bearer ${adminKey}` } }),
+      fetch(`/api/admin/members/${m.id}/lash-records`, { headers: { Authorization: `Bearer ${adminKey}` } }),
+    ]);
+    const [data, lashData] = await Promise.all([detailRes.json(), lashRes.json()]);
     setDetail(data);
+    setLashRecords(Array.isArray(lashData) ? lashData : []);
     setDetailLoading(false);
+  }
+
+  async function saveLashRecord() {
+    if (!selected || !lashForm.service_date) return;
+    setSavingLash(true); setLashMsg("");
+    const res = await fetch(`/api/admin/members/${selected.id}/lash-records`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${adminKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify(lashForm),
+    });
+    const d = await res.json();
+    setSavingLash(false);
+    if (!res.ok) { setLashMsg(`Error: ${d.error}`); return; }
+    setLashMsg("Lash record saved!");
+    setShowLashForm(false);
+    setLashForm({ service_date: new Date().toLocaleDateString("en-CA"), service_type: "", material: "", style: "", length: "", curl: "", lash_count: "", technician_notes: "", client_requests: "" });
+    const lr = await fetch(`/api/admin/members/${selected.id}/lash-records`, { headers: { Authorization: `Bearer ${adminKey}` } });
+    const lrData = await lr.json();
+    setLashRecords(Array.isArray(lrData) ? lrData : []);
   }
 
   async function awardPoints() {
@@ -509,6 +550,94 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
                 </div>
               </div>
             )}
+
+            {/* Lash Passport */}
+            <div className="bg-white rounded-xl border border-neutral-100 overflow-hidden">
+              <div className="px-4 py-3 border-b border-neutral-100 flex items-center justify-between">
+                <p className="text-[13px] font-bold text-[#1C1C1C]">Lash Passport</p>
+                <button onClick={() => setShowLashForm(!showLashForm)}
+                  className="text-[11px] text-[#C9A84C] hover:underline">
+                  {showLashForm ? "Cancel" : "+ Add Record"}
+                </button>
+              </div>
+
+              {showLashForm && (
+                <div className="px-4 py-4 border-b border-neutral-100 space-y-3 bg-neutral-50">
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { key: "service_date", label: "Date", type: "date" },
+                      { key: "service_type", label: "Service Type", placeholder: "New Full Set / Refill" },
+                      { key: "material", label: "Material", placeholder: "Classic / Volume / Cashmere" },
+                      { key: "style", label: "Style", placeholder: "Cat Eye / Doll Eye" },
+                      { key: "length", label: "Length", placeholder: "10-13mm" },
+                      { key: "curl", label: "Curl", placeholder: "C / D / L" },
+                      { key: "lash_count", label: "Count", placeholder: "120", type: "number" },
+                    ].map(f => (
+                      <div key={f.key} className={f.key === "service_date" ? "col-span-2" : ""}>
+                        <label className="block text-[9px] uppercase tracking-[0.1em] text-neutral-400 mb-1">{f.label}</label>
+                        <input
+                          type={f.type ?? "text"}
+                          value={lashForm[f.key as keyof typeof lashForm]}
+                          onChange={e => setLashForm(p => ({ ...p, [f.key]: e.target.value }))}
+                          placeholder={f.placeholder}
+                          className="w-full border border-neutral-200 rounded-lg px-2.5 py-1.5 text-[12px] focus:outline-none focus:border-[#C9A84C] bg-white"
+                        />
+                      </div>
+                    ))}
+                    <div className="col-span-2">
+                      <label className="block text-[9px] uppercase tracking-[0.1em] text-neutral-400 mb-1">Client Requests</label>
+                      <input value={lashForm.client_requests}
+                        onChange={e => setLashForm(p => ({ ...p, client_requests: e.target.value }))}
+                        placeholder="What client asked for"
+                        className="w-full border border-neutral-200 rounded-lg px-2.5 py-1.5 text-[12px] focus:outline-none focus:border-[#C9A84C] bg-white" />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block text-[9px] uppercase tracking-[0.1em] text-neutral-400 mb-1">Technician Notes</label>
+                      <input value={lashForm.technician_notes}
+                        onChange={e => setLashForm(p => ({ ...p, technician_notes: e.target.value }))}
+                        placeholder="Internal notes"
+                        className="w-full border border-neutral-200 rounded-lg px-2.5 py-1.5 text-[12px] focus:outline-none focus:border-[#C9A84C] bg-white" />
+                    </div>
+                  </div>
+                  {lashMsg && <p className={`text-[11px] font-semibold ${lashMsg.startsWith("Error") ? "text-red-500" : "text-green-600"}`}>{lashMsg}</p>}
+                  <button onClick={saveLashRecord} disabled={savingLash}
+                    className="w-full py-2 bg-[#1C1C1C] text-white text-[12px] font-semibold rounded-lg hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all disabled:opacity-40">
+                    {savingLash ? "Saving…" : "Save Lash Record"}
+                  </button>
+                </div>
+              )}
+
+              {lashMsg && !showLashForm && (
+                <p className="px-4 py-2 text-[11px] text-green-600 font-semibold border-b border-neutral-100">{lashMsg}</p>
+              )}
+
+              {lashRecords.length === 0 ? (
+                <p className="text-[12px] text-neutral-400 text-center py-6">No lash records yet</p>
+              ) : (
+                <div className="divide-y divide-neutral-50">
+                  {lashRecords.map(r => (
+                    <div key={r.id} className="px-4 py-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="text-[12px] font-semibold text-[#1C1C1C]">
+                          {new Date(r.service_date + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                        </p>
+                        {r.service_type && <span className="text-[11px] text-neutral-400">{r.service_type}</span>}
+                      </div>
+                      <div className="flex gap-3 flex-wrap text-[11px] text-neutral-500">
+                        {r.material && <span>{r.material}</span>}
+                        {r.style && <span>· {r.style}</span>}
+                        {r.length && <span>· {r.length}</span>}
+                        {r.curl && <span>· {r.curl}</span>}
+                        {r.lash_count && <span>· {r.lash_count}pcs</span>}
+                      </div>
+                      {r.technician_notes && (
+                        <p className="text-[11px] text-neutral-400 mt-1 italic">{r.technician_notes}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Transaction history */}
             <div className="bg-white rounded-xl border border-neutral-100 overflow-hidden">

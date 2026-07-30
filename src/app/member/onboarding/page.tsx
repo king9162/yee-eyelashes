@@ -15,6 +15,7 @@ export default function OnboardingPage() {
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [birthday, setBirthday] = useState("");
+  const [referralCode, setReferralCode] = useState("");
 
   useEffect(() => {
     async function init() {
@@ -58,20 +59,27 @@ export default function OnboardingPage() {
     setSaving(true);
     const res = await fetch("/api/member/profile", {
       method: "PATCH",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       body: JSON.stringify({ first_name: firstName.trim(), last_name: lastName.trim(), phone: phone.trim(), birthday }),
     });
-    setSaving(false);
 
     if (!res.ok) {
+      setSaving(false);
       const d = await res.json().catch(() => ({}));
       setError(d.error ?? "Something went wrong. Please try again.");
       return;
     }
 
+    // Apply referral code if entered
+    if (referralCode.trim()) {
+      await fetch("/api/member/apply-referral", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ referral_code: referralCode.trim() }),
+      });
+    }
+
+    setSaving(false);
     router.replace("/member/dashboard");
   }
 
@@ -153,6 +161,19 @@ export default function OnboardingPage() {
               onChange={e => setBirthday(e.target.value)}
               type="date"
               className="w-full border border-[#D4CCC0] bg-white rounded-xl px-3.5 py-3 text-[13px] text-[#1C1C1C] focus:outline-none focus:border-[#C9A84C] transition-colors"
+            />
+          </div>
+
+          {/* Referral code */}
+          <div>
+            <label className="block text-[10px] uppercase tracking-[0.12em] text-neutral-400 mb-1.5">
+              Referral Code <span className="normal-case tracking-normal text-neutral-300">(optional)</span>
+            </label>
+            <input
+              value={referralCode}
+              onChange={e => setReferralCode(e.target.value.toUpperCase())}
+              placeholder="e.g. A1B2C3D4"
+              className="w-full border border-[#D4CCC0] bg-white rounded-xl px-3.5 py-3 text-[13px] text-[#1C1C1C] placeholder:text-neutral-300 focus:outline-none focus:border-[#C9A84C] transition-colors font-mono tracking-widest"
             />
           </div>
 

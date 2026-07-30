@@ -250,10 +250,11 @@ export default function MemberDashboardPage() {
         {profile.last_visit_date && <RefillCard lastVisitDate={profile.last_visit_date} />}
 
         {/* Quick links row */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           {[
             { label: "Appointments", icon: "📅", href: "/member/bookings" },
             { label: `Coupons${couponCount > 0 ? ` (${couponCount})` : ""}`, icon: "🎟", href: "/member/coupons" },
+            { label: "Lash Passport", icon: "✦", href: "/member/lash-records" },
             { label: "Edit Profile", icon: "✎", href: "/member/profile" },
           ].map(item => (
             <a key={item.label} href={item.href}
