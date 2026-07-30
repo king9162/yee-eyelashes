@@ -14,6 +14,7 @@ type Profile = {
   last_visit_date: string | null;
   joined_at: string;
   referral_code: string | null;
+  referred_by: string | null;
   birthday: string | null;
 };
 
@@ -43,6 +44,7 @@ function calcTier(visits: number): Profile["vip_tier"] {
 export default function MemberDashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState("");
   const [profile, setProfile] = useState<Profile | null>(null);
   const [upcomingBooking, setUpcomingBooking] = useState<Booking | null>(null);
   const [couponCount, setCouponCount] = useState(0);
@@ -56,6 +58,7 @@ export default function MemberDashboardPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { router.replace("/member/login"); return; }
       setUser(session.user);
+      setToken(session.access_token);
 
       const { data: prof } = await supabase
         .from("profiles")
@@ -276,7 +279,12 @@ export default function MemberDashboardPage() {
         <TierBenefitsCard tier={currentTier} />
 
         {/* Referral */}
-        {profile.referral_code && <ReferralCard code={profile.referral_code} stats={referralStats} />}
+        <ReferralCard
+          code={profile.referral_code}
+          referredBy={profile.referred_by}
+          stats={referralStats}
+          token={token}
+        />
 
         {/* Footer */}
         <p className="text-center text-[11px] text-neutral-400 pb-4">
@@ -368,55 +376,114 @@ function TierBadge({ tier }: { tier: Profile["vip_tier"] }) {
   );
 }
 
-function ReferralCard({ code, stats }: { code: string; stats: { pending: number; completed: number } }) {
+function ReferralCard({ code, referredBy, stats, token }: {
+  code: string | null;
+  referredBy: string | null;
+  stats: { pending: number; completed: number };
+  token: string;
+}) {
   const [copied, setCopied] = useState(false);
+  const [inputCode, setInputCode] = useState("");
+  const [applying, setApplying] = useState(false);
+  const [applyMsg, setApplyMsg] = useState("");
+  const [applied, setApplied] = useState(!!referredBy);
 
   function copy() {
+    if (!code) return;
     navigator.clipboard.writeText(code).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
   }
 
+  async function applyReferral() {
+    if (!inputCode.trim()) return;
+    setApplying(true); setApplyMsg("");
+    const res = await fetch("/api/member/apply-referral", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ referral_code: inputCode.trim().toUpperCase() }),
+    });
+    const data = await res.json();
+    setApplying(false);
+    if (res.ok) {
+      setApplied(true);
+      setApplyMsg(`✓ Referral applied — linked to ${data.referrer_name ?? "your friend"}`);
+    } else {
+      setApplyMsg(data.error ?? "Failed to apply code");
+    }
+  }
+
   const total = stats.pending + stats.completed;
 
   return (
-    <div className="bg-white rounded-2xl border border-neutral-100 p-4">
-      <div className="flex items-start justify-between mb-1">
-        <p className="text-[12px] font-bold text-[#1C1C1C]">Refer a Friend</p>
-        {total > 0 && (
-          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C9A84C]/10 text-[#C9A84C]">
-            {total} referred
-          </span>
-        )}
-      </div>
-      <p className="text-[11px] text-neutral-400 mb-3">
-        Share your code and help friends discover Yee Eyelashes.
-      </p>
-      <div className="flex items-center gap-2 mb-3">
-        <div className="flex-1 bg-[#F8F5EF] rounded-xl px-4 py-2.5 text-center">
-          <p className="text-[17px] font-bold tracking-[0.2em] text-[#1C1C1C]" style={{ fontFamily: "var(--font-cormorant)" }}>
-            {code}
-          </p>
-        </div>
-        <button
-          onClick={copy}
-          className="px-4 py-2.5 rounded-xl text-[11px] font-semibold transition-all"
-          style={{ background: copied ? "#22C55E" : "#1C1C1C", color: "#fff" }}
-        >
-          {copied ? "Copied!" : "Copy"}
-        </button>
-      </div>
-      {total > 0 && (
-        <div className="flex gap-3 pt-2 border-t border-neutral-50">
-          {stats.completed > 0 && (
-            <p className="text-[11px] text-emerald-600 font-semibold">✓ {stats.completed} completed</p>
-          )}
-          {stats.pending > 0 && (
-            <p className="text-[11px] text-amber-600">⏳ {stats.pending} pending first visit</p>
+    <div className="bg-white rounded-2xl border border-neutral-100 p-4 space-y-4">
+
+      {/* Your code to share */}
+      {code && (
+        <div>
+          <div className="flex items-start justify-between mb-1">
+            <p className="text-[12px] font-bold text-[#1C1C1C]">Refer a Friend</p>
+            {total > 0 && (
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C9A84C]/10 text-[#C9A84C]">
+                {total} referred
+              </span>
+            )}
+          </div>
+          <p className="text-[11px] text-neutral-400 mb-2">Share your code and help friends discover Yee Eyelashes.</p>
+          <div className="flex items-center gap-2">
+            <div className="flex-1 bg-[#F8F5EF] rounded-xl px-4 py-2.5 text-center">
+              <p className="text-[17px] font-bold tracking-[0.2em] text-[#1C1C1C]" style={{ fontFamily: "var(--font-cormorant)" }}>
+                {code}
+              </p>
+            </div>
+            <button onClick={copy}
+              className="px-4 py-2.5 rounded-xl text-[11px] font-semibold transition-all"
+              style={{ background: copied ? "#22C55E" : "#1C1C1C", color: "#fff" }}>
+              {copied ? "Copied!" : "Copy"}
+            </button>
+          </div>
+          {total > 0 && (
+            <div className="flex gap-3 pt-2 border-t border-neutral-50 mt-2">
+              {stats.completed > 0 && <p className="text-[11px] text-emerald-600 font-semibold">✓ {stats.completed} completed</p>}
+              {stats.pending > 0 && <p className="text-[11px] text-amber-600">⏳ {stats.pending} pending first visit</p>}
+            </div>
           )}
         </div>
       )}
+
+      {/* Enter a friend's code */}
+      <div className="border-t border-neutral-50 pt-3">
+        <p className="text-[12px] font-bold text-[#1C1C1C] mb-1">Have a Referral Code?</p>
+        {applied ? (
+          <p className="text-[11px] text-emerald-600 font-semibold">
+            {applyMsg || "✓ Referral code already applied"}
+          </p>
+        ) : (
+          <>
+            <p className="text-[11px] text-neutral-400 mb-2">Enter a friend's code to link your accounts.</p>
+            <div className="flex gap-2">
+              <input
+                value={inputCode}
+                onChange={e => setInputCode(e.target.value.toUpperCase())}
+                placeholder="e.g. ABC12345"
+                maxLength={12}
+                className="flex-1 border border-[#D4CCC0] bg-white rounded-xl px-3 py-2.5 text-[13px] font-mono tracking-widest text-[#1C1C1C] placeholder:text-neutral-300 focus:outline-none focus:border-[#C9A84C] transition-colors uppercase"
+              />
+              <button onClick={applyReferral} disabled={applying || !inputCode.trim()}
+                className="px-4 py-2.5 rounded-xl text-[11px] font-semibold transition-all disabled:opacity-40"
+                style={{ background: "#1C1C1C", color: "#fff" }}>
+                {applying ? "…" : "Apply"}
+              </button>
+            </div>
+            {applyMsg && (
+              <p className={`text-[11px] mt-1.5 font-semibold ${applyMsg.startsWith("✓") ? "text-emerald-600" : "text-red-500"}`}>
+                {applyMsg}
+              </p>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
