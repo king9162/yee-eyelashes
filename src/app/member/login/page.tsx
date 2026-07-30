@@ -35,8 +35,8 @@ export default function MemberLoginPage() {
           <Image
             src="/images/yee-logo-v1-cropped.png"
             alt="Yee Eyelashes"
-            width={120}
-            height={48}
+            width={180}
+            height={72}
             className="object-contain"
           />
         </div>
@@ -55,8 +55,8 @@ export default function MemberLoginPage() {
           >
             Yee Eyelashes
           </h1>
-          <p className="text-[13px] text-neutral-500 whitespace-nowrap">
-            Free treatments, birthday rewards &amp; more — it&apos;s all waiting for you.
+          <p className="text-[13px] text-neutral-500 text-center whitespace-nowrap">
+            Points · Birthday Reward · Exclusive VIP Benefits
           </p>
         </div>
 
