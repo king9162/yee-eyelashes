@@ -24,8 +24,8 @@ function CallbackHandler() {
           router.replace("/member/login");
           return;
         }
-        await ensureProfile(data.session.access_token);
-        router.replace("/member/dashboard");
+        const isNew = await ensureProfile(data.session.access_token);
+        router.replace(isNew ? "/member/onboarding" : "/member/dashboard");
         return;
       }
 
@@ -37,8 +37,8 @@ function CallbackHandler() {
         router.replace("/member/login");
         return;
       }
-      await ensureProfile(session.access_token);
-      router.replace("/member/dashboard");
+      const isNew2 = await ensureProfile(session.access_token);
+      router.replace(isNew2 ? "/member/onboarding" : "/member/dashboard");
     }
 
     exchange();
@@ -47,14 +47,16 @@ function CallbackHandler() {
   return null;
 }
 
-async function ensureProfile(token: string) {
+async function ensureProfile(token: string): Promise<boolean> {
   try {
-    await fetch("/api/member/ensure-profile", {
+    const res = await fetch("/api/member/ensure-profile", {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
     });
+    const d = await res.json();
+    return d.created === true;
   } catch {
-    // Non-fatal
+    return false;
   }
 }
 
