@@ -150,16 +150,16 @@ const NAV: { section: string; items: { id: View; label: string }[] }[] = [
   { section: "Appointments", items: [
     { id: "bookings", label: "Bookings" },
   ]},
+  { section: "Customers", items: [
+    { id: "clients-main", label: "My Clients"    },
+    { id: "clients-elly", label: "Elly's Clients" },
+    { id: "packages",     label: "3x Package"    },
+  ]},
   { section: "Member Club", items: [
     { id: "checkout",  label: "Member Checkout"  },
     { id: "members",   label: "Members"          },
     { id: "coupons",   label: "Coupon Templates" },
     { id: "referrals", label: "Referrals"        },
-  ]},
-  { section: "Customers", items: [
-    { id: "clients-main", label: "My Clients"    },
-    { id: "clients-elly", label: "Elly's Clients" },
-    { id: "packages",     label: "3x Package"    },
   ]},
   { section: "Marketing", items: [
     { id: "automations", label: "Automations" },
