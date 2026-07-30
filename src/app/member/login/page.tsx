@@ -19,81 +19,94 @@ export default function MemberLoginPage() {
       },
     });
     if (error) {
-      setError("登入失敗，請稍後再試");
+      setError("Sign in failed. Please try again.");
       setLoading(false);
     }
   }
 
   return (
-    <div className="min-h-screen bg-[#0F0F0F] flex flex-col items-center justify-center px-4">
-      <div className="w-full max-w-sm">
+    <div
+      className="min-h-screen flex flex-col items-center justify-center px-4"
+      style={{ background: "#F8F5EF", fontFamily: "var(--font-montserrat), sans-serif" }}
+    >
+      <div className="w-full max-w-[360px]">
         {/* Logo */}
-        <div className="flex justify-center mb-8">
+        <div className="flex justify-center mb-10">
           <Image
-            src="/images/yee-logo-og.png"
+            src="/images/yee-logo-v1-cropped.png"
             alt="Yee Eyelashes"
-            width={64}
-            height={64}
-            className="rounded-full object-cover"
+            width={120}
+            height={48}
+            className="object-contain"
           />
         </div>
 
         {/* Heading */}
-        <div className="text-center mb-10">
-          <p className="text-[11px] tracking-[0.25em] text-[#C9A84C] uppercase mb-2 font-montserrat">
+        <div className="text-center mb-8">
+          <p
+            className="text-[10px] tracking-[0.3em] uppercase mb-3"
+            style={{ color: "#C9A84C" }}
+          >
             Member Club
           </p>
           <h1
-            className="text-[36px] font-light text-white leading-tight"
+            className="text-[40px] font-light leading-tight text-[#1C1C1C] mb-3"
             style={{ fontFamily: "var(--font-cormorant)" }}
           >
             Yee Eyelashes
           </h1>
-          <p className="text-[13px] text-neutral-400 mt-3 font-montserrat leading-relaxed">
-            登入會員，查看點數、生日優惠<br />與專屬 VIP 福利
+          <p className="text-[13px] text-neutral-500 whitespace-nowrap">
+            Points · Birthday Perks · Exclusive VIP Benefits
           </p>
+        </div>
+
+        {/* Divider */}
+        <div className="flex items-center gap-3 mb-6">
+          <div className="flex-1 h-px bg-[#E0D9CF]" />
+          <span className="text-[10px] text-neutral-400 tracking-[0.15em] uppercase">Sign in</span>
+          <div className="flex-1 h-px bg-[#E0D9CF]" />
         </div>
 
         {/* Google Sign In */}
         <button
           onClick={signInWithGoogle}
           disabled={loading}
-          className="w-full flex items-center justify-center gap-3 bg-white text-[#1C1C1C] font-semibold text-[14px] py-3.5 rounded-xl hover:bg-neutral-100 transition-all disabled:opacity-50 font-montserrat"
+          className="w-full flex items-center justify-center gap-3 py-3.5 rounded-xl border border-[#D4CCC0] bg-white text-[#1C1C1C] font-semibold text-[13px] hover:border-[#C9A84C] hover:shadow-sm transition-all disabled:opacity-50"
         >
           {loading ? (
-            <span className="text-neutral-500">跳轉中…</span>
+            <span className="text-neutral-400">Redirecting…</span>
           ) : (
             <>
               <GoogleIcon />
-              使用 Google 帳號登入
+              Continue with Google
             </>
           )}
         </button>
 
         {error && (
-          <p className="text-center text-[12px] text-red-400 mt-3">{error}</p>
+          <p className="text-center text-[12px] text-red-500 mt-3">{error}</p>
         )}
 
         {/* Benefits */}
-        <div className="mt-10 space-y-3">
+        <div className="mt-8 space-y-2.5">
           {[
-            { icon: "✦", text: "消費每 $1 賺 1 點，100 點折抵 $1" },
-            { icon: "✦", text: "生日月享 30% 折扣禮遇" },
-            { icon: "✦", text: "累積晉升 Silver · Gold · Diamond" },
-            { icon: "✦", text: "優先預約 · 專屬優惠券" },
+            "Earn 1 point per $1 spent — 100 pts = $1 off",
+            "30% birthday discount every year",
+            "Advance to Silver, Gold & Diamond tiers",
+            "Priority booking & exclusive coupons",
           ].map((b) => (
-            <div key={b.text} className="flex items-start gap-3">
-              <span className="text-[#C9A84C] text-[10px] mt-0.5 flex-shrink-0">{b.icon}</span>
-              <p className="text-[12px] text-neutral-400 font-montserrat leading-relaxed">{b.text}</p>
+            <div key={b} className="flex items-start gap-2.5">
+              <span className="text-[#C9A84C] text-[9px] mt-1 flex-shrink-0">✦</span>
+              <p className="text-[12px] text-neutral-500 leading-relaxed">{b}</p>
             </div>
           ))}
         </div>
 
-        <p className="text-center text-[11px] text-neutral-600 mt-10 font-montserrat">
-          登入即代表同意我們的{" "}
-          <a href="/en/terms" className="underline hover:text-neutral-400">服務條款</a>
-          {" "}與{" "}
-          <a href="/en/privacy" className="underline hover:text-neutral-400">隱私政策</a>
+        <p className="text-center text-[11px] text-neutral-400 mt-8">
+          By signing in you agree to our{" "}
+          <a href="/en/terms" className="underline hover:text-neutral-600">Terms</a>
+          {" "}&amp;{" "}
+          <a href="/en/privacy" className="underline hover:text-neutral-600">Privacy Policy</a>
         </p>
       </div>
     </div>
