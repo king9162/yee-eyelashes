@@ -90,8 +90,8 @@ export default function MemberLoginPage() {
         {/* Benefits */}
         <div className="mt-8 space-y-2.5">
           {[
-            "Earn 1 point per $1 spent — 100 pts = $1 off",
-            "Birthday reward — 30% off every year",
+            "Earn 1 point per $1 spent, 100 pts = $1 off",
+            "Birthday reward, 30% off every year",
             "Advance to Silver, Gold & Diamond tiers",
             "Priority booking & exclusive coupons",
           ].map((b) => (
