@@ -27,21 +27,21 @@ type Transaction = {
 };
 
 const TIER_CONFIG = {
-  member:  { label: "Member",  color: "#888",    bg: "#1a1a1a", next: "Silver",  threshold: 500  },
-  silver:  { label: "Silver",  color: "#C0C0C0", bg: "#1a1a1a", next: "Gold",    threshold: 1500 },
-  gold:    { label: "Gold",    color: "#C9A84C", bg: "#1a1200", next: "Diamond", threshold: 3000 },
-  diamond: { label: "Diamond", color: "#A8DAFF", bg: "#001225", next: null,      threshold: null },
+  member:  { label: "Member",  color: "#888",    next: "Silver",  threshold: 500  },
+  silver:  { label: "Silver",  color: "#C0C0C0", next: "Gold",    threshold: 1500 },
+  gold:    { label: "Gold",    color: "#C9A84C", next: "Diamond", threshold: 3000 },
+  diamond: { label: "Diamond", color: "#A8DAFF", next: null,      threshold: null },
 };
 
 const TXN_LABELS: Record<string, string> = {
-  purchase_earned:  "消費賺點",
-  referral_reward:  "推薦獎勵",
-  birthday_bonus:   "生日禮遇",
-  promotion_bonus:  "活動獎勵",
-  manual_adjustment:"手動調整",
-  redemption:       "點數折抵",
-  refund_adjustment:"退款調整",
-  expired:          "點數過期",
+  purchase_earned:   "Points Earned",
+  referral_reward:   "Referral Reward",
+  birthday_bonus:    "Birthday Reward",
+  promotion_bonus:   "Promotion Bonus",
+  manual_adjustment: "Manual Adjustment",
+  redemption:        "Points Redeemed",
+  refund_adjustment: "Refund Adjustment",
+  expired:           "Points Expired",
 };
 
 export default function MemberDashboardPage() {
@@ -56,10 +56,7 @@ export default function MemberDashboardPage() {
 
     async function load() {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.replace("/member/login");
-        return;
-      }
+      if (!session) { router.replace("/member/login"); return; }
       setUser(session.user);
 
       const { data: prof } = await supabase
@@ -93,19 +90,20 @@ export default function MemberDashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F8F6F2] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-[#C9A84C] border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-[#F8F5EF] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin"
+          style={{ borderColor: "#C9A84C", borderTopColor: "transparent" }} />
       </div>
     );
   }
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-[#F8F6F2] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[#F8F5EF] flex items-center justify-center px-4">
         <div className="text-center">
-          <p className="text-[14px] text-neutral-500">帳號設定中，請稍候…</p>
+          <p className="text-[14px] text-neutral-500">Setting up your account…</p>
           <button onClick={() => window.location.reload()} className="mt-4 text-[12px] text-[#C9A84C] underline">
-            重新載入
+            Reload
           </button>
         </div>
       </div>
@@ -114,17 +112,18 @@ export default function MemberDashboardPage() {
 
   const tier = TIER_CONFIG[profile.vip_tier];
   const avatarUrl = (user?.user_metadata?.avatar_url as string) ?? "";
+  const spendToNext = tier.threshold ? tier.threshold - profile.total_spend_all_time : 0;
 
   return (
-    <div className="min-h-screen bg-[#F8F6F2]" style={{ fontFamily: "var(--font-montserrat), sans-serif" }}>
+    <div className="min-h-screen bg-[#F8F5EF]" style={{ fontFamily: "var(--font-montserrat), sans-serif" }}>
       {/* Header */}
-      <header className="bg-[#0F0F0F] px-4 py-4 flex items-center justify-between">
+      <header className="bg-[#0F0F0F] px-5 py-4 flex items-center justify-between">
         <div>
           <p className="text-[10px] tracking-[0.2em] text-[#C9A84C] uppercase">Yee Eyelashes</p>
           <p className="text-[10px] text-neutral-500">Member Club</p>
         </div>
         <button onClick={signOut} className="text-[11px] text-neutral-500 hover:text-neutral-300 transition-colors">
-          登出
+          Sign Out
         </button>
       </header>
 
@@ -156,24 +155,21 @@ export default function MemberDashboardPage() {
           </div>
 
           <div>
-            <p className="text-[11px] text-neutral-400 mb-1">點數餘額</p>
+            <p className="text-[11px] text-neutral-400 mb-1">Points Balance</p>
             <p className="text-[40px] font-light leading-none" style={{ fontFamily: "var(--font-cormorant)" }}>
               {profile.points_balance.toLocaleString()}
               <span className="text-[18px] text-neutral-400 ml-1">pts</span>
             </p>
             <p className="text-[11px] text-neutral-500 mt-1">
-              ≈ ${(profile.points_balance / 100).toFixed(0)} 折抵金額
+              ≈ ${(profile.points_balance / 100).toFixed(0)} off your next visit
             </p>
           </div>
 
-          {/* Tier progress */}
           {tier.next && tier.threshold && (
             <div className="mt-5">
               <div className="flex justify-between text-[10px] text-neutral-400 mb-1.5">
-                <span>距離 {tier.next}</span>
-                <span>${tier.threshold - profile.total_spend_all_time > 0
-                  ? `還差 $${(tier.threshold - profile.total_spend_all_time).toFixed(0)}`
-                  : "已達標"}</span>
+                <span>To {tier.next}</span>
+                <span>{spendToNext > 0 ? `$${spendToNext.toFixed(0)} away` : "Reached"}</span>
               </div>
               <div className="h-1 bg-white/10 rounded-full overflow-hidden">
                 <div
@@ -191,10 +187,10 @@ export default function MemberDashboardPage() {
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-3">
           {[
-            { label: "總消費", value: `$${profile.total_spend_all_time.toFixed(0)}` },
-            { label: "到訪次數", value: `${profile.total_visits_all_time} 次` },
-            { label: "上次到訪", value: profile.last_visit_date
-              ? new Date(profile.last_visit_date).toLocaleDateString("zh-TW", { month: "numeric", day: "numeric" })
+            { label: "Total Spent",  value: `$${profile.total_spend_all_time.toFixed(0)}` },
+            { label: "Visits",       value: `${profile.total_visits_all_time}` },
+            { label: "Last Visit",   value: profile.last_visit_date
+              ? new Date(profile.last_visit_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })
               : "—"
             },
           ].map((s) => (
@@ -205,12 +201,13 @@ export default function MemberDashboardPage() {
           ))}
         </div>
 
-        {/* Quick action */}
+        {/* Book CTA */}
         <a
           href="/en/booking"
-          className="block bg-[#C9A84C] text-[#1C1C1C] font-semibold text-[13px] text-center py-3.5 rounded-xl hover:bg-[#b8953d] transition-colors"
+          className="block text-[#1C1C1C] font-semibold text-[13px] text-center py-3.5 rounded-xl transition-colors"
+          style={{ background: "#C9A84C" }}
         >
-          預約服務
+          Book an Appointment
         </a>
 
         {/* VIP benefits */}
@@ -219,12 +216,12 @@ export default function MemberDashboardPage() {
         {/* Transaction history */}
         <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
           <div className="px-4 py-3.5 border-b border-neutral-100">
-            <p className="text-[13px] font-semibold text-[#1C1C1C]">點數紀錄</p>
+            <p className="text-[13px] font-semibold text-[#1C1C1C]">Points History</p>
           </div>
           {txns.length === 0 ? (
             <div className="px-4 py-8 text-center">
-              <p className="text-[13px] text-neutral-400">尚無點數紀錄</p>
-              <p className="text-[11px] text-neutral-300 mt-1">預約服務後即可開始累積點數</p>
+              <p className="text-[13px] text-neutral-400">No points history yet</p>
+              <p className="text-[11px] text-neutral-300 mt-1">Book an appointment to start earning points</p>
             </div>
           ) : (
             <div className="divide-y divide-neutral-50">
@@ -233,7 +230,7 @@ export default function MemberDashboardPage() {
                   <div>
                     <p className="text-[13px] font-medium text-[#1C1C1C]">{TXN_LABELS[t.type] ?? t.type}</p>
                     <p className="text-[11px] text-neutral-400 mt-0.5">
-                      {new Date(t.created_at).toLocaleDateString("zh-TW")}
+                      {new Date(t.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                       {t.notes && ` · ${t.notes}`}
                     </p>
                   </div>
@@ -241,7 +238,7 @@ export default function MemberDashboardPage() {
                     <p className={`text-[14px] font-semibold ${t.amount > 0 ? "text-[#C9A84C]" : "text-neutral-500"}`}>
                       {t.amount > 0 ? `+${t.amount}` : t.amount} pts
                     </p>
-                    <p className="text-[10px] text-neutral-300">{t.balance_after} 餘</p>
+                    <p className="text-[10px] text-neutral-300">{t.balance_after} remaining</p>
                   </div>
                 </div>
               ))}
@@ -251,7 +248,7 @@ export default function MemberDashboardPage() {
 
         {/* Footer */}
         <p className="text-center text-[11px] text-neutral-400 pb-4">
-          會員號碼：{profile.member_id} · 加入於 {new Date(profile.joined_at).toLocaleDateString("zh-TW")}
+          Member ID: {profile.member_id} · Joined {new Date(profile.joined_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
         </p>
       </div>
     </div>
@@ -272,21 +269,19 @@ function TierBadge({ tier }: { tier: Profile["vip_tier"] }) {
 
 function TierBenefitsCard({ tier }: { tier: Profile["vip_tier"] }) {
   const benefits: Record<Profile["vip_tier"], string[]> = {
-    member:  ["消費每 $1 賺 1 點", "生日月享 30% 折扣", "點數 12 個月有效期"],
-    silver:  ["消費每 $1 賺 1.2 點", "生日月享 30% 折扣", "優先預約", "專屬 Silver 優惠券"],
-    gold:    ["消費每 $1 賺 1.5 點", "生日月享 35% 折扣", "優先預約", "每季專屬禮遇"],
-    diamond: ["消費每 $1 賺 2 點", "生日月享 40% 折扣", "VIP 優先預約", "每月專屬禮遇", "免費護理升級"],
+    member:  ["Earn 1 pt per $1 spent", "Birthday reward — 30% off", "Points valid for 12 months"],
+    silver:  ["Earn 1.2 pts per $1 spent", "Birthday reward — 30% off", "Priority booking", "Exclusive Silver coupons"],
+    gold:    ["Earn 1.5 pts per $1 spent", "Birthday reward — 35% off", "Priority booking", "Seasonal VIP gift"],
+    diamond: ["Earn 2 pts per $1 spent", "Birthday reward — 40% off", "VIP priority booking", "Monthly exclusive gift", "Free treatment upgrade"],
   };
 
   const config = TIER_CONFIG[tier];
 
   return (
     <div className="bg-white rounded-2xl border border-neutral-100 p-4">
-      <div className="flex items-center gap-2 mb-3">
-        <span className="text-[12px] font-bold" style={{ color: config.color }}>
-          {config.label} 福利
-        </span>
-      </div>
+      <p className="text-[12px] font-bold mb-3" style={{ color: config.color }}>
+        {config.label} Benefits
+      </p>
       <div className="space-y-2">
         {benefits[tier].map((b) => (
           <div key={b} className="flex items-center gap-2">
@@ -297,7 +292,7 @@ function TierBenefitsCard({ tier }: { tier: Profile["vip_tier"] }) {
       </div>
       {config.next && (
         <p className="text-[11px] text-neutral-400 mt-3 pt-3 border-t border-neutral-100">
-          升級至 {config.next} 可享更多福利 →
+          Upgrade to {config.next} to unlock more benefits →
         </p>
       )}
     </div>
