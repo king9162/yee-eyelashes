@@ -15,6 +15,7 @@ import SEOPagesView        from "./SEOPagesView";
 import RevenueSection      from "./RevenueSection";
 import ExpensesView        from "./ExpensesView";
 import UserSettingsView    from "./UserSettingsView";
+import MembersView         from "./MembersView";
 
 // ── Types ──────────────────────────────────────────────────────
 type Client = {
@@ -28,7 +29,7 @@ type Booking = {
   date: string; status: string;
   refill_sent_at: string | null; review_sent_at: string | null;
 };
-type View = "dashboard" | "revenue" | "expenses" | "analytics" | "seo-pages" | "update-history" | "changelog" | "calendar" | "bookings" | "clients-main" | "clients-elly" | "automations" | "reviews" | "packages" | "user-settings";
+type View = "dashboard" | "revenue" | "expenses" | "analytics" | "seo-pages" | "update-history" | "changelog" | "calendar" | "bookings" | "clients-main" | "clients-elly" | "automations" | "reviews" | "packages" | "user-settings" | "members";
 
 const EMPTY_CLIENT: Omit<Client,"id"> = {
   visit_date:"", email:"", phone:"", first_name:"", last_name:"",
@@ -52,6 +53,7 @@ const VIEW_LABELS: Record<string, string> = {
   "packages":       "3x Package",
   "seo-pages":      "SEO Pages",
   "user-settings":  "User Settings",
+  "members":        "Members",
 };
 
 const BOTTOM_TABS: { id: View; label: string; icon: React.ReactNode }[] = [
@@ -138,9 +140,10 @@ const NAV: { section: string; items: { id: View; label: string }[] }[] = [
     { id: "bookings", label: "Bookings" },
   ]},
   { section: "Customers", items: [
-    { id: "clients-main", label: "My Clients"    },
+    { id: "members",      label: "Members"        },
+    { id: "clients-main", label: "My Clients"     },
     { id: "clients-elly", label: "Elly's Clients" },
-    { id: "packages",     label: "3x Package"    },
+    { id: "packages",     label: "3x Package"     },
   ]},
   { section: "Marketing", items: [
     { id: "automations", label: "Automations" },
@@ -1937,6 +1940,7 @@ export default function AdminPage() {
           {view === "seo-pages"     && <SEOPagesView />}
           {view === "changelog"     && <ChangelogView />}
           {view === "user-settings" && <UserSettingsView adminKey={savedKey} />}
+          {view === "members"       && <MembersView      adminKey={savedKey} />}
         </main>
       </div>
 

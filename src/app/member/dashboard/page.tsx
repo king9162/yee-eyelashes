@@ -122,9 +122,15 @@ export default function MemberDashboardPage() {
           <p className="text-[10px] tracking-[0.2em] text-[#C9A84C] uppercase">Yee Eyelashes</p>
           <p className="text-[10px] text-neutral-500">Member Club</p>
         </div>
-        <button onClick={signOut} className="text-[11px] text-neutral-500 hover:text-neutral-300 transition-colors">
-          Sign Out
-        </button>
+        <div className="flex items-center gap-4">
+          <button onClick={() => router.push("/member/profile")}
+            className="text-[11px] text-neutral-500 hover:text-neutral-300 transition-colors">
+            Edit Profile
+          </button>
+          <button onClick={signOut} className="text-[11px] text-neutral-500 hover:text-neutral-300 transition-colors">
+            Sign Out
+          </button>
+        </div>
       </header>
 
       <div className="max-w-lg mx-auto px-4 py-6 space-y-4">
