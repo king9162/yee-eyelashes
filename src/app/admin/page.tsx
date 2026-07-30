@@ -187,7 +187,9 @@ export default function AdminPage() {
   const [loading,setLoading]= useState(false);
   const [view,   setView]   = useState<View>("dashboard");
   const [sideOpen, setSideOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const [collapsed, setCollapsed] = useState<Set<string>>(
+    () => new Set(NAV.map(s => s.section))
+  );
 
   // Clients state
   const [clients,       setClients]       = useState<Client[]>([]);
@@ -239,6 +241,19 @@ export default function AdminPage() {
   const [partnerPin, setPartnerPin]         = useState("");
   const [partnerPinError, setPartnerPinError] = useState("");
   const [partnerPinLoading, setPartnerPinLoading] = useState(false);
+
+  // Auto-expand the section that contains the active view
+  useEffect(() => {
+    const activeSection = NAV.find(s => s.items.some(i => i.id === view))?.section;
+    if (activeSection) {
+      setCollapsed(prev => {
+        if (!prev.has(activeSection)) return prev;
+        const next = new Set(prev);
+        next.delete(activeSection);
+        return next;
+      });
+    }
+  }, [view]);
 
   const loadActions = useCallback(async (secret: string) => {
     try {
