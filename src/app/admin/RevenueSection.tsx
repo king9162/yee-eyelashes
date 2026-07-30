@@ -6,6 +6,7 @@ type Entry = {
   id: string; date: string; client_name: string; service_label: string;
   amount: number; tip: number; payment_method: string;
   square_payment_id?: string | null; notes?: string | null; recorded_by?: string | null;
+  member_id?: string | null; points_awarded?: number | null;
 };
 type DayGroup   = { date: string; entries: Entry[] };
 type MonthGroup = { key: string; label: string; days: DayGroup[] };
@@ -311,6 +312,9 @@ function EntryRow({ e, onEdit, onDelete, deleting, bookingInfo }: {
                 </span>
               )}
               {e.tip > 0 && <span className="text-[12px] text-[#C9A84C] tabular-nums">+{fmt$(e.tip)} tip</span>}
+              {e.points_awarded != null && e.points_awarded > 0 && (
+                <span className="text-[10px] text-[#C9A84C] font-semibold bg-[#C9A84C]/10 px-1.5 py-0.5 rounded-full">✦ {e.points_awarded} pts</span>
+              )}
             </div>
           )}
         </div>

@@ -18,6 +18,11 @@ export default function MemberProfilePage() {
   const [email, setEmail] = useState("");
   const [memberId, setMemberId] = useState("");
   const [birthdayLocked, setBirthdayLocked] = useState(false);
+  const [notifBirthday, setNotifBirthday] = useState(true);
+  const [notifRefill, setNotifRefill] = useState(true);
+  const [notifMarketing, setNotifMarketing] = useState(false);
+  const [savingPrefs, setSavingPrefs] = useState(false);
+  const [prefsMsg, setPrefsMsg] = useState("");
 
   useEffect(() => {
     async function init() {
@@ -28,7 +33,7 @@ export default function MemberProfilePage() {
 
       const { data: p } = await supabase
         .from("profiles")
-        .select("first_name, last_name, phone, birthday, birthday_set_at, email, member_id")
+        .select("first_name, last_name, phone, birthday, birthday_set_at, email, member_id, notif_birthday, notif_refill, notif_marketing")
         .eq("id", session.user.id)
         .single();
 
@@ -39,8 +44,10 @@ export default function MemberProfilePage() {
         setBirthday(p.birthday ?? "");
         setEmail(p.email ?? session.user.email ?? "");
         setMemberId(p.member_id ?? "");
-        // Lock birthday if already set (prevent abuse)
         if (p.birthday_set_at) setBirthdayLocked(true);
+        setNotifBirthday(p.notif_birthday ?? true);
+        setNotifRefill(p.notif_refill ?? true);
+        setNotifMarketing(p.notif_marketing ?? false);
       }
 
       setLoading(false);
@@ -74,6 +81,18 @@ export default function MemberProfilePage() {
     }
     setSuccess(true);
     setTimeout(() => setSuccess(false), 3000);
+  }
+
+  async function savePrefs() {
+    setSavingPrefs(true); setPrefsMsg("");
+    const res = await fetch("/api/member/preferences", {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ notif_birthday: notifBirthday, notif_refill: notifRefill, notif_marketing: notifMarketing }),
+    });
+    setSavingPrefs(false);
+    setPrefsMsg(res.ok ? "Preferences saved ✓" : "Failed to save");
+    if (res.ok) setTimeout(() => setPrefsMsg(""), 3000);
   }
 
   if (loading) {
@@ -154,6 +173,34 @@ export default function MemberProfilePage() {
           <button onClick={save} disabled={saving}
             className="w-full py-3.5 rounded-xl text-[13px] font-semibold text-white bg-[#1C1C1C] hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all disabled:opacity-50">
             {saving ? "Saving…" : "Save Changes"}
+          </button>
+        </div>
+
+        {/* Notification preferences */}
+        <div className="bg-white rounded-2xl border border-neutral-100 p-5 mt-4 space-y-4">
+          <p className="text-[13px] font-semibold text-[#1C1C1C]">Notifications</p>
+          {[
+            { label: "Birthday Reward", sub: "Reminder when your birthday month arrives", value: notifBirthday, set: setNotifBirthday },
+            { label: "Refill Reminders", sub: "Tips on when to book your next refill", value: notifRefill, set: setNotifRefill },
+            { label: "Promotions & Offers", sub: "Special deals and seasonal offers", value: notifMarketing, set: setNotifMarketing },
+          ].map(n => (
+            <div key={n.label} className="flex items-center justify-between">
+              <div>
+                <p className="text-[12px] font-medium text-[#1C1C1C]">{n.label}</p>
+                <p className="text-[11px] text-neutral-400">{n.sub}</p>
+              </div>
+              <button
+                onClick={() => n.set(!n.value)}
+                className={`relative w-10 h-6 rounded-full transition-colors ${n.value ? "bg-[#C9A84C]" : "bg-neutral-200"}`}
+              >
+                <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${n.value ? "translate-x-5" : "translate-x-1"}`} />
+              </button>
+            </div>
+          ))}
+          {prefsMsg && <p className={`text-[12px] font-semibold ${prefsMsg.includes("✓") ? "text-green-600" : "text-red-500"}`}>{prefsMsg}</p>}
+          <button onClick={savePrefs} disabled={savingPrefs}
+            className="w-full py-2.5 rounded-xl text-[12px] font-semibold text-white bg-[#1C1C1C] hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all disabled:opacity-50">
+            {savingPrefs ? "Saving…" : "Save Preferences"}
           </button>
         </div>
       </div>

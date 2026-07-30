@@ -15,6 +15,7 @@ type Member = {
   total_visits_all_time: number;
   last_visit_date: string | null;
   joined_at: string;
+  referral_code: string | null;
 };
 
 type Transaction = {
@@ -84,6 +85,10 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
   const [issueCouponNotes, setIssueCouponNotes] = useState("");
   const [issuing, setIssuing] = useState(false);
   const [issueMsg, setIssueMsg] = useState("");
+
+  // Re-link bookings
+  const [relinking, setRelinking] = useState(false);
+  const [relinkMsg, setRelinkMsg] = useState("");
 
   // Seed coupons
   const [seeding, setSeeding] = useState(false);
@@ -168,6 +173,19 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
     setIssueMsg("Coupon issued!");
     setIssueCouponNotes("");
     await loadDetail(selected);
+  }
+
+  async function relinkBookings() {
+    if (!selected) return;
+    setRelinking(true); setRelinkMsg("");
+    const res = await fetch(`/api/admin/members/${selected.id}/link-bookings`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${adminKey}` },
+    });
+    const d = await res.json();
+    setRelinking(false);
+    setRelinkMsg(res.ok ? `Done — linked ${d.linked} booking${d.linked !== 1 ? "s" : ""}` : `Error: ${d.error}`);
+    if (res.ok) { await loadDetail(selected); search(query); }
   }
 
   async function redeemCoupon(couponId: string) {
@@ -292,12 +310,30 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
                   { label: "Phone", value: detail.profile.phone ?? "—" },
                   { label: "Birthday", value: detail.profile.birthday ?? "—" },
                   { label: "Joined", value: new Date(detail.profile.joined_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) },
+                  { label: "Referral Code", value: detail.profile.referral_code ?? "—" },
+                  { label: "Last Visit", value: detail.profile.last_visit_date ?? "—" },
                 ].map(f => (
                   <div key={f.label}>
                     <p className="text-[10px] uppercase tracking-[0.1em] text-neutral-400 mb-0.5">{f.label}</p>
-                    <p className="text-[#1C1C1C] font-medium">{f.value}</p>
+                    <p className="text-[#1C1C1C] font-medium font-mono">{f.value}</p>
                   </div>
                 ))}
+              </div>
+
+              {/* Re-link bookings */}
+              <div className="mt-4 pt-4 border-t border-neutral-100 flex items-center gap-3">
+                <button
+                  onClick={relinkBookings}
+                  disabled={relinking}
+                  className="text-[11px] px-3 py-1.5 bg-neutral-100 text-neutral-600 rounded-lg hover:bg-neutral-200 transition-colors disabled:opacity-40"
+                >
+                  {relinking ? "Linking…" : "Re-link Bookings"}
+                </button>
+                {relinkMsg && (
+                  <p className={`text-[11px] ${relinkMsg.startsWith("Error") ? "text-red-500" : "text-green-600"}`}>
+                    {relinkMsg}
+                  </p>
+                )}
               </div>
             </div>
 

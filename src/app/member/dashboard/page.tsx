@@ -15,6 +15,8 @@ type Profile = {
   total_visits_all_time: number;
   last_visit_date: string | null;
   joined_at: string;
+  referral_code: string | null;
+  birthday: string | null;
 };
 
 type Booking = {
@@ -274,6 +276,9 @@ export default function MemberDashboardPage() {
         {/* VIP benefits */}
         <TierBenefitsCard tier={profile.vip_tier} />
 
+        {/* Referral */}
+        {profile.referral_code && <ReferralCard code={profile.referral_code} />}
+
         {/* Transaction history */}
         <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
           <div className="px-4 py-3.5 border-b border-neutral-100">
@@ -394,6 +399,40 @@ function TierBadge({ tier }: { tier: Profile["vip_tier"] }) {
     >
       {config.label}
     </span>
+  );
+}
+
+function ReferralCard({ code }: { code: string }) {
+  const [copied, setCopied] = useState(false);
+
+  function copy() {
+    navigator.clipboard.writeText(code).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+
+  return (
+    <div className="bg-white rounded-2xl border border-neutral-100 p-4">
+      <p className="text-[12px] font-bold text-[#1C1C1C] mb-1">Refer a Friend</p>
+      <p className="text-[11px] text-neutral-400 mb-3">
+        Share your code — when a friend joins, you both earn bonus points.
+      </p>
+      <div className="flex items-center gap-2">
+        <div className="flex-1 bg-[#F8F5EF] rounded-xl px-4 py-2.5 text-center">
+          <p className="text-[17px] font-bold tracking-[0.2em] text-[#1C1C1C]" style={{ fontFamily: "var(--font-cormorant)" }}>
+            {code}
+          </p>
+        </div>
+        <button
+          onClick={copy}
+          className="px-4 py-2.5 rounded-xl text-[11px] font-semibold transition-all"
+          style={{ background: copied ? "#22C55E" : "#1C1C1C", color: "#fff" }}
+        >
+          {copied ? "Copied!" : "Copy"}
+        </button>
+      </div>
+    </div>
   );
 }
 
