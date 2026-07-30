@@ -1896,7 +1896,7 @@ export default function AdminPage() {
       <div className="flex flex-1 min-h-0">
         {/* Sidebar — desktop always visible, mobile slide-in */}
         <div className={`
-          md:relative md:translate-x-0 md:flex
+          md:relative md:translate-x-0 md:flex md:h-full
           ${sideOpen ? "flex" : "hidden"}
           fixed inset-y-0 left-0 z-40 md:z-auto
           flex-col
