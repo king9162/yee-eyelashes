@@ -35,8 +35,8 @@ export default function MemberLoginPage() {
           <Image
             src="/images/yee-logo-v1-cropped.png"
             alt="Yee Eyelashes"
-            width={180}
-            height={72}
+            width={360}
+            height={144}
             className="object-contain"
           />
         </div>
