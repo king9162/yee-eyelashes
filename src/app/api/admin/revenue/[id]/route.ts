@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { awardMemberPoints } from "@/lib/member-points";
 
 function auth(req: NextRequest) {
   return req.headers.get("authorization") === `Bearer ${process.env.ADMIN_SECRET_KEY}`;
@@ -21,7 +22,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (body.date          !== undefined) update.date            = body.date;
 
   const db = supabaseAdmin();
-  const { data: before } = await db.from("revenue_entries").select("client_name,amount,tip,payment_method,service_label").eq("id", id).single();
+
+  // Read current entry to check points status
+  const { data: before } = await db.from("revenue_entries")
+    .select("client_name,amount,tip,payment_method,service_label,date,points_awarded,member_id")
+    .eq("id", id).single();
+
   const { data, error } = await db.from("revenue_entries").update(update).eq("id", id).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
@@ -32,7 +38,73 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     details: { before, after: { client_name: update.client_name, amount: update.amount, tip: update.tip, payment_method: update.payment_method, service_label: update.service_label } },
   });
 
+  // ── Auto-award points if: amount > 0 AND points not yet awarded ──
+  const newAmount = (update.amount ?? before?.amount ?? 0) as number;
+  const alreadyAwarded = before?.points_awarded != null;
+
+  if (newAmount > 0 && !alreadyAwarded) {
+    const effectiveDate = (update.date ?? before?.date) as string | undefined;
+    const effectiveName = (update.client_name ?? before?.client_name) as string | undefined;
+
+    if (effectiveDate && effectiveName) {
+      tryAwardRevenuePoints({
+        db,
+        entryId: id,
+        date: effectiveDate,
+        clientName: effectiveName,
+        amount: newAmount,
+      }).catch(() => {});
+    }
+  }
+
   return NextResponse.json(data);
+}
+
+async function tryAwardRevenuePoints({
+  db,
+  entryId,
+  date,
+  clientName,
+  amount,
+}: {
+  db: ReturnType<typeof supabaseAdmin>;
+  entryId: string;
+  date: string;
+  clientName: string;
+  amount: number;
+}) {
+  const { data: booking } = await db
+    .from("bookings")
+    .select("member_id")
+    .eq("date", date)
+    .eq("name", clientName)
+    .not("member_id", "is", null)
+    .limit(1)
+    .single();
+
+  const memberId = booking?.member_id as string | undefined;
+  if (!memberId) return;
+
+  const pts = Math.floor(amount);
+  if (pts <= 0) return;
+
+  const result = await awardMemberPoints({
+    memberId,
+    amount: pts,
+    type: "purchase_earned",
+    notes: `${clientName} · ${date}`,
+    createdBy: "system",
+    additionalSpend: amount,
+    revenueEntryId: entryId,
+  });
+
+  if (result) {
+    await db.from("revenue_entries").update({
+      member_id: memberId,
+      points_awarded: pts,
+      points_awarded_at: new Date().toISOString(),
+    }).eq("id", entryId);
+  }
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

@@ -27,6 +27,26 @@ type Transaction = {
   created_at: string;
 };
 
+type MemberCoupon = {
+  id: string;
+  status: string;
+  issued_at: string;
+  expires_at: string | null;
+  used_at: string | null;
+  notes: string | null;
+  coupons: { id: string; name: string; description: string | null; discount_type: string; discount_value: number } | null;
+};
+
+type CouponTemplate = {
+  id: string;
+  name: string;
+  description: string | null;
+  type: string;
+  discount_type: string;
+  discount_value: number;
+  active: boolean;
+};
+
 const TIER_COLORS: Record<string, string> = {
   member: "#888", silver: "#C0C0C0", gold: "#C9A84C", diamond: "#A8DAFF",
 };
@@ -38,13 +58,19 @@ const TXN_LABELS: Record<string, string> = {
   refund_adjustment: "Refund", expired: "Expired",
 };
 
+function discountLabel(c: CouponTemplate | MemberCoupon["coupons"]) {
+  if (!c) return "";
+  return c.discount_type === "fixed" ? `$${c.discount_value} off` : `${c.discount_value}% off`;
+}
+
 export default function MembersView({ adminKey }: { adminKey: string }) {
   const [query, setQuery] = useState("");
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Member | null>(null);
-  const [detail, setDetail] = useState<{ profile: Member; txns: Transaction[] } | null>(null);
+  const [detail, setDetail] = useState<{ profile: Member; txns: Transaction[]; coupons: MemberCoupon[] } | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [couponTemplates, setCouponTemplates] = useState<CouponTemplate[]>([]);
 
   // Award points state
   const [awardAmount, setAwardAmount] = useState("");
@@ -52,6 +78,15 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
   const [awardNotes, setAwardNotes] = useState("");
   const [awarding, setAwarding] = useState(false);
   const [awardMsg, setAwardMsg] = useState("");
+
+  // Issue coupon state
+  const [issueCouponId, setIssueCouponId] = useState("");
+  const [issueCouponNotes, setIssueCouponNotes] = useState("");
+  const [issuing, setIssuing] = useState(false);
+  const [issueMsg, setIssueMsg] = useState("");
+
+  // Seed coupons
+  const [seeding, setSeeding] = useState(false);
 
   const search = useCallback(async (q: string) => {
     setLoading(true);
@@ -70,11 +105,24 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
     return () => clearTimeout(t);
   }, [query, search]);
 
+  // Load coupon templates once
+  useEffect(() => {
+    fetch("/api/admin/coupons", { headers: { Authorization: `Bearer ${adminKey}` } })
+      .then(r => r.json())
+      .then(d => {
+        const templates = Array.isArray(d) ? d : [];
+        setCouponTemplates(templates.filter((t: CouponTemplate) => t.active));
+        if (templates.length > 0) setIssueCouponId(templates[0].id);
+      })
+      .catch(() => {});
+  }, [adminKey]);
+
   async function loadDetail(m: Member) {
     setSelected(m);
     setDetail(null);
     setDetailLoading(true);
     setAwardMsg("");
+    setIssueMsg("");
     const res = await fetch(`/api/admin/members/${m.id}`, {
       headers: { Authorization: `Bearer ${adminKey}` },
     });
@@ -102,6 +150,49 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
     setAwardAmount(""); setAwardNotes("");
     await loadDetail(selected);
     search(query);
+  }
+
+  async function issueCoupon() {
+    if (!selected || !issueCouponId) return;
+    setIssuing(true); setIssueMsg("");
+
+    const res = await fetch(`/api/admin/members/${selected.id}/coupons`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${adminKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ coupon_id: issueCouponId, notes: issueCouponNotes || null }),
+    });
+    const d = await res.json();
+    setIssuing(false);
+
+    if (!res.ok) { setIssueMsg(`Error: ${d.error}`); return; }
+    setIssueMsg("Coupon issued!");
+    setIssueCouponNotes("");
+    await loadDetail(selected);
+  }
+
+  async function redeemCoupon(couponId: string) {
+    if (!selected) return;
+    const res = await fetch(`/api/admin/members/${selected.id}/coupons/${couponId}/redeem`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${adminKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ used_by: "admin" }),
+    });
+    if (res.ok) await loadDetail(selected);
+  }
+
+  async function seedCoupons() {
+    setSeeding(true);
+    await fetch("/api/admin/seed-coupons", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${adminKey}` },
+    });
+    setSeeding(false);
+    // Reload templates
+    const res = await fetch("/api/admin/coupons", { headers: { Authorization: `Bearer ${adminKey}` } });
+    const d = await res.json();
+    const templates = Array.isArray(d) ? d : [];
+    setCouponTemplates(templates.filter((t: CouponTemplate) => t.active));
+    if (templates.length > 0) setIssueCouponId(templates[0].id);
   }
 
   return (
@@ -148,8 +239,17 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
           )}
         </div>
 
-        <div className="px-4 py-2 border-t border-neutral-100">
+        <div className="px-4 py-2 border-t border-neutral-100 flex items-center justify-between">
           <p className="text-[11px] text-neutral-400">{members.length} member{members.length !== 1 ? "s" : ""}</p>
+          {couponTemplates.length === 0 && (
+            <button
+              onClick={seedCoupons}
+              disabled={seeding}
+              className="text-[10px] text-[#C9A84C] hover:underline disabled:opacity-40"
+            >
+              {seeding ? "Seeding…" : "Seed coupons"}
+            </button>
+          )}
         </div>
       </div>
 
@@ -269,6 +369,110 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
                 </button>
               </div>
             </div>
+
+            {/* Issue coupon */}
+            <div className="bg-white rounded-xl border border-neutral-100 p-5">
+              <p className="text-[13px] font-bold text-[#1C1C1C] mb-4">Issue Coupon</p>
+              {couponTemplates.length === 0 ? (
+                <div className="text-center py-3">
+                  <p className="text-[12px] text-neutral-400 mb-2">No coupon templates yet.</p>
+                  <button
+                    onClick={seedCoupons}
+                    disabled={seeding}
+                    className="text-[12px] text-[#C9A84C] hover:underline disabled:opacity-40"
+                  >
+                    {seeding ? "Creating…" : "Create default templates"}
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-[0.1em] text-neutral-400 mb-1">Coupon</label>
+                    <select
+                      value={issueCouponId}
+                      onChange={e => setIssueCouponId(e.target.value)}
+                      className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:border-[#C9A84C] bg-white"
+                    >
+                      {couponTemplates.map(t => (
+                        <option key={t.id} value={t.id}>
+                          {t.name} ({discountLabel(t)})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-[0.1em] text-neutral-400 mb-1">Notes (optional)</label>
+                    <input
+                      value={issueCouponNotes}
+                      onChange={e => setIssueCouponNotes(e.target.value)}
+                      placeholder="e.g. Loyalty reward"
+                      className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:border-[#C9A84C]"
+                    />
+                  </div>
+                  {issueMsg && (
+                    <p className={`text-[12px] font-semibold ${issueMsg.startsWith("Error") ? "text-red-500" : "text-green-600"}`}>
+                      {issueMsg}
+                    </p>
+                  )}
+                  <button
+                    onClick={issueCoupon}
+                    disabled={issuing || !issueCouponId}
+                    className="w-full py-2.5 bg-[#1C1C1C] text-white text-[12px] font-semibold rounded-lg hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all disabled:opacity-40"
+                  >
+                    {issuing ? "Issuing…" : "Issue Coupon"}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Member's coupons */}
+            {detail.coupons.length > 0 && (
+              <div className="bg-white rounded-xl border border-neutral-100 overflow-hidden">
+                <div className="px-4 py-3 border-b border-neutral-100">
+                  <p className="text-[13px] font-bold text-[#1C1C1C]">Coupons</p>
+                </div>
+                <div className="divide-y divide-neutral-50">
+                  {detail.coupons.map(mc => {
+                    const isActive = mc.status === "available" || mc.status === "reserved";
+                    return (
+                      <div key={mc.id} className="flex items-center justify-between px-4 py-3 gap-3">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[12px] font-medium text-[#1C1C1C] truncate">
+                            {mc.coupons?.name ?? "Coupon"}
+                          </p>
+                          <p className="text-[11px] text-neutral-400 mt-0.5">
+                            {mc.coupons ? discountLabel(mc.coupons) : ""}
+                            {mc.expires_at && ` · Exp ${new Date(mc.expires_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`}
+                            {mc.notes && ` · ${mc.notes}`}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span
+                            className="text-[10px] font-bold uppercase"
+                            style={{
+                              color: mc.status === "available" ? "#C9A84C"
+                                : mc.status === "used" ? "#9CA3AF"
+                                : mc.status === "expired" ? "#9CA3AF"
+                                : "#6B7280",
+                            }}
+                          >
+                            {mc.status}
+                          </span>
+                          {isActive && (
+                            <button
+                              onClick={() => redeemCoupon(mc.id)}
+                              className="text-[10px] px-2 py-1 bg-[#1C1C1C] text-white rounded hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all"
+                            >
+                              Redeem
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Transaction history */}
             <div className="bg-white rounded-xl border border-neutral-100 overflow-hidden">

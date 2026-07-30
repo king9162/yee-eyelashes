@@ -14,6 +14,19 @@ const TAG_LABEL: Record<Tag, string> = { new: "NEW", fix: "FIX", improve: "+" };
 
 const DAYS: Day[] = [
   {
+    date: "Jul 29, 2026", label: "2026-07-29",
+    changes: [
+      { tag: "new",     text: "Member Club 上線：Google 登入、點數、VIP 等級、優惠券、預約記錄一站查看（/member）" },
+      { tag: "new",     text: "點數自動累積：Revenue 記錄金額後自動換算點數（$1 = 1 pt），直接寫入會員帳戶" },
+      { tag: "new",     text: "VIP 等級自動升級：Silver $500、Gold $1,000、Diamond $2,000（以消費總額計）" },
+      { tag: "new",     text: "生日優惠自動發放：生日當月進入 Dashboard 自動領取 30% off 優惠券，當月有效" },
+      { tag: "new",     text: "Admin 會員管理：搜尋會員、查看消費與點數紀錄、手動調整點數、發放優惠券、直接核銷優惠" },
+      { tag: "new",     text: "優惠券範本：Birthday Reward、Welcome Gift、VIP Reward、Refill Special 四種預設範本" },
+      { tag: "new",     text: "預約連結：現有 Square 預約按電話/Email 自動比對，歷史紀錄自動綁定會員帳號" },
+      { tag: "improve", text: "Refill 倒數計時卡片：Dashboard 顯示距上次來訪天數、推薦補充類型、進度條" },
+    ],
+  },
+  {
     date: "Jul 22, 2026", label: "2026-07-22",
     changes: [
       { tag: "new",     text: "Revenue 多付款方式：付款方式按鈕改為多選，同一筆可同時選 Cash + Card，各自輸入金額（例：現金 $60 + 刷卡 $19），合計自動加總" },

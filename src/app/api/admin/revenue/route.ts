@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { todayNY } from "@/lib/date";
+import { awardMemberPoints } from "@/lib/member-points";
 
 function auth(req: NextRequest) {
   return req.headers.get("authorization") === `Bearer ${process.env.ADMIN_SECRET_KEY}`;
@@ -86,12 +87,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "date and client_name are required" }, { status: 400 });
   }
 
+  const parsedAmount = parseFloat(amount) || 0;
   const db = supabaseAdmin();
   const { data, error } = await db.from("revenue_entries").insert({
     date,
     client_name:     String(client_name).trim(),
     service_label:   String(service_label ?? "").trim(),
-    amount:          parseFloat(amount) || 0,
+    amount:          parsedAmount,
     tip:             parseFloat(tip)    || 0,
     payment_method:  payment_method ?? "cash",
     notes:           notes ?? null,
@@ -104,8 +106,62 @@ export async function POST(req: NextRequest) {
     entry_id: (data as Record<string, unknown>)?.id ?? null,
     action: "add",
     changed_by: changed_by ?? null,
-    details: { client_name: String(client_name).trim(), date, amount: parseFloat(amount) || 0, payment_method: payment_method ?? "cash", service_label: String(service_label ?? "").trim() },
+    details: { client_name: String(client_name).trim(), date, amount: parsedAmount, payment_method: payment_method ?? "cash", service_label: String(service_label ?? "").trim() },
   });
 
+  // ── Auto-award points if amount > 0 and booking has a linked member ──
+  const entryId = (data as Record<string, unknown>)?.id as string | undefined;
+  if (parsedAmount > 0 && entryId) {
+    tryAwardRevenuePoints({ db, entryId, date, clientName: String(client_name).trim(), amount: parsedAmount }).catch(() => {});
+  }
+
   return NextResponse.json(data);
+}
+
+async function tryAwardRevenuePoints({
+  db,
+  entryId,
+  date,
+  clientName,
+  amount,
+}: {
+  db: ReturnType<typeof supabaseAdmin>;
+  entryId: string;
+  date: string;
+  clientName: string;
+  amount: number;
+}) {
+  // Find booking with member_id matching this revenue entry
+  const { data: booking } = await db
+    .from("bookings")
+    .select("member_id")
+    .eq("date", date)
+    .eq("name", clientName)
+    .not("member_id", "is", null)
+    .limit(1)
+    .single();
+
+  const memberId = booking?.member_id as string | undefined;
+  if (!memberId) return;
+
+  const pts = Math.floor(amount);
+  if (pts <= 0) return;
+
+  const result = await awardMemberPoints({
+    memberId,
+    amount: pts,
+    type: "purchase_earned",
+    notes: `${clientName} · ${date}`,
+    createdBy: "system",
+    additionalSpend: amount,
+    revenueEntryId: entryId,
+  });
+
+  if (result) {
+    await db.from("revenue_entries").update({
+      member_id: memberId,
+      points_awarded: pts,
+      points_awarded_at: new Date().toISOString(),
+    }).eq("id", entryId);
+  }
 }

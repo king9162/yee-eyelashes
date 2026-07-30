@@ -37,8 +37,8 @@ type Transaction = {
 
 const TIER_CONFIG = {
   member:  { label: "Member",  color: "#888",    next: "Silver",  threshold: 500  },
-  silver:  { label: "Silver",  color: "#C0C0C0", next: "Gold",    threshold: 1500 },
-  gold:    { label: "Gold",    color: "#C9A84C", next: "Diamond", threshold: 3000 },
+  silver:  { label: "Silver",  color: "#C0C0C0", next: "Gold",    threshold: 1000 },
+  gold:    { label: "Gold",    color: "#C9A84C", next: "Diamond", threshold: 2000 },
   diamond: { label: "Diamond", color: "#A8DAFF", next: null,      threshold: null },
 };
 
@@ -87,10 +87,12 @@ export default function MemberDashboardPage() {
         setTxns(t ?? []);
       }
 
-      // Fetch bookings + coupons in parallel
+      // Fetch bookings + coupons in parallel, and fire birthday check
+      const headers = { Authorization: `Bearer ${session.access_token}` };
       const [bkRes, cpRes] = await Promise.all([
-        fetch("/api/member/bookings", { headers: { Authorization: `Bearer ${session.access_token}` } }),
-        fetch("/api/member/coupons",  { headers: { Authorization: `Bearer ${session.access_token}` } }),
+        fetch("/api/member/bookings",        { headers }),
+        fetch("/api/member/coupons",         { headers }),
+        fetch("/api/member/birthday-check",  { method: "POST", headers }),
       ]);
       const [bkData, cpData] = await Promise.all([bkRes.json(), cpRes.json()]);
 
