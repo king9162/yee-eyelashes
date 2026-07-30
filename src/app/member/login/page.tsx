@@ -37,7 +37,7 @@ export default function MemberLoginPage() {
             alt="Yee Eyelashes"
             width={360}
             height={144}
-            className="object-contain"
+            className="w-[180px] sm:w-[260px] object-contain"
           />
         </div>
 
