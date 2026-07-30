@@ -10,8 +10,6 @@ type Profile = {
   last_name: string;
   email: string | null;
   vip_tier: "member" | "silver" | "gold" | "diamond";
-  points_balance: number;
-  total_spend_all_time: number;
   total_visits_all_time: number;
   last_visit_date: string | null;
   joined_at: string;
@@ -28,40 +26,20 @@ type Booking = {
   status: string;
 };
 
-type Transaction = {
-  id: string;
-  type: string;
-  amount: number;
-  balance_after: number;
-  notes: string | null;
-  created_at: string;
-};
-
 const TIER_CONFIG = {
-  member:  { label: "Member",  color: "#888",    next: "Silver",  threshold: 500  },
-  silver:  { label: "Silver",  color: "#C0C0C0", next: "Gold",    threshold: 1000 },
-  gold:    { label: "Gold",    color: "#C9A84C", next: "Diamond", threshold: 2000 },
+  member:  { label: "Member",  color: "#888",    next: "Silver",  threshold: 5  },
+  silver:  { label: "Silver",  color: "#C0C0C0", next: "Gold",    threshold: 10 },
+  gold:    { label: "Gold",    color: "#C9A84C", next: "Diamond", threshold: 20 },
   diamond: { label: "Diamond", color: "#A8DAFF", next: null,      threshold: null },
-};
-
-const TXN_LABELS: Record<string, string> = {
-  purchase_earned:   "Points Earned",
-  referral_reward:   "Referral Reward",
-  birthday_bonus:    "Birthday Reward",
-  promotion_bonus:   "Promotion Bonus",
-  manual_adjustment: "Manual Adjustment",
-  redemption:        "Points Redeemed",
-  refund_adjustment: "Refund Adjustment",
-  expired:           "Points Expired",
 };
 
 export default function MemberDashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [txns, setTxns] = useState<Transaction[]>([]);
   const [upcomingBooking, setUpcomingBooking] = useState<Booking | null>(null);
   const [couponCount, setCouponCount] = useState(0);
+  const [referralStats, setReferralStats] = useState<{ pending: number; completed: number }>({ pending: 0, completed: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -79,33 +57,30 @@ export default function MemberDashboardPage() {
         .single();
       setProfile(prof ?? null);
 
-      if (prof) {
-        const { data: t } = await supabase
-          .from("points_transactions")
-          .select("id, type, amount, balance_after, notes, created_at")
-          .eq("member_id", session.user.id)
-          .order("created_at", { ascending: false })
-          .limit(10);
-        setTxns(t ?? []);
-      }
-
-      // Fetch bookings + coupons in parallel, and fire birthday check
       const headers = { Authorization: `Bearer ${session.access_token}` };
-      const [bkRes, cpRes] = await Promise.all([
+      const [bkRes, cpRes, refRes] = await Promise.all([
         fetch("/api/member/bookings",        { headers }),
         fetch("/api/member/coupons",         { headers }),
+        fetch("/api/member/referrals",       { headers }),
         fetch("/api/member/birthday-check",  { method: "POST", headers }),
       ]);
-      const [bkData, cpData] = await Promise.all([bkRes.json(), cpRes.json()]);
+      const [bkData, cpData, refData] = await Promise.all([bkRes.json(), cpRes.json(), refRes.json()]);
 
       const today = new Date().toISOString().split("T")[0];
       const upcoming = (Array.isArray(bkData) ? bkData : []).filter(
         (b: Booking) => b.date >= today && !["cancelled", "completed", "no-show"].includes(b.status)
       );
-      setUpcomingBooking(upcoming[upcoming.length - 1] ?? null); // earliest upcoming
+      setUpcomingBooking(upcoming[upcoming.length - 1] ?? null);
       setCouponCount((Array.isArray(cpData) ? cpData : []).filter(
         (c: { status: string }) => c.status === "available"
       ).length);
+
+      if (Array.isArray(refData)) {
+        setReferralStats({
+          pending:   refData.filter((r: { status: string }) => r.status === "pending").length,
+          completed: refData.filter((r: { status: string }) => r.status === "completed").length,
+        });
+      }
 
       setLoading(false);
     }
@@ -143,7 +118,9 @@ export default function MemberDashboardPage() {
 
   const tier = TIER_CONFIG[profile.vip_tier];
   const avatarUrl = (user?.user_metadata?.avatar_url as string) ?? "";
-  const spendToNext = tier.threshold ? tier.threshold - profile.total_spend_all_time : 0;
+  const visits = profile.total_visits_all_time;
+  const visitsInCycle = visits % 5;
+  const visitsToNextCoupon = 5 - visitsInCycle;
 
   return (
     <div className="min-h-screen bg-[#F8F5EF]" style={{ fontFamily: "var(--font-montserrat), sans-serif" }}>
@@ -185,29 +162,43 @@ export default function MemberDashboardPage() {
             <TierBadge tier={profile.vip_tier} />
           </div>
 
+          {/* Visit progress toward next coupon */}
           <div>
-            <p className="text-[11px] text-neutral-400 mb-1">Points Balance</p>
-            <p className="text-[40px] font-light leading-none" style={{ fontFamily: "var(--font-cormorant)" }}>
-              {profile.points_balance.toLocaleString()}
-              <span className="text-[18px] text-neutral-400 ml-1">pts</span>
-            </p>
-            <p className="text-[11px] text-neutral-500 mt-1">
-              ≈ ${(profile.points_balance / 100).toFixed(0)} off your next visit
+            <p className="text-[11px] text-neutral-400 mb-1">Progress to 20% Off Coupon</p>
+            <div className="flex items-end gap-2 mb-2">
+              <p className="text-[40px] font-light leading-none" style={{ fontFamily: "var(--font-cormorant)" }}>
+                {visitsInCycle}<span className="text-[18px] text-neutral-400"> / 5</span>
+              </p>
+              {visitsInCycle === 0 && visits > 0 && (
+                <p className="text-[12px] text-[#C9A84C] font-semibold mb-1">Coupon issued!</p>
+              )}
+            </div>
+            <div className="flex gap-1.5 mb-1">
+              {[1, 2, 3, 4, 5].map(i => (
+                <div key={i} className="flex-1 h-1.5 rounded-full transition-all"
+                  style={{ background: i <= visitsInCycle ? "#C9A84C" : "rgba(255,255,255,0.15)" }} />
+              ))}
+            </div>
+            <p className="text-[11px] text-neutral-500">
+              {visitsInCycle === 0 && visits > 0
+                ? `${visits} total visits — keep it up!`
+                : `${visitsToNextCoupon} more visit${visitsToNextCoupon !== 1 ? "s" : ""} to earn 20% off`}
             </p>
           </div>
 
+          {/* Tier progress */}
           {tier.next && tier.threshold && (
             <div className="mt-5">
               <div className="flex justify-between text-[10px] text-neutral-400 mb-1.5">
                 <span>To {tier.next}</span>
-                <span>{spendToNext > 0 ? `$${spendToNext.toFixed(0)} away` : "Reached"}</span>
+                <span>{visits < tier.threshold ? `${tier.threshold - visits} visits away` : "Reached"}</span>
               </div>
               <div className="h-1 bg-white/10 rounded-full overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all"
                   style={{
                     background: tier.color,
-                    width: `${Math.min(100, (profile.total_spend_all_time / tier.threshold) * 100)}%`,
+                    width: `${Math.min(100, (visits / tier.threshold) * 100)}%`,
                   }}
                 />
               </div>
@@ -216,10 +207,9 @@ export default function MemberDashboardPage() {
         </div>
 
         {/* Stats row */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           {[
-            { label: "Total Spent",  value: `$${profile.total_spend_all_time.toFixed(0)}` },
-            { label: "Visits",       value: `${profile.total_visits_all_time}` },
+            { label: "Total Visits", value: `${visits}` },
             { label: "Last Visit",   value: profile.last_visit_date
               ? new Date(profile.last_visit_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })
               : "—"
@@ -255,7 +245,7 @@ export default function MemberDashboardPage() {
             { label: "Appointments", icon: "📅", href: "/member/bookings" },
             { label: `Coupons${couponCount > 0 ? ` (${couponCount})` : ""}`, icon: "🎟", href: "/member/coupons" },
             { label: "Lash Passport", icon: "✦", href: "/member/lash-records" },
-            { label: "Edit Profile", icon: "✎", href: "/member/profile" },
+            { label: "Edit Profile",  icon: "👤", href: "/member/profile" },
           ].map(item => (
             <a key={item.label} href={item.href}
               className="bg-white rounded-xl border border-neutral-100 p-3 text-center hover:border-[#C9A84C]/40 transition-colors">
@@ -278,40 +268,7 @@ export default function MemberDashboardPage() {
         <TierBenefitsCard tier={profile.vip_tier} />
 
         {/* Referral */}
-        {profile.referral_code && <ReferralCard code={profile.referral_code} />}
-
-        {/* Transaction history */}
-        <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
-          <div className="px-4 py-3.5 border-b border-neutral-100">
-            <p className="text-[13px] font-semibold text-[#1C1C1C]">Points History</p>
-          </div>
-          {txns.length === 0 ? (
-            <div className="px-4 py-8 text-center">
-              <p className="text-[13px] text-neutral-400">No points history yet</p>
-              <p className="text-[11px] text-neutral-300 mt-1">Book an appointment to start earning points</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-neutral-50">
-              {txns.map((t) => (
-                <div key={t.id} className="flex items-center justify-between px-4 py-3">
-                  <div>
-                    <p className="text-[13px] font-medium text-[#1C1C1C]">{TXN_LABELS[t.type] ?? t.type}</p>
-                    <p className="text-[11px] text-neutral-400 mt-0.5">
-                      {new Date(t.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                      {t.notes && ` · ${t.notes}`}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className={`text-[14px] font-semibold ${t.amount > 0 ? "text-[#C9A84C]" : "text-neutral-500"}`}>
-                      {t.amount > 0 ? `+${t.amount}` : t.amount} pts
-                    </p>
-                    <p className="text-[10px] text-neutral-300">{t.balance_after} remaining</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        {profile.referral_code && <ReferralCard code={profile.referral_code} stats={referralStats} />}
 
         {/* Footer */}
         <p className="text-center text-[11px] text-neutral-400 pb-4">
@@ -403,7 +360,7 @@ function TierBadge({ tier }: { tier: Profile["vip_tier"] }) {
   );
 }
 
-function ReferralCard({ code }: { code: string }) {
+function ReferralCard({ code, stats }: { code: string; stats: { pending: number; completed: number } }) {
   const [copied, setCopied] = useState(false);
 
   function copy() {
@@ -413,13 +370,22 @@ function ReferralCard({ code }: { code: string }) {
     });
   }
 
+  const total = stats.pending + stats.completed;
+
   return (
     <div className="bg-white rounded-2xl border border-neutral-100 p-4">
-      <p className="text-[12px] font-bold text-[#1C1C1C] mb-1">Refer a Friend</p>
+      <div className="flex items-start justify-between mb-1">
+        <p className="text-[12px] font-bold text-[#1C1C1C]">Refer a Friend</p>
+        {total > 0 && (
+          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C9A84C]/10 text-[#C9A84C]">
+            {total} referred
+          </span>
+        )}
+      </div>
       <p className="text-[11px] text-neutral-400 mb-3">
-        Share your code — when a friend joins, you both earn bonus points.
+        Share your code and help friends discover Yee Eyelashes.
       </p>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 mb-3">
         <div className="flex-1 bg-[#F8F5EF] rounded-xl px-4 py-2.5 text-center">
           <p className="text-[17px] font-bold tracking-[0.2em] text-[#1C1C1C]" style={{ fontFamily: "var(--font-cormorant)" }}>
             {code}
@@ -433,16 +399,26 @@ function ReferralCard({ code }: { code: string }) {
           {copied ? "Copied!" : "Copy"}
         </button>
       </div>
+      {total > 0 && (
+        <div className="flex gap-3 pt-2 border-t border-neutral-50">
+          {stats.completed > 0 && (
+            <p className="text-[11px] text-emerald-600 font-semibold">✓ {stats.completed} completed</p>
+          )}
+          {stats.pending > 0 && (
+            <p className="text-[11px] text-amber-600">⏳ {stats.pending} pending first visit</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
 function TierBenefitsCard({ tier }: { tier: Profile["vip_tier"] }) {
   const benefits: Record<Profile["vip_tier"], string[]> = {
-    member:  ["Earn 1 pt per $1 spent", "Birthday reward — 30% off", "Points valid for 12 months"],
-    silver:  ["Earn 1.2 pts per $1 spent", "Birthday reward — 30% off", "Priority booking", "Exclusive Silver coupons"],
-    gold:    ["Earn 1.5 pts per $1 spent", "Birthday reward — 35% off", "Priority booking", "Seasonal VIP gift"],
-    diamond: ["Earn 2 pts per $1 spent", "Birthday reward — 40% off", "VIP priority booking", "Monthly exclusive gift", "Free treatment upgrade"],
+    member:  ["Every 5 visits → 20% off coupon", "Birthday reward — 30% off", "Member-only promotions"],
+    silver:  ["Every 5 visits → 20% off coupon", "Birthday reward — 30% off", "Priority booking", "Exclusive Silver coupons"],
+    gold:    ["Every 5 visits → 20% off coupon", "Birthday reward — 35% off", "Priority booking", "Seasonal VIP gift"],
+    diamond: ["Every 5 visits → 20% off coupon", "Birthday reward — 40% off", "VIP priority booking", "Monthly exclusive gift", "Free treatment upgrade"],
   };
 
   const config = TIER_CONFIG[tier];
@@ -460,9 +436,9 @@ function TierBenefitsCard({ tier }: { tier: Profile["vip_tier"] }) {
           </div>
         ))}
       </div>
-      {config.next && (
+      {config.next && config.threshold && (
         <p className="text-[11px] text-neutral-400 mt-3 pt-3 border-t border-neutral-100">
-          Upgrade to {config.next} to unlock more benefits →
+          Reach {config.threshold} visits to unlock {config.next} benefits →
         </p>
       )}
     </div>

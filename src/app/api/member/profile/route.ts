@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { sendMemberWelcomeEmail } from "@/lib/email";
 
 export async function PATCH(req: NextRequest) {
   const token = req.headers.get("authorization")?.replace("Bearer ", "");
@@ -20,6 +21,15 @@ export async function PATCH(req: NextRequest) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     { auth: { persistSession: false } }
   );
+
+  // Read current profile before update to detect first onboarding completion
+  const { data: existing } = await admin
+    .from("profiles")
+    .select("first_name, phone, birthday, referral_code")
+    .eq("id", user.id)
+    .single();
+
+  const wasIncomplete = !existing?.phone || !existing?.birthday;
 
   const updates: Record<string, unknown> = {};
   if (first_name !== undefined) updates.first_name = first_name;
@@ -44,6 +54,20 @@ export async function PATCH(req: NextRequest) {
     fetch(`${base}/api/member/link-bookings`, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
+    }).catch(() => {});
+  }
+
+  // Send welcome email on first completed onboarding
+  const newPhone   = (updates.phone    ?? existing?.phone)    as string | null;
+  const newBirthday = (updates.birthday ?? existing?.birthday) as string | null;
+  const isNowComplete = !!(newPhone && newBirthday);
+
+  if (wasIncomplete && isNowComplete && existing?.referral_code) {
+    const memberName = (first_name ?? existing?.first_name ?? "").trim() || "Member";
+    sendMemberWelcomeEmail({
+      name:         memberName,
+      email:        user.email ?? "",
+      referralCode: existing.referral_code as string,
     }).catch(() => {});
   }
 

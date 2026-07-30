@@ -23,6 +23,11 @@ export function generateCancelToken(bookingId: string): string {
   return createHmac("sha256", secret).update(bookingId).digest("hex").slice(0, 40);
 }
 
+export function generateUnsubscribeToken(memberId: string): string {
+  const secret = process.env.ADMIN_SECRET_KEY ?? "fallback-secret";
+  return createHmac("sha256", secret).update(`unsub:${memberId}`).digest("hex").slice(0, 40);
+}
+
 // Generate Google Calendar URL
 function buildGoogleCalendarUrl(data: BookingEmailData): string {
   const [year, month, day] = data.date.split("-").map(Number);
@@ -610,6 +615,382 @@ export async function sendBirthdayEmail(data: { name: string; email: string }) {
     html,
   });
   if (error) throw new Error(`Resend birthday email error: ${JSON.stringify(error)}`);
+}
+
+// ── 7. Member welcome email ──────────────────────────────────────────────────
+export async function sendMemberWelcomeEmail(data: {
+  name:         string;
+  email:        string;
+  referralCode: string;
+}) {
+  const dashUrl = `${BASE}/member/dashboard`;
+  const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f8f5ef;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f5ef;padding:40px 20px;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;max-width:560px;width:100%;">
+        <tr><td style="background:linear-gradient(135deg,#1C1C1C 0%,#2D2008 100%);padding:48px 48px 40px;text-align:center;">
+          <p style="margin:0 0 12px;font-size:10px;letter-spacing:0.5em;text-transform:uppercase;color:#C9A84C;">Yee Eyelashes</p>
+          <h1 style="margin:0 0 8px;font-size:30px;font-weight:300;color:#ffffff;letter-spacing:-0.01em;">Welcome, ${data.name}</h1>
+          <p style="margin:0;font-size:13px;color:#aaa;">Your Member Club account is ready</p>
+        </td></tr>
+        <tr><td style="padding:40px 48px;">
+          <p style="margin:0 0 24px;font-size:14px;color:#777;line-height:1.9;">
+            You're now a member of the Yee Eyelashes Member Club — every dollar you spend earns points, and your points can be redeemed for discounts at checkout. Plus, exclusive perks as you level up.
+          </p>
+
+          <!-- How it works -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #f0ece4;margin-bottom:28px;">
+            <tr><td style="padding:16px 20px;border-bottom:1px solid #f0ece4;background:#fafaf8;">
+              <p style="margin:0;font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:#C9A84C;">How It Works</p>
+            </td></tr>
+            <tr><td style="padding:20px 20px 4px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr><td style="padding:8px 0;font-size:13px;color:#1c1c1c;border-bottom:1px solid #f7f7f7;">
+                  <strong>$1 spent</strong> <span style="color:#999;margin:0 8px;">→</span> <strong style="color:#C9A84C;">1 point earned</strong>
+                </td></tr>
+                <tr><td style="padding:8px 0;font-size:13px;color:#1c1c1c;border-bottom:1px solid #f7f7f7;">
+                  <strong>100 points</strong> <span style="color:#999;margin:0 8px;">→</span> <strong style="color:#C9A84C;">$1 off any service</strong>
+                </td></tr>
+                <tr><td style="padding:8px 0;font-size:13px;color:#1c1c1c;border-bottom:1px solid #f7f7f7;">
+                  <strong>Birthday month</strong> <span style="color:#999;margin:0 8px;">→</span> <strong style="color:#C9A84C;">30% off coupon issued</strong>
+                </td></tr>
+                <tr><td style="padding:8px 0;font-size:13px;color:#1c1c1c;">
+                  <strong>$500+ spent</strong> <span style="color:#999;margin:0 8px;">→</span> <strong style="color:#C9A84C;">Silver tier &amp; above perks</strong>
+                </td></tr>
+              </table>
+            </td></tr>
+          </table>
+
+          <!-- Referral code -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#fef9ec;border:1px solid #f0dfa0;border-radius:8px;margin-bottom:28px;">
+            <tr><td style="padding:24px 28px;text-align:center;">
+              <p style="margin:0 0 8px;font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:#C9A84C;">Your Referral Code</p>
+              <p style="margin:0 0 8px;font-size:28px;font-weight:700;color:#1c1c1c;letter-spacing:0.15em;font-family:monospace;">${data.referralCode}</p>
+              <p style="margin:0;font-size:12px;color:#999;line-height:1.7;">Share this code with friends. When they join and visit,<br/>you both earn bonus points.</p>
+            </td></tr>
+          </table>
+
+          <table cellpadding="0" cellspacing="0" style="margin:0 auto 28px;">
+            <tr><td style="background:#1c1c1c;text-align:center;">
+              <a href="${dashUrl}" style="display:inline-block;padding:14px 44px;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:#ffffff;text-decoration:none;">
+                View My Dashboard →
+              </a>
+            </td></tr>
+          </table>
+          <p style="margin:0;font-size:13px;color:#bbb;text-align:center;line-height:1.8;">
+            📍 278 Plandome Rd, 2F, Manhasset, NY 11030<br/>
+            📷 <a href="https://www.instagram.com/yee_lashesny" style="color:#C9A84C;text-decoration:none;">@yee_lashesny</a>
+          </p>
+        </td></tr>
+        <tr><td style="padding:24px 48px;background:#1c1c1c;text-align:center;">
+          <p style="margin:0;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:#555;">
+            © ${new Date().getFullYear()} Yee Eyelashes · Manhasset, NY
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  const { error } = await getResend().emails.send({
+    from:    `Yee Eyelashes <${FROM}>`,
+    to:      data.email,
+    subject: `Welcome to Yee Eyelashes Member Club, ${data.name}! ✦`,
+    html,
+  });
+  if (error) throw new Error(`Resend welcome email error: ${JSON.stringify(error)}`);
+}
+
+// ── 8. Member appointment reminder ──────────────────────────────────────────
+export async function sendMemberAppointmentReminderEmail(data: {
+  name:         string;
+  email:        string;
+  serviceLabel: string;
+  date:         string;
+  time:         string;
+}) {
+  const formattedDate = formatDate(data.date);
+  const rebookUrl = `${BASE}/en/booking`;
+
+  const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f8f5ef;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f5ef;padding:40px 20px;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;max-width:560px;width:100%;">
+        <tr><td style="background:#C9A84C;height:4px;"></td></tr>
+        <tr><td style="padding:48px 48px 32px;text-align:center;border-bottom:1px solid #f0ece4;">
+          <p style="margin:0 0 8px;font-size:10px;letter-spacing:0.5em;text-transform:uppercase;color:#C9A84C;">Yee Eyelashes</p>
+          <h1 style="margin:0;font-size:26px;font-weight:300;color:#1c1c1c;">Your appointment is tomorrow ✨</h1>
+        </td></tr>
+        <tr><td style="padding:40px 48px;">
+          <p style="margin:0 0 24px;font-size:14px;color:#777;line-height:1.9;">
+            Hi ${data.name}, just a reminder that your lash appointment is coming up tomorrow!
+          </p>
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#fafaf8;border-left:2px solid #C9A84C;margin-bottom:28px;">
+            <tr><td style="padding:24px 28px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                ${row("Service", data.serviceLabel)}
+                ${row("Date",    formattedDate)}
+                ${row("Time",    data.time)}
+              </table>
+            </td></tr>
+          </table>
+          <p style="margin:0 0 24px;font-size:13px;color:#999;line-height:1.8;">
+            📍 278 Plandome Rd, 2nd Floor, Manhasset, NY 11030<br/>
+            📞 <a href="tel:5169843859" style="color:#C9A84C;text-decoration:none;">(516) 984-3859</a>
+          </p>
+          <p style="margin:0;font-size:12px;color:#bbb;line-height:1.8;">
+            Need to reschedule? Please contact us at least 24 hours in advance.
+          </p>
+        </td></tr>
+        <tr><td style="padding:24px 48px;background:#1c1c1c;text-align:center;">
+          <p style="margin:0;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:#555;">
+            © ${new Date().getFullYear()} Yee Eyelashes · Manhasset, NY
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  const { error } = await getResend().emails.send({
+    from:    `Yee Eyelashes <${FROM}>`,
+    to:      data.email,
+    subject: `Reminder: your lash appointment is tomorrow — Yee Eyelashes`,
+    html,
+  });
+  if (error) throw new Error(`Resend appointment reminder error: ${JSON.stringify(error)}`);
+}
+
+// ── 9. Member points awarded notification ────────────────────────────────────
+export async function sendMemberPointsEmail(data: {
+  name:        string;
+  email:       string;
+  pointsEarned: number;
+  newBalance:  number;
+  tier:        string;
+  visitDate:   string;
+}) {
+  const dashUrl = `${BASE}/member/dashboard`;
+  const tierLabel: Record<string, string> = {
+    diamond: "Diamond",
+    gold:    "Gold",
+    silver:  "Silver",
+    member:  "Member",
+  };
+
+  const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f8f5ef;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f5ef;padding:40px 20px;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;max-width:560px;width:100%;">
+        <tr><td style="background:#C9A84C;height:4px;"></td></tr>
+        <tr><td style="padding:48px 48px 32px;text-align:center;border-bottom:1px solid #f0ece4;">
+          <p style="margin:0 0 8px;font-size:10px;letter-spacing:0.5em;text-transform:uppercase;color:#C9A84C;">Yee Eyelashes</p>
+          <h1 style="margin:0;font-size:26px;font-weight:300;color:#1c1c1c;letter-spacing:-0.01em;">✦ Points Earned</h1>
+        </td></tr>
+        <tr><td style="padding:40px 48px;">
+          <p style="margin:0 0 28px;font-size:14px;color:#777;line-height:1.9;">
+            Hi ${data.name}, thank you for your visit! Here's a summary of your points from ${data.visitDate}.
+          </p>
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#fef9ec;border:1px solid #f0dfa0;border-radius:8px;margin-bottom:28px;">
+            <tr><td style="padding:28px 32px;text-align:center;">
+              <p style="margin:0 0 4px;font-size:10px;letter-spacing:0.35em;text-transform:uppercase;color:#C9A84C;">Points Earned</p>
+              <p style="margin:0 0 16px;font-size:40px;font-weight:700;color:#1c1c1c;">+${data.pointsEarned}</p>
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="text-align:center;padding:12px 16px;border-top:1px solid #f0dfa0;">
+                    <p style="margin:0 0 4px;font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:#999;">New Balance</p>
+                    <p style="margin:0;font-size:22px;font-weight:600;color:#1c1c1c;">${data.newBalance} pts</p>
+                    <p style="margin:4px 0 0;font-size:12px;color:#aaa;">= $${(data.newBalance / 100).toFixed(2)} in savings</p>
+                  </td>
+                  <td style="text-align:center;padding:12px 16px;border-top:1px solid #f0dfa0;border-left:1px solid #f0dfa0;">
+                    <p style="margin:0 0 4px;font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:#999;">Tier</p>
+                    <p style="margin:0;font-size:18px;font-weight:600;color:#C9A84C;">${tierLabel[data.tier] ?? "Member"}</p>
+                  </td>
+                </tr>
+              </table>
+            </td></tr>
+          </table>
+          <table cellpadding="0" cellspacing="0" style="margin:0 auto 28px;">
+            <tr><td style="background:#1c1c1c;text-align:center;">
+              <a href="${dashUrl}" style="display:inline-block;padding:14px 40px;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:#ffffff;text-decoration:none;">
+                View My Dashboard →
+              </a>
+            </td></tr>
+          </table>
+          <p style="margin:0;font-size:12px;color:#bbb;text-align:center;line-height:1.8;">
+            Every dollar spent earns 1 point · 100 points = $1 off
+          </p>
+        </td></tr>
+        <tr><td style="padding:24px 48px;background:#1c1c1c;text-align:center;">
+          <p style="margin:0;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:#555;">
+            © ${new Date().getFullYear()} Yee Eyelashes · Manhasset, NY
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  const { error } = await getResend().emails.send({
+    from:    `Yee Eyelashes <${FROM}>`,
+    to:      data.email,
+    subject: `✦ You earned ${data.pointsEarned} points — Yee Eyelashes`,
+    html,
+  });
+  if (error) throw new Error(`Resend member points email error: ${JSON.stringify(error)}`);
+}
+
+// ── 8. Referral bonus notification ───────────────────────────────────────────
+export async function sendReferralBonusEmail(data: {
+  name:        string;
+  email:       string;
+  bonusPoints: number;
+  newBalance:  number;
+  isReferrer:  boolean;
+  refereeName?: string;
+}) {
+  const dashUrl = `${BASE}/member/dashboard`;
+  const heading   = data.isReferrer
+    ? `Your referral earned you ${data.bonusPoints} points!`
+    : `Welcome bonus: +${data.bonusPoints} points!`;
+  const body = data.isReferrer
+    ? `Great news, ${data.name}! ${data.refereeName ?? "Your friend"} just completed their first visit at Yee Eyelashes — and you've earned a referral bonus.`
+    : `Welcome to Yee Eyelashes, ${data.name}! You've received a first-visit bonus for joining through a referral.`;
+
+  const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f8f5ef;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f5ef;padding:40px 20px;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;max-width:560px;width:100%;">
+        <tr><td style="background:#C9A84C;height:4px;"></td></tr>
+        <tr><td style="padding:48px 48px 32px;text-align:center;border-bottom:1px solid #f0ece4;">
+          <p style="margin:0 0 8px;font-size:10px;letter-spacing:0.5em;text-transform:uppercase;color:#C9A84C;">Yee Eyelashes</p>
+          <h1 style="margin:0;font-size:24px;font-weight:300;color:#1c1c1c;letter-spacing:-0.01em;">🎉 ${heading}</h1>
+        </td></tr>
+        <tr><td style="padding:40px 48px;">
+          <p style="margin:0 0 28px;font-size:14px;color:#777;line-height:1.9;">${body}</p>
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#fef9ec;border:1px solid #f0dfa0;border-radius:8px;margin-bottom:28px;">
+            <tr><td style="padding:28px 32px;text-align:center;">
+              <p style="margin:0 0 4px;font-size:10px;letter-spacing:0.35em;text-transform:uppercase;color:#C9A84C;">Bonus Added</p>
+              <p style="margin:0 0 16px;font-size:40px;font-weight:700;color:#1c1c1c;">+${data.bonusPoints}</p>
+              <p style="margin:0;font-size:13px;color:#777;">New balance: <strong style="color:#1c1c1c;">${data.newBalance} pts</strong></p>
+            </td></tr>
+          </table>
+          <table cellpadding="0" cellspacing="0" style="margin:0 auto 0;">
+            <tr><td style="background:#1c1c1c;text-align:center;">
+              <a href="${dashUrl}" style="display:inline-block;padding:14px 40px;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:#ffffff;text-decoration:none;">
+                View My Dashboard →
+              </a>
+            </td></tr>
+          </table>
+        </td></tr>
+        <tr><td style="padding:24px 48px;background:#1c1c1c;text-align:center;">
+          <p style="margin:0;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:#555;">
+            © ${new Date().getFullYear()} Yee Eyelashes · Manhasset, NY
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  const { error } = await getResend().emails.send({
+    from:    `Yee Eyelashes <${FROM}>`,
+    to:      data.email,
+    subject: data.isReferrer
+      ? `🎉 You earned a referral bonus — Yee Eyelashes`
+      : `🎉 Welcome bonus credited — Yee Eyelashes`,
+    html,
+  });
+  if (error) throw new Error(`Resend referral bonus email error: ${JSON.stringify(error)}`);
+}
+
+// ── 9. Points expiry warning ──────────────────────────────────────────────────
+export async function sendMemberPointsExpiryWarningEmail(data: {
+  name:        string;
+  email:       string;
+  expiringPts: number;
+  expiryDate:  string; // "Month DD, YYYY"
+  currentBalance: number;
+  memberId:    string;
+}) {
+  const dashUrl  = `${BASE}/member/dashboard`;
+  const profileUrl = `${BASE}/member/profile`;
+  const unsubToken = generateUnsubscribeToken(data.memberId);
+  const unsubUrl   = `${BASE}/member/unsubscribe?id=${data.memberId}&sig=${unsubToken}`;
+
+  const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f8f5ef;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f5ef;padding:40px 20px;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;max-width:560px;width:100%;">
+        <tr><td style="background:#C9A84C;height:4px;"></td></tr>
+        <tr><td style="padding:48px 48px 32px;text-align:center;border-bottom:1px solid #f0ece4;">
+          <p style="margin:0 0 8px;font-size:10px;letter-spacing:0.5em;text-transform:uppercase;color:#C9A84C;">Yee Eyelashes</p>
+          <h1 style="margin:0;font-size:24px;font-weight:300;color:#1c1c1c;">⏳ Your points expire soon</h1>
+        </td></tr>
+        <tr><td style="padding:40px 48px;">
+          <p style="margin:0 0 24px;font-size:14px;color:#777;line-height:1.9;">
+            Hi ${data.name}, just a heads up — <strong style="color:#1c1c1c;">${data.expiringPts} of your points</strong> will expire on <strong style="color:#1c1c1c;">${data.expiryDate}</strong> because they were earned more than 12 months ago.
+          </p>
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#fef9ec;border:1px solid #f0dfa0;border-radius:8px;margin-bottom:28px;">
+            <tr><td style="padding:28px 32px;text-align:center;">
+              <p style="margin:0 0 4px;font-size:10px;letter-spacing:0.35em;text-transform:uppercase;color:#C9A84C;">Expiring</p>
+              <p style="margin:0 0 12px;font-size:40px;font-weight:700;color:#1c1c1c;">${data.expiringPts} pts</p>
+              <p style="margin:0;font-size:13px;color:#777;">Current balance: <strong style="color:#1c1c1c;">${data.currentBalance} pts</strong></p>
+            </td></tr>
+          </table>
+          <p style="margin:0 0 28px;font-size:13px;color:#777;line-height:1.9;">
+            Book a service before ${data.expiryDate} to keep your points active. Any new service resets the 12-month clock on all your points.
+          </p>
+          <table cellpadding="0" cellspacing="0" style="margin:0 auto 0;">
+            <tr><td style="background:#1c1c1c;text-align:center;">
+              <a href="${dashUrl}" style="display:inline-block;padding:14px 40px;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:#ffffff;text-decoration:none;">
+                Book Now →
+              </a>
+            </td></tr>
+          </table>
+        </td></tr>
+        <tr><td style="padding:24px 48px;background:#1c1c1c;text-align:center;">
+          <p style="margin:0 0 8px;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:#555;">
+            © ${new Date().getFullYear()} Yee Eyelashes · Manhasset, NY
+          </p>
+          <p style="margin:0;font-size:10px;color:#444;">
+            <a href="${profileUrl}" style="color:#888;text-decoration:underline;">Manage notifications</a>
+            &nbsp;·&nbsp;
+            <a href="${unsubUrl}" style="color:#888;text-decoration:underline;">Unsubscribe</a>
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  const { error } = await getResend().emails.send({
+    from:    `Yee Eyelashes <${FROM}>`,
+    to:      data.email,
+    subject: `⏳ ${data.expiringPts} points expiring on ${data.expiryDate} — Yee Eyelashes`,
+    html,
+  });
+  if (error) throw new Error(`Resend points expiry warning email error: ${JSON.stringify(error)}`);
 }
 
 function row(label: string, value: string) {

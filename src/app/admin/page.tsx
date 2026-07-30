@@ -18,6 +18,7 @@ import UserSettingsView    from "./UserSettingsView";
 import MembersView         from "./MembersView";
 import CouponsView         from "./CouponsView";
 import CheckoutView        from "./CheckoutView";
+import ReferralsView       from "./ReferralsView";
 
 // ── Types ──────────────────────────────────────────────────────
 type Client = {
@@ -31,7 +32,7 @@ type Booking = {
   date: string; status: string;
   refill_sent_at: string | null; review_sent_at: string | null;
 };
-type View = "dashboard" | "revenue" | "expenses" | "analytics" | "seo-pages" | "update-history" | "changelog" | "calendar" | "bookings" | "clients-main" | "clients-elly" | "automations" | "reviews" | "packages" | "user-settings" | "members" | "coupons" | "checkout";
+type View = "dashboard" | "revenue" | "expenses" | "analytics" | "seo-pages" | "update-history" | "changelog" | "calendar" | "bookings" | "clients-main" | "clients-elly" | "automations" | "reviews" | "packages" | "user-settings" | "members" | "coupons" | "checkout" | "referrals";
 
 const EMPTY_CLIENT: Omit<Client,"id"> = {
   visit_date:"", email:"", phone:"", first_name:"", last_name:"",
@@ -58,6 +59,7 @@ const VIEW_LABELS: Record<string, string> = {
   "members":        "Members",
   "coupons":        "Coupon Templates",
   "checkout":       "Member Checkout",
+  "referrals":      "Referrals",
 };
 
 const BOTTOM_TABS: { id: View; label: string; icon: React.ReactNode }[] = [
@@ -125,6 +127,11 @@ const ICONS: Record<string, React.ReactNode> = {
       <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
     </svg>
   ),
+  "Member Club": (
+    <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+    </svg>
+  ),
   "Version History": (
     <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
@@ -143,13 +150,16 @@ const NAV: { section: string; items: { id: View; label: string }[] }[] = [
   { section: "Appointments", items: [
     { id: "bookings", label: "Bookings" },
   ]},
+  { section: "Member Club", items: [
+    { id: "checkout",  label: "Member Checkout"  },
+    { id: "members",   label: "Members"          },
+    { id: "coupons",   label: "Coupon Templates" },
+    { id: "referrals", label: "Referrals"        },
+  ]},
   { section: "Customers", items: [
-    { id: "checkout",     label: "Member Checkout"  },
-    { id: "members",      label: "Members"          },
-    { id: "coupons",      label: "Coupon Templates" },
-    { id: "clients-main", label: "My Clients"       },
-    { id: "clients-elly", label: "Elly's Clients"   },
-    { id: "packages",     label: "3x Package"       },
+    { id: "clients-main", label: "My Clients"    },
+    { id: "clients-elly", label: "Elly's Clients" },
+    { id: "packages",     label: "3x Package"    },
   ]},
   { section: "Marketing", items: [
     { id: "automations", label: "Automations" },
@@ -1949,6 +1959,7 @@ export default function AdminPage() {
           {view === "members"       && <MembersView      adminKey={savedKey} />}
           {view === "coupons"       && <CouponsView      adminKey={savedKey} />}
           {view === "checkout"      && <CheckoutView     adminKey={savedKey} />}
+          {view === "referrals"     && <ReferralsView    adminKey={savedKey} />}
         </main>
       </div>
 

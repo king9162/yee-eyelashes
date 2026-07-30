@@ -27,6 +27,14 @@
     {
       "path": "/api/cron/holiday-blast",
       "schedule": "0 14 * * *"
+    },
+    {
+      "path": "/api/cron/member-appointment-reminder",
+      "schedule": "0 18 * * *"
+    },
+    {
+      "path": "/api/admin/expire-coupons",
+      "schedule": "0 3 * * *"
     }
   ]
 }

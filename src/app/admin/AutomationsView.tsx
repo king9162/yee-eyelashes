@@ -110,6 +110,14 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
   const [selectedPreset,  setSelectedPreset]  = useState<string | null>(null);
   const [blastSearch,     setBlastSearch]     = useState("");
 
+  // Member email blast state
+  const [memberBlastSubject,   setMemberBlastSubject]   = useState("");
+  const [memberBlastBody,      setMemberBlastBody]      = useState("");
+  const [memberBlastPreviewing, setMemberBlastPreviewing] = useState(false);
+  const [memberBlastSending,   setMemberBlastSending]   = useState(false);
+  const [memberBlastPreview,   setMemberBlastPreview]   = useState<{ total: number; recipients: string[] } | null>(null);
+  const [memberBlastResult,    setMemberBlastResult]    = useState<{ sent: number; total: number; errors: string[] } | null>(null);
+
   const headers = { Authorization: `Bearer ${adminKey}` };
 
   useEffect(() => {
@@ -853,6 +861,118 @@ export default function AutomationsView({ adminKey }: { adminKey: string }) {
           </div>
         </div>
 
+      </div>
+
+      {/* ── Member Email Blast ── */}
+      <div className="mb-8">
+        <h3 className="text-[18px] font-bold text-[#1C1C1C] mb-1">Member Email Blast</h3>
+        <p className="text-[12px] text-neutral-400 mb-4">Send a custom email to all members who opted in to Promotions &amp; Offers.</p>
+        <div className="bg-white border border-neutral-200 rounded-xl p-5 space-y-4">
+          <div>
+            <label className="block text-[10px] uppercase tracking-[0.12em] text-neutral-400 mb-1.5">Subject</label>
+            <input
+              value={memberBlastSubject}
+              onChange={e => setMemberBlastSubject(e.target.value)}
+              placeholder="e.g. Summer Special — 15% Off This Week Only"
+              className="w-full border border-neutral-200 rounded-xl px-3.5 py-3 text-[13px] focus:outline-none focus:border-[#C9A84C] transition-colors"
+            />
+          </div>
+          <div>
+            <label className="block text-[10px] uppercase tracking-[0.12em] text-neutral-400 mb-1.5">
+              HTML Body
+              <span className="ml-2 normal-case tracking-normal text-neutral-300">Use {"{{name}}"} for personalized first name</span>
+            </label>
+            <textarea
+              value={memberBlastBody}
+              onChange={e => setMemberBlastBody(e.target.value)}
+              placeholder={"<p>Hi {{name}},</p>\n<p>We have a special offer just for you...</p>"}
+              rows={8}
+              className="w-full border border-neutral-200 rounded-xl px-3.5 py-3 text-[12px] font-mono focus:outline-none focus:border-[#C9A84C] transition-colors resize-y"
+            />
+          </div>
+
+          {memberBlastPreview && (
+            <div className="bg-[#FEF9EC] border border-[#F0DFA0] rounded-xl px-4 py-3">
+              <p className="text-[12px] font-semibold text-[#1C1C1C] mb-1">
+                {memberBlastPreview.total} opted-in member{memberBlastPreview.total !== 1 ? "s" : ""} will receive this email
+              </p>
+              <p className="text-[11px] text-neutral-500">
+                {memberBlastPreview.recipients.slice(0, 10).join(", ")}
+                {memberBlastPreview.recipients.length > 10 ? ` +${memberBlastPreview.recipients.length - 10} more` : ""}
+              </p>
+            </div>
+          )}
+
+          {memberBlastResult && (
+            <div className={`rounded-xl px-4 py-3 ${memberBlastResult.errors.length > 0 ? "bg-red-50 border border-red-200" : "bg-green-50 border border-green-200"}`}>
+              <p className={`text-[13px] font-semibold ${memberBlastResult.errors.length > 0 ? "text-red-700" : "text-green-700"}`}>
+                Sent {memberBlastResult.sent} / {memberBlastResult.total} emails
+              </p>
+              {memberBlastResult.errors.length > 0 && (
+                <ul className="mt-1 space-y-0.5">
+                  {memberBlastResult.errors.map((e, i) => (
+                    <li key={i} className="text-[11px] text-red-600 font-mono">{e}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+
+          <div className="flex gap-2 pt-1">
+            <button
+              onClick={async () => {
+                if (!memberBlastSubject.trim() || !memberBlastBody.trim()) {
+                  alert("Subject and body are required.");
+                  return;
+                }
+                setMemberBlastPreviewing(true);
+                setMemberBlastPreview(null);
+                setMemberBlastResult(null);
+                const res = await fetch("/api/admin/member-blast", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminKey}` },
+                  body: JSON.stringify({ subject: memberBlastSubject, html_body: memberBlastBody, preview_only: true }),
+                });
+                const d = await res.json();
+                if (res.ok) setMemberBlastPreview({ total: d.total, recipients: d.recipients ?? [] });
+                else alert(d.error ?? "Preview failed");
+                setMemberBlastPreviewing(false);
+              }}
+              disabled={memberBlastPreviewing || memberBlastSending}
+              className="px-4 py-2.5 rounded-xl text-[12px] font-semibold border border-neutral-200 text-neutral-600 hover:border-[#C9A84C] transition-all disabled:opacity-50"
+            >
+              {memberBlastPreviewing ? "Previewing…" : "Preview Recipients"}
+            </button>
+            <button
+              onClick={async () => {
+                if (!memberBlastSubject.trim() || !memberBlastBody.trim()) {
+                  alert("Subject and body are required.");
+                  return;
+                }
+                if (!memberBlastPreview) {
+                  alert("Please preview recipients first.");
+                  return;
+                }
+                if (!confirm(`Send to ${memberBlastPreview.total} opted-in members? This cannot be undone.`)) return;
+                setMemberBlastSending(true);
+                setMemberBlastResult(null);
+                const res = await fetch("/api/admin/member-blast", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminKey}` },
+                  body: JSON.stringify({ subject: memberBlastSubject, html_body: memberBlastBody }),
+                });
+                const d = await res.json();
+                if (res.ok) setMemberBlastResult({ sent: d.sent, total: d.total, errors: d.errors ?? [] });
+                else alert(d.error ?? "Send failed");
+                setMemberBlastSending(false);
+              }}
+              disabled={memberBlastSending || memberBlastPreviewing}
+              className="flex-1 py-2.5 rounded-xl text-[12px] font-semibold text-white bg-[#1C1C1C] hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all disabled:opacity-50"
+            >
+              {memberBlastSending ? "Sending…" : "Send to All Opted-In Members"}
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* ── Cron History ── */}

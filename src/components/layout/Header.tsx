@@ -23,12 +23,13 @@ export default function Header({ lang }: Props) {
   }, []);
 
   const navLinks = [
-    { label: t.nav.home,     href: `/${lang}` },
-    { label: t.nav.services, href: `/${lang}/services` },
-    { label: t.nav.gallery,  href: `/${lang}/gallery` },
-    { label: t.nav.about,    href: `/${lang}/about` },
-    { label: t.nav.coupon,   href: `/${lang}/coupon` },
-    { label: t.nav.contact,  href: `/${lang}/contact` },
+    { label: t.nav.home,     href: `/${lang}`,          member: false },
+    { label: t.nav.services, href: `/${lang}/services`, member: false },
+    { label: t.nav.gallery,  href: `/${lang}/gallery`,  member: false },
+    { label: t.nav.about,    href: `/${lang}/about`,    member: false },
+    { label: t.nav.coupon,   href: `/${lang}/coupon`,   member: false },
+    { label: t.nav.contact,  href: `/${lang}/contact`,  member: false },
+    { label: `✦ ${t.nav.member}`, href: `/member`,     member: true  },
   ];
 
   const isActive = (href: string) => pathname === href;
@@ -88,9 +89,13 @@ export default function Header({ lang }: Props) {
                 href={link.href}
                 className={cn(
                   "relative text-[11px] uppercase tracking-[0.38em] transition-colors duration-300 py-1",
-                  isActive(link.href)
-                    ? "text-[#C9A84C]"
-                    : "text-neutral-400 hover:text-neutral-800"
+                  link.member
+                    ? isActive(link.href)
+                      ? "text-[#C9A84C]"
+                      : "text-[#C9A84C] opacity-70 hover:opacity-100"
+                    : isActive(link.href)
+                      ? "text-[#C9A84C]"
+                      : "text-neutral-400 hover:text-neutral-800"
                 )}
               >
                 {link.label}
@@ -156,7 +161,9 @@ export default function Header({ lang }: Props) {
               onClick={() => setMenuOpen(false)}
               className={cn(
                 "text-[10.5px] uppercase tracking-[0.22em] py-4 border-b border-neutral-50 last:border-0 transition-colors",
-                isActive(link.href) ? "text-[#C9A84C]" : "text-neutral-500 hover:text-neutral-800"
+                link.member
+                  ? isActive(link.href) ? "text-[#C9A84C]" : "text-[#C9A84C] opacity-70"
+                  : isActive(link.href) ? "text-[#C9A84C]" : "text-neutral-500 hover:text-neutral-800"
               )}
             >
               {link.label}

@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
       .from("points_transactions")
       .select("amount")
       .eq("member_id", member.id)
-      .in("type", ["purchase_earned", "promotion_bonus", "birthday_bonus", "referral_reward"])
+      .in("type", ["purchase_earned", "promotion_bonus", "birthday_bonus", "referral_reward", "referral_bonus"])
       .gt("amount", 0)
       .lt("created_at", cutoff.toISOString());
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
-import { awardMemberPoints } from "@/lib/member-points";
+import { tryAwardRevenuePoints } from "@/lib/revenue-points";
 
 function auth(req: NextRequest) {
   return req.headers.get("authorization") === `Bearer ${process.env.ADMIN_SECRET_KEY}`;
@@ -60,52 +60,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   return NextResponse.json(data);
 }
 
-async function tryAwardRevenuePoints({
-  db,
-  entryId,
-  date,
-  clientName,
-  amount,
-}: {
-  db: ReturnType<typeof supabaseAdmin>;
-  entryId: string;
-  date: string;
-  clientName: string;
-  amount: number;
-}) {
-  const { data: booking } = await db
-    .from("bookings")
-    .select("member_id")
-    .eq("date", date)
-    .eq("name", clientName)
-    .not("member_id", "is", null)
-    .limit(1)
-    .single();
-
-  const memberId = booking?.member_id as string | undefined;
-  if (!memberId) return;
-
-  const pts = Math.floor(amount);
-  if (pts <= 0) return;
-
-  const result = await awardMemberPoints({
-    memberId,
-    amount: pts,
-    type: "purchase_earned",
-    notes: `${clientName} · ${date}`,
-    createdBy: "system",
-    additionalSpend: amount,
-    revenueEntryId: entryId,
-  });
-
-  if (result) {
-    await db.from("revenue_entries").update({
-      member_id: memberId,
-      points_awarded: pts,
-      points_awarded_at: new Date().toISOString(),
-    }).eq("id", entryId);
-  }
-}
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   if (!auth(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

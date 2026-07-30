@@ -95,6 +95,12 @@ export default function DashboardView({ adminKey, letterOpenedAt, adminLoginLog,
   const [editForm,    setEditForm]    = useState<typeof EMPTY_ADD & { notes: string }>(EMPTY_EDIT);
   const [editSaving,  setEditSaving]  = useState(false);
   const [syncing,     setSyncing]     = useState(false);
+  const [memberStats, setMemberStats] = useState<{
+    total_members: number;
+    active_coupons: number;
+    pending_referrals: number;
+    completed_referrals: number;
+  } | null>(null);
 
   const h = { Authorization: `Bearer ${adminKey}` };
 
@@ -121,13 +127,15 @@ export default function DashboardView({ adminKey, letterOpenedAt, adminLoginLog,
       .catch(() => {});
 
     Promise.all([
-      fetch("/api/bookings", { headers: h }).then(r => r.json()),
-      fetch("/api/clients",  { headers: h }).then(r => r.json()),
-      fetch("/api/reviews",  { headers: h }).then(r => r.json()),
-    ]).then(([b, c, r]) => {
+      fetch("/api/bookings",      { headers: h }).then(r => r.json()),
+      fetch("/api/clients",       { headers: h }).then(r => r.json()),
+      fetch("/api/reviews",       { headers: h }).then(r => r.json()),
+      fetch("/api/admin/member-stats", { headers: h }).then(r => r.json()).catch(() => null),
+    ]).then(([b, c, r, ms]) => {
       setBookings(Array.isArray(b) ? b : []);
       setClients(Array.isArray(c) ? c : []);
       setReviews(Array.isArray(r) ? r : []);
+      if (ms && !ms.error) setMemberStats(ms);
       setLoading(false);
     }).catch(() => setLoading(false));
 
@@ -579,6 +587,31 @@ export default function DashboardView({ adminKey, letterOpenedAt, adminLoginLog,
           </div>
         ))}
       </div>
+
+      {/* ── Member Club Stats ── */}
+      {memberStats && (
+        <div className="bg-white border border-neutral-200 rounded-xl p-4 mb-6">
+          <p className="text-[9px] uppercase tracking-[0.15em] text-neutral-400 mb-3">✦ Member Club</p>
+          <div className="grid grid-cols-4 gap-3">
+            <div className="text-center">
+              <p className="text-[22px] font-bold text-[#1C1C1C]">{memberStats.total_members}</p>
+              <p className="text-[10px] text-neutral-400 mt-0.5">Members</p>
+            </div>
+            <div className="text-center border-l border-neutral-100">
+              <p className="text-[22px] font-bold text-[#C9A84C]">{memberStats.active_coupons}</p>
+              <p className="text-[10px] text-neutral-400 mt-0.5">Active Coupons</p>
+            </div>
+            <div className="text-center border-l border-neutral-100">
+              <p className="text-[22px] font-bold text-[#1C1C1C]">{memberStats.pending_referrals}</p>
+              <p className="text-[10px] text-neutral-400 mt-0.5">Referrals Pending</p>
+            </div>
+            <div className="text-center border-l border-neutral-100">
+              <p className="text-[22px] font-bold text-[#1C1C1C]">{memberStats.completed_referrals}</p>
+              <p className="text-[10px] text-neutral-400 mt-0.5">Referrals Done</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {upcomingBirthdays.length > 0 && (
         <div className="bg-white border border-neutral-200 rounded-xl p-4 mb-6">

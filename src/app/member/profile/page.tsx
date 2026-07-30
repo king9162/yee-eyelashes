@@ -23,6 +23,8 @@ export default function MemberProfilePage() {
   const [notifMarketing, setNotifMarketing] = useState(false);
   const [savingPrefs, setSavingPrefs] = useState(false);
   const [prefsMsg, setPrefsMsg] = useState("");
+  const [referralCode, setReferralCode] = useState("");
+  const [referralCopied, setReferralCopied] = useState(false);
 
   useEffect(() => {
     async function init() {
@@ -33,7 +35,7 @@ export default function MemberProfilePage() {
 
       const { data: p } = await supabase
         .from("profiles")
-        .select("first_name, last_name, phone, birthday, birthday_set_at, email, member_id, notif_birthday, notif_refill, notif_marketing")
+        .select("first_name, last_name, phone, birthday, birthday_set_at, email, member_id, referral_code, notif_birthday, notif_refill, notif_marketing")
         .eq("id", session.user.id)
         .single();
 
@@ -45,6 +47,7 @@ export default function MemberProfilePage() {
         setEmail(p.email ?? session.user.email ?? "");
         setMemberId(p.member_id ?? "");
         if (p.birthday_set_at) setBirthdayLocked(true);
+        setReferralCode(p.referral_code ?? "");
         setNotifBirthday(p.notif_birthday ?? true);
         setNotifRefill(p.notif_refill ?? true);
         setNotifMarketing(p.notif_marketing ?? false);
@@ -119,10 +122,33 @@ export default function MemberProfilePage() {
       </header>
 
       <div className="max-w-lg mx-auto px-4 py-6">
-        {/* Member ID badge */}
-        <div className="bg-white rounded-2xl border border-neutral-100 px-4 py-3 mb-5 flex items-center justify-between">
-          <p className="text-[12px] text-neutral-400">Member ID</p>
-          <p className="text-[13px] font-semibold text-[#1C1C1C]">{memberId}</p>
+        {/* Member ID + Referral Code */}
+        <div className="bg-white rounded-2xl border border-neutral-100 p-4 mb-5 space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-[12px] text-neutral-400">Member ID</p>
+            <p className="text-[13px] font-semibold text-[#1C1C1C]">{memberId}</p>
+          </div>
+          {referralCode && (
+            <div className="flex items-center justify-between pt-2 border-t border-neutral-50">
+              <div>
+                <p className="text-[12px] text-neutral-400">Referral Code</p>
+                <p className="text-[11px] text-neutral-300">Share with friends</p>
+              </div>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(referralCode).then(() => {
+                    setReferralCopied(true);
+                    setTimeout(() => setReferralCopied(false), 2000);
+                  });
+                }}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all"
+                style={{ background: referralCopied ? "#22C55E" : "#1C1C1C", color: "#fff" }}
+              >
+                <span className="font-mono tracking-widest">{referralCode}</span>
+                <span>{referralCopied ? "✓" : "Copy"}</span>
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="bg-white rounded-2xl border border-neutral-100 p-5 space-y-4">

@@ -25,6 +25,13 @@ export default function OnboardingPage() {
 
       setToken(session.access_token);
 
+      // Pre-fill referral code from URL → sessionStorage (set by login page)
+      const pendingRef = sessionStorage.getItem("pending_ref");
+      if (pendingRef) {
+        setReferralCode(pendingRef.toUpperCase());
+        sessionStorage.removeItem("pending_ref");
+      }
+
       // Pre-fill from existing profile
       const { data: profile } = await supabase
         .from("profiles")

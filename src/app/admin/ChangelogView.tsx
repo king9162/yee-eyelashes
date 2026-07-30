@@ -14,6 +14,57 @@ const TAG_LABEL: Record<Tag, string> = { new: "NEW", fix: "FIX", improve: "+" };
 
 const DAYS: Day[] = [
   {
+    date: "Jul 30, 2026", label: "2026-07-30",
+    changes: [
+      { tag: "improve", text: "Points 機制完全移除：改為每 5 次到訪自動發 20% off 優惠券，不再計點、不顯示點數餘額" },
+      { tag: "improve", text: "VIP 等級改為訪問次數：Silver=5次、Gold=10次、Diamond=20次（不再以消費金額計算）" },
+      { tag: "improve", text: "Member Dashboard 更新：主卡片改顯示 5 格進度條（X/5 到下一張 20% off），移除點數、消費金額欄位與點數明細區塊" },
+      { tag: "improve", text: "TierBenefitsCard 更新：移除所有 pts 描述，改為 '每 5 次到訪 → 20% off 優惠券'" },
+      { tag: "improve", text: "Referral 卡片文案更新：移除「+200 pts / +100 pts」，改為友善推薦說明" },
+      { tag: "improve", text: "Admin 側欄重整：Member Club 獨立成一個 section（Member Checkout / Members / Coupon Templates / Referrals），Customers 僅保留 My Clients / Elly's Clients / 3x Package，Points Ledger 移除" },
+      { tag: "improve", text: "Admin Dashboard 會員統計：移除「Pts in Circulation」，改顯示「Referrals Done」（已完成推薦數）" },
+      { tag: "new",     text: "Email 登入新增 Forgot Password / Reset Password 流程：寄發重設連結 → 點連結開啟新密碼設定頁，設定後自動導向 Dashboard" },
+      { tag: "improve", text: "vercel.json 清理：移除 expire-points 和 member-points-expiry-warning 兩個已廢棄的 cron" },
+    ],
+  },
+  {
+    date: "Jul 29, 2026 (Part 5)", label: "2026-07-29e",
+    changes: [
+      { tag: "fix",     text: "listUsers 分頁修正：member-blast 和 Square Sync 改為迴圈抓取（perPage: 1000），超過 500 會員後仍正常運作" },
+      { tag: "new",     text: "Unsubscribe 連結：每封 member-blast 郵件底部自動加上個人化退訂連結（HMAC 驗簽）；/member/unsubscribe 頁面處理確認，直接更新 notif_marketing=false" },
+      { tag: "new",     text: "Referral Code URL 帶入：訪問 /member?ref=CODE 或 /member/login?ref=CODE，Onboarding 自動填入推薦碼（OAuth 期間透過 sessionStorage 保留）" },
+      { tag: "new",     text: "點數到期前警告 Email：每月 25 日 10:00 UTC 自動偵測 11 個月前舊點數，寄送即將到期提醒給受影響會員，告知幾號到期、剩餘幾點、可以如何保留" },
+      { tag: "new",     text: "主站 Nav 加入 Member Club 連結：桌機版和手機版 Nav 均顯示「✦ Member Club」，金色字體區隔，連結至 /member（自動導向登入或 Dashboard）" },
+    ],
+  },
+  {
+    date: "Jul 29, 2026 (Part 4)", label: "2026-07-29d",
+    changes: [
+      { tag: "new",     text: "Member Email Blast UI：在 Automations 頁面新增會員 Email 群發面板，支援 Preview Recipients（只看不寄）、HTML body 加 {{name}} 個人化、確認後寄給所有 notif_marketing=true 的會員" },
+    ],
+  },
+  {
+    date: "Jul 29, 2026 (Part 3)", label: "2026-07-29c",
+    changes: [
+      { tag: "new",     text: "Admin Points Ledger：查看所有會員的點數流水帳，支援按類型篩選、姓名搜尋、分頁" },
+      { tag: "new",     text: "Auto-Expire Coupons Cron：每天 3am UTC 自動把過期優惠券標為 expired（vercel.json 已設定）" },
+      { tag: "new",     text: "Square Sync 自動綁定會員：每次 Sync Square 時，自動把有電話/Email 的預約比對並綁定會員帳號" },
+      { tag: "new",     text: "Member Referral 狀態顯示：Dashboard 推薦卡片顯示已推薦幾人、Pending/Completed 分列" },
+      { tag: "fix",     text: "TXN_LABELS 補上 referral_bonus：之前點數明細顯示 raw type string，現在正確顯示「Referral Bonus」" },
+      { tag: "new",     text: "Member Referrals API：/api/member/referrals 回傳自己推薦的所有紀錄與狀態" },
+    ],
+  },
+  {
+    date: "Jul 29, 2026 (Part 2)", label: "2026-07-29b",
+    changes: [
+      { tag: "new",     text: "會員歡迎 Email：Onboarding 完成後自動寄出，顯示個人推薦碼、點數規則、VIP 等級說明" },
+      { tag: "new",     text: "Admin Referrals 頁面：查看所有推薦紀錄、狀態（Pending / Completed）、推薦人、被推薦人，支援搜尋與 Tab 篩選" },
+      { tag: "new",     text: "Dashboard Member Club 統計：顯示會員總人數、流通點數、有效優惠券數、待完成推薦數" },
+      { tag: "new",     text: "預約前一天提醒 Email（會員）：每天 6pm UTC 自動寄明日有會員預約的提醒（cron 已設定）" },
+      { tag: "new",     text: "Admin Member Stats API：/api/admin/member-stats 彙整會員數據供 Dashboard 使用" },
+    ],
+  },
+  {
     date: "Jul 29, 2026", label: "2026-07-29",
     changes: [
       { tag: "new",     text: "Member Club 上線：Google 登入、點數、VIP 等級、優惠券、預約記錄一站查看（/member）" },
@@ -25,6 +76,10 @@ const DAYS: Day[] = [
       { tag: "new",     text: "Admin 會員詳情：Lash Record 紀錄、Re-link Bookings 按鈕、優惠券核銷" },
       { tag: "new",     text: "Coupon Templates 管理頁面：新增自訂範本、啟用/停用、Seed 預設 4 種" },
       { tag: "new",     text: "Referral 推薦系統：每位會員有專屬推薦碼，Dashboard 顯示，Onboarding 可輸入推薦碼" },
+      { tag: "new",     text: "推薦完成自動發點數：被推薦人首次消費時，推薦人 +200 pts、被推薦人 +100 pts，並各自收到 Email 通知" },
+      { tag: "new",     text: "購買點數 Email 通知：每次消費自動發 Email 告知本次獲得點數、新餘額、目前等級" },
+      { tag: "new",     text: "推薦獎勵 Email 通知：推薦完成時雙方各收到 Email，顯示獎勵點數及新餘額" },
+      { tag: "new",     text: "Expire Points Cron：每月 1 日自動過期超過 12 個月的點數（vercel.json 已設定）" },
       { tag: "new",     text: "會員通知設定：Profile 頁面可開關生日優惠、補充提醒、行銷訊息" },
       { tag: "new",     text: "Revenue 點數標籤：已自動發點數的記錄旁顯示 ✦ Xpts 金色標籤" },
       { tag: "new",     text: "預約連結：現有 Square 預約按電話/Email 自動比對，歷史紀錄自動綁定會員帳號" },

@@ -308,5 +308,72 @@ export async function POST(req: NextRequest) {
     }).catch(() => {/* non-fatal */});
   }
 
+  // ── Auto-link bookings to member profiles by phone / email ──────────────────
+  // Find bookings with no member_id but a known phone or email, match against profiles
+  const { data: unlinked } = await db
+    .from("bookings")
+    .select("id, phone, email")
+    .is("member_id", null)
+    .not("status", "eq", "cancelled");
+
+  if (unlinked && unlinked.length > 0) {
+    // Fetch all profiles with phone or email set
+    const { data: profiles } = await db
+      .from("profiles")
+      .select("id, phone")
+      .not("phone", "is", null);
+
+    const phoneToMember = new Map<string, string>();
+    for (const p of profiles ?? []) {
+      const n = normP(p.phone ?? "");
+      if (n) phoneToMember.set(n, p.id);
+    }
+
+    const emailToMember = new Map<string, string>();
+    try {
+      let page = 1;
+      while (true) {
+        const { data } = await db.auth.admin.listUsers({ perPage: 1000, page });
+        for (const u of data?.users ?? []) {
+          if (u.email) emailToMember.set(u.email, u.id);
+        }
+        if (!data?.users?.length || data.users.length < 1000) break;
+        page++;
+      }
+    } catch { /* non-fatal */ }
+
+    let linked = 0;
+    for (const b of unlinked as { id: string; phone: string; email: string }[]) {
+      const ph = normP(b.phone ?? "");
+      const memberId = (ph && phoneToMember.get(ph)) || (b.email && emailToMember.get(b.email)) || null;
+      if (!memberId) continue;
+      await db.from("bookings").update({ member_id: memberId }).eq("id", b.id);
+      linked++;
+    }
+
+    if (linked > 0) {
+      // Refresh visit stats for affected members
+      const { data: linkedBookings } = await db
+        .from("bookings")
+        .select("member_id, date")
+        .not("member_id", "is", null)
+        .neq("status", "cancelled");
+
+      const memberVisits = new Map<string, string[]>();
+      for (const b of linkedBookings ?? []) {
+        const id = b.member_id as string;
+        if (!memberVisits.has(id)) memberVisits.set(id, []);
+        memberVisits.get(id)!.push(b.date as string);
+      }
+      for (const [memberId, dates] of memberVisits) {
+        const sorted = dates.sort();
+        await db.from("profiles").update({
+          total_visits_all_time: dates.length,
+          last_visit_date: sorted[sorted.length - 1],
+        }).eq("id", memberId);
+      }
+    }
+  }
+
   return NextResponse.json({ synced, total: unique.length, clientsSynced });
 }
