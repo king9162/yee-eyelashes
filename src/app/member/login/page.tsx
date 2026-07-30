@@ -134,9 +134,9 @@ function LoginContent() {
 
         {tab === "google" && (
           <div className="mt-8 space-y-2.5">
-            {["Earn 1 point per $1 spent, 100 pts = $1 off",
+            {["Every 5 visits → 20% off coupon, automatically",
               "Birthday reward, 30% off every year",
-              "Advance to Silver, Gold & Diamond tiers",
+              "Silver, Gold & Diamond tiers unlocked by visits",
               "Priority booking & exclusive coupons"].map(b => (
               <div key={b} className="flex items-start gap-2.5">
                 <span className="text-[#C9A84C] text-[9px] mt-1 flex-shrink-0">✦</span>
