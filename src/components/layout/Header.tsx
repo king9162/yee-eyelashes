@@ -29,7 +29,6 @@ export default function Header({ lang }: Props) {
     { label: t.nav.about,    href: `/${lang}/about`,    member: false },
     { label: t.nav.coupon,   href: `/${lang}/coupon`,   member: false },
     { label: t.nav.contact,  href: `/${lang}/contact`,  member: false },
-    { label: `✦ ${t.nav.member}`, href: `/member`,     member: true  },
   ];
 
   const isActive = (href: string) => pathname === href;
