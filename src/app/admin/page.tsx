@@ -1031,7 +1031,7 @@ export default function AdminPage() {
                   className="text-neutral-200 hover:text-red-400 transition-colors ml-2 text-[10px]">✕</button>
               </summary>
               <div className="mt-1.5 space-y-1 max-h-40 overflow-y-auto">
-                {[...adminLoginLog].reverse().map((e, i) => (
+                {[...adminLoginLog].reverse().slice(0, 10).map((e, i) => (
                   <div key={i} className="text-[9px] text-neutral-400 leading-tight">
                     <span className="text-neutral-500">{new Date(e.at).toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</span>
                     <span className="text-neutral-300 ml-1">· {e.device} · {e.ip}</span>
@@ -1922,7 +1922,7 @@ export default function AdminPage() {
 
         {/* Main content */}
         <main className="flex-1 min-w-0 overflow-hidden flex flex-col">
-          {view === "dashboard"      && <DashboardView      adminKey={savedKey} letterOpenedAt={letterOpenedAt} adminLoginLog={adminLoginLog} onClearLoginLog={async () => {
+          {view === "dashboard"      && <DashboardView      adminKey={savedKey} letterOpenedAt={letterOpenedAt} adminLoginLog={adminLoginLog} clientCount={activeGroupsList.length} onClearLoginLog={async () => {
                   await fetch("/api/admin/settings", { method: "PATCH", headers: { "Content-Type": "application/json", Authorization: `Bearer ${savedKey}` }, body: JSON.stringify({ key: "admin_login_log", value: "[]" }) });
                   setAdminLoginLog([]);
                 }} />}

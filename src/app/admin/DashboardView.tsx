@@ -74,10 +74,11 @@ const APPT_TIMES = [
 const EMPTY_ADD  = { name:"", phone:"", email:"", service_label:"", date:"", time:"10:00 AM", duration_min:90 };
 const EMPTY_EDIT = { ...EMPTY_ADD, notes:"" };
 
-export default function DashboardView({ adminKey, letterOpenedAt, adminLoginLog, onClearLoginLog }: {
+export default function DashboardView({ adminKey, letterOpenedAt, adminLoginLog, clientCount, onClearLoginLog }: {
   adminKey: string;
   letterOpenedAt?: string | null;
   adminLoginLog?: { at: string; ip: string; device: string }[];
+  clientCount?: number;
   onClearLoginLog?: () => void;
 }) {
   const [bookings,    setBookings]    = useState<DashBooking[]>([]);
@@ -395,7 +396,7 @@ export default function DashboardView({ adminKey, letterOpenedAt, adminLoginLog,
     { label: "This Week",         value: v(weekAppts.length),        sub: "appointments"   },
     { label: "Visits This Month", value: v(monthVisits.length),      sub: "total visits"   },
     { label: "New This Month",    value: v(newClientsThisMonth),     sub: "new clients"    },
-    { label: "Total Clients",     value: v(seen.size),               sub: "in database"    },
+    { label: "Total Clients",     value: v(clientCount ?? seen.size), sub: "in database"    },
     { label: "Returning Clients", value: v(returning), sub: "2+ visits",
       dual: { left: { value: v(returningThisMonth), sub: "this month" }, right: { value: v(returning), sub: "all time" } } },
     { label: "Google Reviews",    value: v(reviews.filter(r => !r.deleted_from_google).length),
