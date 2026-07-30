@@ -15,29 +15,30 @@ export async function GET(req: NextRequest) {
 
   // ── Auto-sync: keep revenue in step with bookings (no Square API call) ──
 
-  // 1. Delete $0 placeholders for cancelled/deleted bookings (today onwards)
-  const { data: cancelledBookings } = await db
-    .from("bookings")
-    .select("date, name")
-    .eq("status", "cancelled")
-    .gte("date", today);
-
-  for (const b of cancelledBookings ?? []) {
-    if (!b.date || !b.name) continue;
-    await db.from("revenue_entries")
-      .delete()
-      .eq("date", b.date)
-      .eq("client_name", b.name)
+  // 1. Reconcile: delete $0 placeholders that no longer match a confirmed booking (today+)
+  //    Handles cancellations, reschedules, and any other booking changes.
+  const [{ data: zeroEntries }, { data: confirmedBookings }] = await Promise.all([
+    db.from("revenue_entries")
+      .select("id, date, client_name")
       .eq("amount", 0)
-      .is("square_payment_id", null);
+      .is("square_payment_id", null)
+      .gte("date", today),
+    db.from("bookings")
+      .select("date, name, service_label")
+      .eq("status", "confirmed")
+      .gte("date", today),
+  ]);
+
+  const confirmedKeys = new Set(
+    (confirmedBookings ?? []).map(b => `${b.date}|${b.name}`)
+  );
+  for (const entry of zeroEntries ?? []) {
+    if (!confirmedKeys.has(`${entry.date}|${entry.client_name}`)) {
+      await db.from("revenue_entries").delete().eq("id", entry.id);
+    }
   }
 
   // 2. Create $0 placeholders for confirmed bookings that have no revenue entry yet
-  const { data: confirmedBookings } = await db
-    .from("bookings")
-    .select("date, name, service_label")
-    .eq("status", "confirmed")
-    .gte("date", today);
 
   if ((confirmedBookings ?? []).length > 0) {
     const { data: existingFwd } = await db

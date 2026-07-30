@@ -12,21 +12,27 @@ export async function POST(req: NextRequest) {
   const db      = supabaseAdmin();
   const token   = process.env.SQUARE_ACCESS_TOKEN!;
 
-  // ── Step 0: Remove $0 placeholders for cancelled bookings ──────────────────
-  const { data: cancelledBookings } = await db
-    .from("bookings")
-    .select("date, name")
-    .eq("status", "cancelled")
-    .gte("date", today);
-
-  for (const b of cancelledBookings ?? []) {
-    if (!b.date || !b.name) continue;
-    await db.from("revenue_entries")
-      .delete()
-      .eq("date", b.date)
-      .eq("client_name", b.name)
+  // ── Step 0: Full reconcile — remove ALL $0 placeholders without a confirmed booking ──
+  const REVENUE_START = "2026-07-20";
+  const [{ data: zeroEntries }, { data: allConfirmed }] = await Promise.all([
+    db.from("revenue_entries")
+      .select("id, date, client_name")
       .eq("amount", 0)
-      .is("square_payment_id", null);
+      .is("square_payment_id", null)
+      .gte("date", REVENUE_START),
+    db.from("bookings")
+      .select("date, name")
+      .eq("status", "confirmed")
+      .gte("date", REVENUE_START),
+  ]);
+
+  const confirmedKeys = new Set((allConfirmed ?? []).map(b => `${b.date}|${b.name}`));
+  let staleRemoved = 0;
+  for (const entry of zeroEntries ?? []) {
+    if (!confirmedKeys.has(`${entry.date}|${entry.client_name}`)) {
+      await db.from("revenue_entries").delete().eq("id", entry.id);
+      staleRemoved++;
+    }
   }
 
   // ── Step 1: Import ALL confirmed bookings (today + future) as $0 placeholders ──
@@ -152,5 +158,5 @@ export async function POST(req: NextRequest) {
     synced++;
   }
 
-  return NextResponse.json({ synced, skipped, bookingsSynced, total: allPayments.length });
+  return NextResponse.json({ synced, skipped, bookingsSynced, staleRemoved, total: allPayments.length });
 }

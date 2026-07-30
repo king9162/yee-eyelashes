@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/admin", "/api/", "/en/booking", "/zh/booking", "/en/cancel", "/zh/cancel"],
+        disallow: ["/admin", "/api/", "/member", "/booking", "/en/booking", "/zh/booking", "/cancel", "/en/cancel", "/zh/cancel"],
       },
     ],
     sitemap: "https://www.yeeeyelashes.com/sitemap.xml",

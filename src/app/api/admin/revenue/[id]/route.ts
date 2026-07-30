@@ -19,7 +19,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (body.notes         !== undefined) update.notes           = body.notes ?? null;
   if (body.recorded_by   !== undefined) update.recorded_by     = body.recorded_by ?? null;
   if (body.date          !== undefined) update.date            = body.date;
-  if (body.changed_by    !== undefined) update.recorded_by     = body.changed_by ?? null;
 
   const db = supabaseAdmin();
   const { data: before } = await db.from("revenue_entries").select("client_name,amount,tip,payment_method,service_label").eq("id", id).single();

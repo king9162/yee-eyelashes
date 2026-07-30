@@ -330,12 +330,10 @@ export default function ExpensesView({ adminKey }: { adminKey: string }) {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-5 space-y-4">
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           {[
             { label: "營業額", value: fmt$(monthRevenue), sub: month === currentMonth() ? "本月（自動同步）" : monthLabel(month), color: "text-[#1C1C1C]" },
             { label: "支出", value: fmt$(totalExpenses), sub: `${expenses.length} 筆`, color: "text-red-500" },
-            { label: "淨利", value: fmt$(netProfit), sub: `利潤率 ${margin}%`, color: netProfit >= 0 ? "text-green-600" : "text-red-500" },
-            { label: "分潤", value: fmt$(partnerA), sub: "70 / 30 分潤", color: "text-[#C9A84C]" },
           ].map(card => (
             <div key={card.label} className="bg-white rounded-xl border border-neutral-200 px-4 py-4">
               <p className="text-[10px] uppercase tracking-[0.12em] text-neutral-400 font-semibold mb-1">{card.label}</p>
@@ -344,30 +342,6 @@ export default function ExpensesView({ adminKey }: { adminKey: string }) {
             </div>
           ))}
         </div>
-
-        {/* Partner Settlement Box */}
-        {netProfit > 0 && (
-          <div className="bg-[#1C1C1C] rounded-xl px-5 py-4 flex items-center justify-between gap-4 flex-wrap">
-            <div>
-              <p className="text-[11px] uppercase tracking-[0.12em] text-neutral-400 mb-1">本月結算</p>
-              <p className="text-white text-[13px]">
-                營業額 <span className="font-bold text-[#C9A84C]">{fmt$(monthRevenue)}</span>
-                {" − "} 支出 <span className="font-bold text-red-400">{fmt$(totalExpenses)}</span>
-                {" = "} 淨利 <span className="font-bold text-green-400">{fmt$(netProfit)}</span>
-              </p>
-            </div>
-            <div className="flex gap-4 shrink-0">
-              <div className="text-center">
-                <p className="text-[10px] text-neutral-400 mb-0.5">合夥人甲 (70%)</p>
-                <p className="text-[20px] font-bold text-[#C9A84C] tabular-nums">{fmt$2(partnerA)}</p>
-              </div>
-              <div className="text-center">
-                <p className="text-[10px] text-neutral-400 mb-0.5">合夥人乙 (30%)</p>
-                <p className="text-[20px] font-bold text-[#C9A84C] tabular-nums">{fmt$2(partnerB)}</p>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Add Expense Form */}
         {showForm && (

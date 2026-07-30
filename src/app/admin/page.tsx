@@ -14,6 +14,7 @@ import AnalyticsView       from "./AnalyticsView";
 import SEOPagesView        from "./SEOPagesView";
 import RevenueSection      from "./RevenueSection";
 import ExpensesView        from "./ExpensesView";
+import UserSettingsView    from "./UserSettingsView";
 
 // ── Types ──────────────────────────────────────────────────────
 type Client = {
@@ -27,7 +28,7 @@ type Booking = {
   date: string; status: string;
   refill_sent_at: string | null; review_sent_at: string | null;
 };
-type View = "dashboard" | "revenue" | "expenses" | "analytics" | "seo-pages" | "update-history" | "changelog" | "calendar" | "bookings" | "clients-main" | "clients-elly" | "automations" | "reviews" | "packages";
+type View = "dashboard" | "revenue" | "expenses" | "analytics" | "seo-pages" | "update-history" | "changelog" | "calendar" | "bookings" | "clients-main" | "clients-elly" | "automations" | "reviews" | "packages" | "user-settings";
 
 const EMPTY_CLIENT: Omit<Client,"id"> = {
   visit_date:"", email:"", phone:"", first_name:"", last_name:"",
@@ -50,6 +51,7 @@ const VIEW_LABELS: Record<string, string> = {
   "bookings":       "Bookings",
   "packages":       "3x Package",
   "seo-pages":      "SEO Pages",
+  "user-settings":  "User Settings",
 };
 
 const BOTTOM_TABS: { id: View; label: string; icon: React.ReactNode }[] = [
@@ -146,6 +148,9 @@ const NAV: { section: string; items: { id: View; label: string }[] }[] = [
   ]},
   { section: "Version History", items: [
     { id: "changelog", label: "Changelog" },
+  ]},
+  { section: "Settings", items: [
+    { id: "user-settings", label: "User Settings" },
   ]},
 ];
 
@@ -1931,6 +1936,7 @@ export default function AdminPage() {
           {view === "packages"      && <PackagesView   adminKey={savedKey} />}
           {view === "seo-pages"     && <SEOPagesView />}
           {view === "changelog"     && <ChangelogView />}
+          {view === "user-settings" && <UserSettingsView adminKey={savedKey} />}
         </main>
       </div>
 

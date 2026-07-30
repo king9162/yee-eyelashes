@@ -14,6 +14,16 @@ const TAG_LABEL: Record<Tag, string> = { new: "NEW", fix: "FIX", improve: "+" };
 
 const DAYS: Day[] = [
   {
+    date: "Jul 22, 2026", label: "2026-07-22",
+    changes: [
+      { tag: "new",     text: "Revenue 多付款方式：付款方式按鈕改為多選，同一筆可同時選 Cash + Card，各自輸入金額（例：現金 $60 + 刷卡 $19），合計自動加總" },
+      { tag: "improve", text: "Revenue 拆分付款顯示：多付款記錄直接在欄位顯示每種方式與金額（💵 Cash $60　💳 Card $19），一目了然" },
+      { tag: "fix",     text: "Revenue 改期自動搬移：預約改期後，舊日期的 $0 佔位自動刪除，新日期自動新增（例：Eleni 7/31 → 7/29，Revenue 跟著同步）" },
+      { tag: "fix",     text: "Revenue 全面對齊：每次載入 / 點 Sync Square，自動比對所有已確認預約，多餘的 $0 佔位（改期殘留、取消殘留）一律清除" },
+      { tag: "fix",     text: "Revenue 編輯 Bug：修復每次 Edit 存檔都會覆蓋記帳人名字的問題" },
+    ],
+  },
+  {
     date: "Jul 21, 2026", label: "2026-07-21",
     changes: [
       { tag: "new",     text: "Revenue 填表人：Add / Edit / Delete 時彈窗詢問是誰操作，自動記住上次填寫的名字" },

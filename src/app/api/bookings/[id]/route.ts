@@ -44,6 +44,32 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const { error } = await db.from("bookings").update(updateFields).eq("id", id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
+    // Revenue placeholder: move from old date to new date when date changes
+    if (newDate !== existing.date && existing.name) {
+      const newClientName = (body.name as string | undefined) ?? existing.name;
+      await db.from("revenue_entries")
+        .delete()
+        .eq("date", existing.date)
+        .eq("client_name", existing.name)
+        .eq("amount", 0)
+        .is("square_payment_id", null);
+      const { data: existingRev } = await db.from("revenue_entries")
+        .select("id")
+        .eq("date", newDate)
+        .eq("client_name", newClientName)
+        .maybeSingle();
+      if (!existingRev) {
+        await db.from("revenue_entries").insert({
+          date:           newDate,
+          client_name:    newClientName,
+          service_label:  (body.service_label as string | undefined) ?? existing.service_label ?? "",
+          amount:         0,
+          tip:            0,
+          payment_method: "cash",
+        });
+      }
+    }
+
     if (!body.skipSquare) {
       // Update Google Calendar: delete old + create new
       try {
