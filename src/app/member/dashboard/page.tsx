@@ -17,6 +17,15 @@ type Profile = {
   joined_at: string;
 };
 
+type Booking = {
+  id: string;
+  date: string;
+  time: string | null;
+  service_label: string | null;
+  service: string | null;
+  status: string;
+};
+
 type Transaction = {
   id: string;
   type: string;
@@ -49,6 +58,8 @@ export default function MemberDashboardPage() {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [txns, setTxns] = useState<Transaction[]>([]);
+  const [upcomingBooking, setUpcomingBooking] = useState<Booking | null>(null);
+  const [couponCount, setCouponCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -75,6 +86,22 @@ export default function MemberDashboardPage() {
           .limit(10);
         setTxns(t ?? []);
       }
+
+      // Fetch bookings + coupons in parallel
+      const [bkRes, cpRes] = await Promise.all([
+        fetch("/api/member/bookings", { headers: { Authorization: `Bearer ${session.access_token}` } }),
+        fetch("/api/member/coupons",  { headers: { Authorization: `Bearer ${session.access_token}` } }),
+      ]);
+      const [bkData, cpData] = await Promise.all([bkRes.json(), cpRes.json()]);
+
+      const today = new Date().toISOString().split("T")[0];
+      const upcoming = (Array.isArray(bkData) ? bkData : []).filter(
+        (b: Booking) => b.date >= today && !["cancelled", "completed", "no-show"].includes(b.status)
+      );
+      setUpcomingBooking(upcoming[upcoming.length - 1] ?? null); // earliest upcoming
+      setCouponCount((Array.isArray(cpData) ? cpData : []).filter(
+        (c: { status: string }) => c.status === "available"
+      ).length);
 
       setLoading(false);
     }
@@ -122,15 +149,9 @@ export default function MemberDashboardPage() {
           <p className="text-[10px] tracking-[0.2em] text-[#C9A84C] uppercase">Yee Eyelashes</p>
           <p className="text-[10px] text-neutral-500">Member Club</p>
         </div>
-        <div className="flex items-center gap-4">
-          <button onClick={() => router.push("/member/profile")}
-            className="text-[11px] text-neutral-500 hover:text-neutral-300 transition-colors">
-            Edit Profile
-          </button>
-          <button onClick={signOut} className="text-[11px] text-neutral-500 hover:text-neutral-300 transition-colors">
-            Sign Out
-          </button>
-        </div>
+        <button onClick={signOut} className="text-[11px] text-neutral-500 hover:text-neutral-300 transition-colors">
+          Sign Out
+        </button>
       </header>
 
       <div className="max-w-lg mx-auto px-4 py-6 space-y-4">
@@ -207,6 +228,38 @@ export default function MemberDashboardPage() {
           ))}
         </div>
 
+        {/* Upcoming appointment */}
+        {upcomingBooking && (
+          <div className="bg-white rounded-2xl border border-[#C9A84C]/20 p-4">
+            <p className="text-[10px] uppercase tracking-[0.15em] text-[#C9A84C] mb-2">Next Appointment</p>
+            <p className="text-[14px] font-semibold text-[#1C1C1C]">
+              {upcomingBooking.service_label ?? upcomingBooking.service ?? "Appointment"}
+            </p>
+            <p className="text-[12px] text-neutral-400 mt-0.5">
+              {new Date(upcomingBooking.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+              {upcomingBooking.time ? ` at ${upcomingBooking.time}` : ""}
+            </p>
+          </div>
+        )}
+
+        {/* Refill countdown */}
+        {profile.last_visit_date && <RefillCard lastVisitDate={profile.last_visit_date} />}
+
+        {/* Quick links row */}
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { label: "Appointments", icon: "📅", href: "/member/bookings" },
+            { label: `Coupons${couponCount > 0 ? ` (${couponCount})` : ""}`, icon: "🎟", href: "/member/coupons" },
+            { label: "Edit Profile", icon: "✎", href: "/member/profile" },
+          ].map(item => (
+            <a key={item.label} href={item.href}
+              className="bg-white rounded-xl border border-neutral-100 p-3 text-center hover:border-[#C9A84C]/40 transition-colors">
+              <p className="text-[18px] mb-1">{item.icon}</p>
+              <p className="text-[10px] text-neutral-500 font-semibold leading-tight">{item.label}</p>
+            </a>
+          ))}
+        </div>
+
         {/* Book CTA */}
         <a
           href="/en/booking"
@@ -257,6 +310,75 @@ export default function MemberDashboardPage() {
           Member ID: {profile.member_id} · Joined {new Date(profile.joined_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
         </p>
       </div>
+    </div>
+  );
+}
+
+function RefillCard({ lastVisitDate }: { lastVisitDate: string }) {
+  const last = new Date(lastVisitDate + "T12:00:00");
+  const today = new Date();
+  const days = Math.floor((today.getTime() - last.getTime()) / (1000 * 60 * 60 * 24));
+
+  let refillType = "";
+  let daysToNext = 0;
+  let daysToFullSet = Math.max(0, 24 - days);
+  let urgency: "green" | "yellow" | "red" = "green";
+
+  if (days <= 7) {
+    refillType = "1-Week Refill";
+    daysToNext = 8 - days;
+    urgency = "green";
+  } else if (days <= 14) {
+    refillType = "2-Week Refill";
+    daysToNext = 15 - days;
+    urgency = "yellow";
+  } else if (days <= 23) {
+    refillType = "3-Week Refill";
+    daysToNext = 24 - days;
+    urgency = "red";
+  } else {
+    refillType = "New Full Set";
+    daysToFullSet = 0;
+    urgency = "red";
+  }
+
+  const barColor = urgency === "green" ? "#22C55E" : urgency === "yellow" ? "#C9A84C" : "#EF4444";
+  const barPct = Math.min(100, (days / 24) * 100);
+
+  return (
+    <div className="bg-white rounded-2xl border border-neutral-100 p-4">
+      <p className="text-[10px] uppercase tracking-[0.15em] text-neutral-400 mb-3">Refill Status</p>
+      <div className="flex items-end justify-between mb-3">
+        <div>
+          <p className="text-[20px] font-light text-[#1C1C1C]" style={{ fontFamily: "var(--font-cormorant)" }}>
+            Day {days}
+          </p>
+          <p className="text-[12px] font-semibold mt-0.5" style={{ color: barColor }}>
+            {refillType}
+          </p>
+        </div>
+        <div className="text-right">
+          {daysToFullSet > 0 ? (
+            <p className="text-[11px] text-neutral-400">{daysToFullSet} days to New Full Set</p>
+          ) : (
+            <p className="text-[11px] text-red-500 font-semibold">New Full Set recommended</p>
+          )}
+          {daysToNext > 0 && refillType !== "New Full Set" && (
+            <p className="text-[10px] text-neutral-300 mt-0.5">{daysToNext} days to next stage</p>
+          )}
+        </div>
+      </div>
+      <div className="h-1.5 bg-neutral-100 rounded-full overflow-hidden">
+        <div className="h-full rounded-full transition-all" style={{ background: barColor, width: `${barPct}%` }} />
+      </div>
+      <div className="flex justify-between text-[9px] text-neutral-300 mt-1.5">
+        <span>Last visit: {last.toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+        <span>Day 24 → New Full Set</span>
+      </div>
+      <a href="/en/booking"
+        className="mt-3 block text-center text-[12px] font-semibold text-[#C9A84C] hover:underline">
+        Book {refillType} →
+      </a>
     </div>
   );
 }

@@ -37,5 +37,15 @@ export async function PATCH(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
+  // If phone was updated, re-link bookings in the background
+  if (updates.phone) {
+    const origin = req.headers.get("origin") ?? req.headers.get("x-forwarded-host") ?? "";
+    const base = origin.startsWith("http") ? origin : `https://${origin}`;
+    fetch(`${base}/api/member/link-bookings`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    }).catch(() => {});
+  }
+
   return NextResponse.json({ ok: true });
 }
