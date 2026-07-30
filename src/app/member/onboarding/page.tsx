@@ -102,7 +102,7 @@ export default function OnboardingPage() {
             Set Up Your Profile
           </h1>
           <p className="text-[12px] text-neutral-400 mt-2 leading-relaxed">
-            Just a few details — so we can personalize your experience<br />and send your birthday reward.
+            Just a few details so we can personalize your experience<br />and send your birthday reward.
           </p>
         </div>
 
