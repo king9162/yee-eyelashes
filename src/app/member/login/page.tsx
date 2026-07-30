@@ -56,7 +56,7 @@ export default function MemberLoginPage() {
             Yee Eyelashes
           </h1>
           <p className="text-[13px] text-neutral-500 whitespace-nowrap">
-            Points · Birthday Perks · Exclusive VIP Benefits
+            Free treatments, birthday rewards &amp; more — it&apos;s all waiting for you.
           </p>
         </div>
 
@@ -91,7 +91,7 @@ export default function MemberLoginPage() {
         <div className="mt-8 space-y-2.5">
           {[
             "Earn 1 point per $1 spent — 100 pts = $1 off",
-            "30% birthday discount every year",
+            "Birthday reward — 30% off every year",
             "Advance to Silver, Gold & Diamond tiers",
             "Priority booking & exclusive coupons",
           ].map((b) => (
