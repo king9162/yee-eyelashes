@@ -638,7 +638,7 @@ export async function sendMemberWelcomeEmail(data: {
         </td></tr>
         <tr><td style="padding:40px 48px;">
           <p style="margin:0 0 24px;font-size:14px;color:#777;line-height:1.9;">
-            You're now a member of the Yee Eyelashes Member Club — every dollar you spend earns points, and your points can be redeemed for discounts at checkout. Plus, exclusive perks as you level up.
+            You're now a member of the Yee Eyelashes Member Club — every visit brings you closer to exclusive rewards, and your tier unlocks more perks as you come back.
           </p>
 
           <!-- How it works -->
@@ -649,16 +649,16 @@ export async function sendMemberWelcomeEmail(data: {
             <tr><td style="padding:20px 20px 4px;">
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr><td style="padding:8px 0;font-size:13px;color:#1c1c1c;border-bottom:1px solid #f7f7f7;">
-                  <strong>$1 spent</strong> <span style="color:#999;margin:0 8px;">→</span> <strong style="color:#C9A84C;">1 point earned</strong>
-                </td></tr>
-                <tr><td style="padding:8px 0;font-size:13px;color:#1c1c1c;border-bottom:1px solid #f7f7f7;">
-                  <strong>100 points</strong> <span style="color:#999;margin:0 8px;">→</span> <strong style="color:#C9A84C;">$1 off any service</strong>
+                  <strong>Every 5 visits</strong> <span style="color:#999;margin:0 8px;">→</span> <strong style="color:#C9A84C;">20% off coupon, automatically</strong>
                 </td></tr>
                 <tr><td style="padding:8px 0;font-size:13px;color:#1c1c1c;border-bottom:1px solid #f7f7f7;">
                   <strong>Birthday month</strong> <span style="color:#999;margin:0 8px;">→</span> <strong style="color:#C9A84C;">30% off coupon issued</strong>
                 </td></tr>
+                <tr><td style="padding:8px 0;font-size:13px;color:#1c1c1c;border-bottom:1px solid #f7f7f7;">
+                  <strong>5+ visits</strong> <span style="color:#999;margin:0 8px;">→</span> <strong style="color:#C9A84C;">Silver tier perks</strong>
+                </td></tr>
                 <tr><td style="padding:8px 0;font-size:13px;color:#1c1c1c;">
-                  <strong>$500+ spent</strong> <span style="color:#999;margin:0 8px;">→</span> <strong style="color:#C9A84C;">Silver tier &amp; above perks</strong>
+                  <strong>10+ visits</strong> <span style="color:#999;margin:0 8px;">→</span> <strong style="color:#C9A84C;">Gold tier &amp; above perks</strong>
                 </td></tr>
               </table>
             </td></tr>
@@ -669,7 +669,7 @@ export async function sendMemberWelcomeEmail(data: {
             <tr><td style="padding:24px 28px;text-align:center;">
               <p style="margin:0 0 8px;font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:#C9A84C;">Your Referral Code</p>
               <p style="margin:0 0 8px;font-size:28px;font-weight:700;color:#1c1c1c;letter-spacing:0.15em;font-family:monospace;">${data.referralCode}</p>
-              <p style="margin:0;font-size:12px;color:#999;line-height:1.7;">Share this code with friends. When they join and visit,<br/>you both earn bonus points.</p>
+              <p style="margin:0;font-size:12px;color:#999;line-height:1.7;">Share this code with friends and help them discover Yee Eyelashes.</p>
             </td></tr>
           </table>
 

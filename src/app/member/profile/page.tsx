@@ -153,7 +153,7 @@ export default function MemberProfilePage() {
 
         <div className="bg-white rounded-2xl border border-neutral-100 p-5 space-y-4">
           {/* Name */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-[10px] uppercase tracking-[0.12em] text-neutral-400 mb-1.5">First Name</label>
               <input value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="Betty"

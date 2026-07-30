@@ -63,7 +63,7 @@ function LoginContent() {
           <p className="text-[10px] tracking-[0.3em] uppercase mb-3" style={{ color: "#C9A84C" }}>Member Club</p>
           <h1 className="text-[38px] font-light leading-tight text-[#1C1C1C] mb-2"
             style={{ fontFamily: "var(--font-cormorant)" }}>Yee Eyelashes</h1>
-          <p className="text-[12px] text-neutral-400">Points · Birthday Reward · Exclusive VIP Benefits</p>
+          <p className="text-[12px] text-neutral-400">Every 5 Visits · Birthday Reward · Exclusive VIP Benefits</p>
         </div>
 
         {/* Tab switcher */}

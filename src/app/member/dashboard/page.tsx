@@ -33,6 +33,13 @@ const TIER_CONFIG = {
   diamond: { label: "Diamond", color: "#A8DAFF", next: null,      threshold: null },
 };
 
+function calcTier(visits: number): Profile["vip_tier"] {
+  if (visits >= 20) return "diamond";
+  if (visits >= 10) return "gold";
+  if (visits >= 5)  return "silver";
+  return "member";
+}
+
 export default function MemberDashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -116,9 +123,10 @@ export default function MemberDashboardPage() {
     );
   }
 
-  const tier = TIER_CONFIG[profile.vip_tier];
-  const avatarUrl = (user?.user_metadata?.avatar_url as string) ?? "";
   const visits = profile.total_visits_all_time;
+  const currentTier = calcTier(visits);
+  const tier = TIER_CONFIG[currentTier];
+  const avatarUrl = (user?.user_metadata?.avatar_url as string) ?? "";
   const visitsInCycle = visits % 5;
   const visitsToNextCoupon = 5 - visitsInCycle;
 
@@ -159,7 +167,7 @@ export default function MemberDashboardPage() {
                 <p className="text-[11px] text-neutral-400">{profile.member_id}</p>
               </div>
             </div>
-            <TierBadge tier={profile.vip_tier} />
+            <TierBadge tier={currentTier} />
           </div>
 
           {/* Visit progress toward next coupon */}
@@ -265,7 +273,7 @@ export default function MemberDashboardPage() {
         </a>
 
         {/* VIP benefits */}
-        <TierBenefitsCard tier={profile.vip_tier} />
+        <TierBenefitsCard tier={currentTier} />
 
         {/* Referral */}
         {profile.referral_code && <ReferralCard code={profile.referral_code} stats={referralStats} />}

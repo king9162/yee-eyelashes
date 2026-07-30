@@ -367,9 +367,12 @@ export async function POST(req: NextRequest) {
       }
       for (const [memberId, dates] of memberVisits) {
         const sorted = dates.sort();
+        const v = dates.length;
+        const vip_tier = v >= 20 ? "diamond" : v >= 10 ? "gold" : v >= 5 ? "silver" : "member";
         await db.from("profiles").update({
-          total_visits_all_time: dates.length,
+          total_visits_all_time: v,
           last_visit_date: sorted[sorted.length - 1],
+          vip_tier,
         }).eq("id", memberId);
       }
     }
