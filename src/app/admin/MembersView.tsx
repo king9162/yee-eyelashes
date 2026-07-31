@@ -138,6 +138,9 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
   // Seed coupons
   const [seeding, setSeeding] = useState(false);
 
+  // Renumber members
+  const [renumbering, setRenumbering] = useState(false);
+
   // Collapsible panels
   const [showAwardPanel, setShowAwardPanel] = useState(false);
   const [showIssueCouponPanel, setShowIssueCouponPanel] = useState(false);
@@ -408,17 +411,42 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
           )}
         </div>
 
-        <div className="px-4 py-2 border-t border-neutral-100 flex items-center justify-between">
+        <div className="px-4 py-2 border-t border-neutral-100 flex items-center justify-between gap-2">
           <p className="text-[11px] text-neutral-400">{members.length} member{members.length !== 1 ? "s" : ""}</p>
-          {couponTemplates.length === 0 && (
+          <div className="flex gap-3">
             <button
-              onClick={seedCoupons}
-              disabled={seeding}
-              className="text-[10px] text-[#C9A84C] hover:underline disabled:opacity-40"
+              onClick={async () => {
+                if (!confirm("Renumber all members by join date? (001, 002, 003…) This cannot be undone.")) return;
+                setRenumbering(true);
+                const res = await fetch("/api/admin/renumber-members", {
+                  method: "POST",
+                  headers: { Authorization: `Bearer ${adminKey}` },
+                });
+                const d = await res.json();
+                setRenumbering(false);
+                if (res.ok) {
+                  alert(`Done — ${d.updated} member${d.updated !== 1 ? "s" : ""} renumbered.`);
+                  search(query);
+                  if (selected) await loadDetail(selected);
+                } else {
+                  alert(`Error: ${d.error}`);
+                }
+              }}
+              disabled={renumbering}
+              className="text-[10px] text-neutral-400 hover:text-[#C9A84C] transition-colors disabled:opacity-40"
             >
-              {seeding ? "Seeding…" : "Seed coupons"}
+              {renumbering ? "Renumbering…" : "Renumber"}
             </button>
-          )}
+            {couponTemplates.length === 0 && (
+              <button
+                onClick={seedCoupons}
+                disabled={seeding}
+                className="text-[10px] text-[#C9A84C] hover:underline disabled:opacity-40"
+              >
+                {seeding ? "Seeding…" : "Seed coupons"}
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

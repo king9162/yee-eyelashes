@@ -18,7 +18,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (last_name  !== undefined) updates.last_name  = (last_name  ?? "").trim();
   if (email      !== undefined) updates.email      = (email      ?? "").trim();
   if (birthday   !== undefined) updates.birthday   = birthday || null;
-  if (member_id  !== undefined) updates.member_id  = (member_id  ?? "").trim().toUpperCase();
+  if (member_id !== undefined) {
+    const newMid = (member_id ?? "").trim().toUpperCase();
+    // Clear old value first to avoid unique constraint conflict, then set new one
+    await db.from("profiles").update({ member_id: `_TEMP_${id}` }).eq("id", id);
+    updates.member_id = newMid;
+  }
 
   if (phone !== undefined) {
     const digits = (phone ?? "").replace(/\D/g, "").slice(-10);
