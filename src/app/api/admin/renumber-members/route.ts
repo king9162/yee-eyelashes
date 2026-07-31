@@ -19,8 +19,10 @@ export async function POST(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   if (!profiles || profiles.length === 0) return NextResponse.json({ updated: 0 });
 
-  // Pass 1: set all to temp IDs to avoid unique constraint conflicts
-  for (const p of profiles) {
+  // Pass 1: clear ALL profiles (including soft-deleted) to temp IDs
+  // so no stale YEE-XXXXX from deleted accounts blocks pass 2
+  const { data: allProfiles } = await db.from("profiles").select("id");
+  for (const p of (allProfiles ?? [])) {
     await db.from("profiles").update({ member_id: `_TEMP_${p.id}` }).eq("id", p.id);
   }
 
