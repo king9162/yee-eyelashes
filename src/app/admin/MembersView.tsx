@@ -38,6 +38,7 @@ type LashRecord = {
   curl: string | null;
   lash_count: number | null;
   technician_notes: string | null;
+  photo_url: string | null;
 };
 
 type MemberBooking = {
@@ -828,6 +829,51 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
                       {r.technician_notes && (
                         <p className="text-[11px] text-neutral-400 mt-1 italic">{r.technician_notes}</p>
                       )}
+
+                      {/* Photo section */}
+                      <div className="mt-2">
+                        {r.photo_url ? (
+                          <div className="flex items-center gap-2 mt-1">
+                            <a href={r.photo_url} target="_blank" rel="noreferrer">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={r.photo_url} alt="Lash photo" className="w-16 h-16 object-cover rounded-lg border border-neutral-200" />
+                            </a>
+                            <label className="text-[11px] text-[#C9A84C] cursor-pointer hover:underline">
+                              Replace photo
+                              <input type="file" accept="image/*" className="hidden"
+                                onChange={async e => {
+                                  const file = e.target.files?.[0];
+                                  if (!file || !selected) return;
+                                  const fd = new FormData(); fd.append("photo", file);
+                                  const res = await fetch(`/api/admin/members/${selected.id}/lash-records/${r.id}/photo`, {
+                                    method: "POST", headers: { Authorization: `Bearer ${adminKey}` }, body: fd,
+                                  });
+                                  if (res.ok) {
+                                    const d = await res.json();
+                                    setLashRecords(prev => prev.map(lr => lr.id === r.id ? { ...lr, photo_url: d.photo_url } : lr));
+                                  }
+                                }} />
+                            </label>
+                          </div>
+                        ) : (
+                          <label className="inline-flex items-center gap-1 text-[11px] text-neutral-400 hover:text-[#C9A84C] cursor-pointer transition-colors mt-1">
+                            <span>+ Upload photo</span>
+                            <input type="file" accept="image/*" className="hidden"
+                              onChange={async e => {
+                                const file = e.target.files?.[0];
+                                if (!file || !selected) return;
+                                const fd = new FormData(); fd.append("photo", file);
+                                const res = await fetch(`/api/admin/members/${selected.id}/lash-records/${r.id}/photo`, {
+                                  method: "POST", headers: { Authorization: `Bearer ${adminKey}` }, body: fd,
+                                });
+                                if (res.ok) {
+                                  const d = await res.json();
+                                  setLashRecords(prev => prev.map(lr => lr.id === r.id ? { ...lr, photo_url: d.photo_url } : lr));
+                                }
+                              }} />
+                          </label>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>

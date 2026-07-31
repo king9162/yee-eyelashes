@@ -14,6 +14,7 @@ type LashRecord = {
   lash_count: number | null;
   technician_notes: string | null;
   client_requests: string | null;
+  photo_url: string | null;
 };
 
 function formatDate(d: string) {
@@ -108,6 +109,13 @@ export default function LashRecordsPage() {
                     ))}
                   </div>
 
+                  {r.photo_url && (
+                    <div className="mt-3">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={r.photo_url} alt="Lash result" className="w-full rounded-xl object-cover"
+                        style={{ maxHeight: 260 }} />
+                    </div>
+                  )}
                   {r.client_requests && (
                     <div className="mt-2 pt-2 border-t border-neutral-50">
                       <p className="text-[10px] uppercase tracking-[0.1em] text-neutral-400 mb-1">Your Requests</p>

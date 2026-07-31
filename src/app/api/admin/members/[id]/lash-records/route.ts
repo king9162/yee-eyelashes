@@ -12,7 +12,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const { data, error } = await db
     .from("lash_records")
-    .select("id, service_date, service_type, material, style, length, curl, lash_count, technician_notes, client_requests, created_at")
+    .select("id, service_date, service_type, material, style, length, curl, lash_count, technician_notes, client_requests, photo_url, created_at")
     .eq("member_id", id)
     .order("service_date", { ascending: false })
     .limit(30);

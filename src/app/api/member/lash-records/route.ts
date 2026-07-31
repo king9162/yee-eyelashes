@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
   const db = supabaseAdmin();
   const { data, error } = await db
     .from("lash_records")
-    .select("id, service_date, service_type, material, style, length, curl, lash_count, technician_notes, client_requests")
+    .select("id, service_date, service_type, material, style, length, curl, lash_count, technician_notes, client_requests, photo_url")
     .eq("member_id", user.id)
     .order("service_date", { ascending: false })
     .limit(30);
