@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabase } from "@/lib/supabase";
+import MemberBottomNav from "@/components/MemberBottomNav";
 
 export default function MemberProfilePage() {
   const router = useRouter();
@@ -110,18 +111,12 @@ export default function MemberProfilePage() {
   return (
     <div className="min-h-screen bg-[#F8F5EF]" style={{ fontFamily: "var(--font-montserrat), sans-serif" }}>
       {/* Header */}
-      <header className="bg-[#0F0F0F] px-5 py-4 flex items-center gap-4">
-        <button onClick={() => router.push("/member/dashboard")}
-          className="text-neutral-400 hover:text-white transition-colors text-[20px] leading-none">
-          ←
-        </button>
-        <div>
-          <p className="text-[10px] tracking-[0.2em] text-[#C9A84C] uppercase">Yee Eyelashes</p>
-          <p className="text-[10px] text-neutral-500">Edit Profile</p>
-        </div>
+      <header className="bg-[#0F0F0F] px-5 py-4">
+        <p className="text-[10px] tracking-[0.2em] text-[#C9A84C] uppercase">Yee Eyelashes</p>
+        <p className="text-[10px] text-neutral-500">My Profile</p>
       </header>
 
-      <div className="max-w-lg mx-auto px-4 py-6">
+      <div className="max-w-lg mx-auto px-4 py-6 pb-28">
         {/* Member ID + Referral Code */}
         <div className="bg-white rounded-2xl border border-neutral-100 p-4 mb-5 space-y-3">
           <div className="flex items-center justify-between">
@@ -229,7 +224,21 @@ export default function MemberProfilePage() {
             {savingPrefs ? "Saving…" : "Save Preferences"}
           </button>
         </div>
+
+        {/* Sign Out */}
+        <button
+          onClick={async () => {
+            const supabase = getSupabase();
+            await supabase.auth.signOut();
+            router.replace("/member/login");
+          }}
+          className="w-full mt-4 py-3 rounded-xl text-[12px] font-semibold text-neutral-400 border border-neutral-200 hover:border-red-300 hover:text-red-500 transition-all"
+        >
+          Sign Out
+        </button>
       </div>
+
+      <MemberBottomNav />
     </div>
   );
 }

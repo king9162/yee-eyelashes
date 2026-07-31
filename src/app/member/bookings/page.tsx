@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabase } from "@/lib/supabase";
+import MemberBottomNav from "@/components/MemberBottomNav";
 
 type Booking = {
   id: string;
@@ -64,16 +65,12 @@ export default function BookingsPage() {
 
   return (
     <div className="min-h-screen bg-[#F8F5EF]" style={{ fontFamily: "var(--font-montserrat), sans-serif" }}>
-      <header className="bg-[#0F0F0F] px-5 py-4 flex items-center gap-4">
-        <button onClick={() => router.push("/member/dashboard")}
-          className="text-neutral-400 hover:text-white transition-colors text-[20px] leading-none">←</button>
-        <div>
-          <p className="text-[10px] tracking-[0.2em] text-[#C9A84C] uppercase">Yee Eyelashes</p>
-          <p className="text-[10px] text-neutral-500">My Appointments</p>
-        </div>
+      <header className="bg-[#0F0F0F] px-5 py-4">
+        <p className="text-[10px] tracking-[0.2em] text-[#C9A84C] uppercase">Yee Eyelashes</p>
+        <p className="text-[10px] text-neutral-500">My Appointments</p>
       </header>
 
-      <div className="max-w-lg mx-auto px-4 py-5">
+      <div className="max-w-lg mx-auto px-4 py-5 pb-28">
         {/* Tabs */}
         <div className="flex bg-white rounded-xl border border-neutral-100 p-1 mb-5">
           {(["upcoming", "past"] as const).map(t => (
@@ -162,6 +159,8 @@ export default function BookingsPage() {
           </div>
         )}
       </div>
+
+      <MemberBottomNav />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
+import MemberBottomNav from "@/components/MemberBottomNav";
 
 type Profile = {
   member_id: string;
@@ -107,12 +108,6 @@ export default function MemberDashboardPage() {
     load();
   }, [router]);
 
-  async function signOut() {
-    const supabase = getSupabase();
-    await supabase.auth.signOut();
-    router.replace("/member/login");
-  }
-
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F8F5EF] flex items-center justify-center">
@@ -161,17 +156,12 @@ export default function MemberDashboardPage() {
   return (
     <div className="min-h-screen bg-[#F8F5EF]" style={{ fontFamily: "var(--font-montserrat), sans-serif" }}>
       {/* Header */}
-      <header className="bg-[#0F0F0F] px-5 py-4 flex items-center justify-between">
-        <div>
-          <p className="text-[10px] tracking-[0.2em] text-[#C9A84C] uppercase">Yee Eyelashes</p>
-          <p className="text-[10px] text-neutral-500">Member Club</p>
-        </div>
-        <button onClick={signOut} className="text-[11px] text-neutral-500 hover:text-neutral-300 transition-colors">
-          Sign Out
-        </button>
+      <header className="bg-[#0F0F0F] px-5 py-4">
+        <p className="text-[10px] tracking-[0.2em] text-[#C9A84C] uppercase">Yee Eyelashes</p>
+        <p className="text-[10px] text-neutral-500">Member Club</p>
       </header>
 
-      <div className="max-w-lg mx-auto px-4 py-6 space-y-4">
+      <div className="max-w-lg mx-auto px-4 py-6 pb-28 space-y-4">
         {/* Member card */}
         <div
           className="rounded-2xl p-5 relative overflow-hidden border border-[#E8E4DC]"
@@ -386,10 +376,12 @@ export default function MemberDashboardPage() {
         />
 
         {/* Footer */}
-        <p className="text-center text-[11px] text-neutral-400 pb-4">
+        <p className="text-center text-[11px] text-neutral-400 pb-2">
           Member ID: {profile.member_id} · Joined {new Date(profile.joined_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
         </p>
       </div>
+
+      <MemberBottomNav />
     </div>
   );
 }
