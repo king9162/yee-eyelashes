@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
   const { data: linkData, error: linkError } = await db.auth.admin.generateLink({
     type: "recovery",
     email: syntheticEmail,
-    options: { redirectTo: `${SITE}/member/reset-password` },
+    options: { redirectTo: `${SITE}/member/auth/callback?type=recovery` },
   });
 
   if (linkError || !linkData?.properties?.action_link) {

@@ -16,12 +16,18 @@ function CallbackHandler() {
       const supabase = getSupabase();
       const code = params.get("code");
 
+      const type = params.get("type");
+
       if (code) {
         // PKCE flow: exchange code for session
         const { data, error } = await supabase.auth.exchangeCodeForSession(code);
         if (error || !data.session) {
           console.error("PKCE exchange failed:", error?.message);
           router.replace("/member/login");
+          return;
+        }
+        if (type === "recovery") {
+          router.replace("/member/reset-password");
           return;
         }
         const isNew = await ensureProfile(data.session.access_token);
@@ -32,6 +38,13 @@ function CallbackHandler() {
       // Implicit flow: session arrives via URL hash (#access_token=...)
       // The Supabase client auto-processes the hash on init — just wait and read it
       await new Promise((r) => setTimeout(r, 800));
+
+      // Check hash for recovery type (implicit flow reset links)
+      if (typeof window !== "undefined" && window.location.hash.includes("type=recovery")) {
+        router.replace("/member/reset-password");
+        return;
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         router.replace("/member/login");
