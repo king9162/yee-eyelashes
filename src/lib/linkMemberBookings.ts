@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { issueMilestoneRewards } from "./issueMilestoneRewards";
 
 export async function linkMemberBookings(
   db: SupabaseClient,
@@ -42,6 +43,8 @@ export async function linkMemberBookings(
     last_visit_date: lastVisit,
     vip_tier,
   }).eq("id", userId);
+
+  await issueMilestoneRewards(db, userId, visits);
 
   return ids.length;
 }

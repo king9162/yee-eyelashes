@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { issueMilestoneRewards } from "@/lib/issueMilestoneRewards";
 
 export const dynamic = "force-dynamic";
 
@@ -385,6 +386,7 @@ export async function POST(req: NextRequest) {
           last_visit_date: sorted[sorted.length - 1],
           vip_tier,
         }).eq("id", memberId);
+        await issueMilestoneRewards(db, memberId, v);
       }
     }
   }

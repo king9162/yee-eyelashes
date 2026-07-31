@@ -11,6 +11,17 @@ export async function POST(req: NextRequest) {
 
   const defaults = [
     {
+      name: "5-Visit Reward",
+      description: "Earned by completing every 5 visits at Yee Eyelashes.",
+      type: "visit_reward",
+      discount_type: "percentage",
+      discount_value: 20,
+      minimum_spend: 0,
+      valid_days: 90,
+      max_uses_per_member: null,
+      active: true,
+    },
+    {
       name: "Birthday Reward — 20% Off",
       description: "Happy Birthday! Enjoy 20% off any service during your birthday month.",
       type: "birthday",

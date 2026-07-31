@@ -10,22 +10,11 @@ type Member = {
   phone: string | null;
   birthday: string | null;
   vip_tier: string;
-  points_balance: number;
   total_spend_all_time: number;
   total_visits_all_time: number;
   last_visit_date: string | null;
   joined_at: string;
   referral_code: string | null;
-};
-
-type Transaction = {
-  id: string;
-  type: string;
-  amount: number;
-  balance_after: number;
-  notes: string | null;
-  created_by: string;
-  created_at: string;
 };
 
 
@@ -63,13 +52,6 @@ const TIER_COLORS: Record<string, string> = {
   member: "#888", silver: "#C0C0C0", gold: "#C9A84C", diamond: "#A8DAFF",
 };
 
-const TXN_LABELS: Record<string, string> = {
-  purchase_earned: "Points Earned", referral_reward: "Referral",
-  birthday_bonus: "Birthday Reward", promotion_bonus: "Promotion",
-  manual_adjustment: "Manual Adjust", redemption: "Redeemed",
-  refund_adjustment: "Refund", expired: "Expired",
-};
-
 function discountLabel(c: CouponTemplate | MemberCoupon["coupons"]) {
   if (!c) return "";
   return c.discount_type === "fixed" ? `$${c.discount_value} off` : `${c.discount_value}% off`;
@@ -94,16 +76,10 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Member | null>(null);
-  const [detail, setDetail] = useState<{ profile: Member; txns: Transaction[]; coupons: MemberCoupon[]; bookings: MemberBooking[] } | null>(null);
+  const [detail, setDetail] = useState<{ profile: Member; coupons: MemberCoupon[]; bookings: MemberBooking[] } | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [couponTemplates, setCouponTemplates] = useState<CouponTemplate[]>([]);
 
-  // Award points state
-  const [awardAmount, setAwardAmount] = useState("");
-  const [awardType, setAwardType] = useState("purchase_earned");
-  const [awardNotes, setAwardNotes] = useState("");
-  const [awarding, setAwarding] = useState(false);
-  const [awardMsg, setAwardMsg] = useState("");
 
   // Issue coupon state
   const [issueCouponId, setIssueCouponId] = useState("");
@@ -136,7 +112,6 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
   const [renumbering, setRenumbering] = useState(false);
 
   // Collapsible panels
-  const [showAwardPanel, setShowAwardPanel] = useState(false);
   const [showIssueCouponPanel, setShowIssueCouponPanel] = useState(false);
 
   // Sidebar collapse
@@ -175,33 +150,12 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
     setSelected(m);
     setDetail(null);
     setDetailLoading(true);
-    setAwardMsg(""); setIssueMsg(""); setRelinkMsg("");
+    setIssueMsg(""); setRelinkMsg("");
 
     const detailRes = await fetch(`/api/admin/members/${m.id}`, { headers: { Authorization: `Bearer ${adminKey}` } });
     const data = await detailRes.json();
     setDetail(data);
     setDetailLoading(false);
-  }
-
-  async function awardPoints() {
-    if (!selected || !awardAmount) return;
-    const amt = parseInt(awardAmount);
-    if (isNaN(amt) || amt === 0) return;
-    setAwarding(true); setAwardMsg("");
-
-    const res = await fetch(`/api/admin/members/${selected.id}/points`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${adminKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ amount: amt, type: awardType, notes: awardNotes || null, created_by: "admin" }),
-    });
-    const d = await res.json();
-    setAwarding(false);
-
-    if (!res.ok) { setAwardMsg(`Error: ${d.error}`); return; }
-    setAwardMsg(`Done! New balance: ${d.new_balance} pts`);
-    setAwardAmount(""); setAwardNotes("");
-    await loadDetail(selected);
-    search(query);
   }
 
   async function issueCoupon() {
@@ -520,78 +474,15 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-3">
               {[
-                { label: "Points", value: `${detail.profile.points_balance}` },
-                { label: "Total Spent", value: `$${detail.profile.total_spend_all_time.toFixed(0)}` },
                 { label: "Visits", value: `${detail.profile.total_visits_all_time}` },
+                { label: "Progress", value: `${detail.profile.total_visits_all_time % 5}/5` },
+                { label: "Total Spent", value: `$${detail.profile.total_spend_all_time.toFixed(0)}` },
               ].map(s => (
                 <div key={s.label} className="bg-white rounded-xl border border-neutral-100 p-3 text-center">
                   <p className="text-[18px] font-bold text-[#1C1C1C]">{s.value}</p>
                   <p className="text-[10px] text-neutral-400 mt-0.5">{s.label}</p>
                 </div>
               ))}
-            </div>
-
-            {/* Award points — collapsible */}
-            <div className="bg-white rounded-xl border border-neutral-100 overflow-hidden">
-              <button
-                onClick={() => setShowAwardPanel(p => !p)}
-                className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-neutral-50 transition-colors"
-              >
-                <p className="text-[13px] font-bold text-[#1C1C1C]">Award / Adjust Points</p>
-                <span className="text-neutral-400 text-[12px]">{showAwardPanel ? "▲" : "▼"}</span>
-              </button>
-              {showAwardPanel && (
-                <div className="px-5 pb-5 space-y-3 border-t border-neutral-100 pt-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[10px] uppercase tracking-[0.1em] text-neutral-400 mb-1">Amount</label>
-                      <input
-                        value={awardAmount}
-                        onChange={e => setAwardAmount(e.target.value)}
-                        placeholder="e.g. 150 or -50"
-                        type="number"
-                        className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:border-[#C9A84C]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] uppercase tracking-[0.1em] text-neutral-400 mb-1">Type</label>
-                      <select
-                        value={awardType}
-                        onChange={e => setAwardType(e.target.value)}
-                        className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:border-[#C9A84C] bg-white"
-                      >
-                        <option value="purchase_earned">Purchase Earned</option>
-                        <option value="birthday_bonus">Birthday Bonus</option>
-                        <option value="referral_reward">Referral Reward</option>
-                        <option value="promotion_bonus">Promotion</option>
-                        <option value="manual_adjustment">Manual Adjustment</option>
-                        <option value="redemption">Redemption</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] uppercase tracking-[0.1em] text-neutral-400 mb-1">Notes (optional)</label>
-                    <input
-                      value={awardNotes}
-                      onChange={e => setAwardNotes(e.target.value)}
-                      placeholder="e.g. Classic Full Set $120"
-                      className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:border-[#C9A84C]"
-                    />
-                  </div>
-                  {awardMsg && (
-                    <p className={`text-[12px] font-semibold ${awardMsg.startsWith("Error") ? "text-red-500" : "text-green-600"}`}>
-                      {awardMsg}
-                    </p>
-                  )}
-                  <button
-                    onClick={awardPoints}
-                    disabled={awarding || !awardAmount}
-                    className="w-full py-2.5 bg-[#1C1C1C] text-white text-[12px] font-semibold rounded-lg hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all disabled:opacity-40"
-                  >
-                    {awarding ? "Processing…" : "Confirm"}
-                  </button>
-                </div>
-              )}
             </div>
 
             {/* Issue coupon — collapsible */}
