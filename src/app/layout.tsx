@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Montserrat } from "next/font/google";
 import Script from "next/script";
-import dynamic from "next/dynamic";
 import "./globals.css";
-
-const RecoveryRedirect = dynamic(() => import("@/components/ui/RecoveryRedirect"), { ssr: false });
+import RecoveryRedirect from "@/components/ui/RecoveryRedirect";
 
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
