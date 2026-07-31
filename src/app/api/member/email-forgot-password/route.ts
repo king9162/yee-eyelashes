@@ -3,6 +3,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { Resend } from "resend";
 import { sendSMS } from "@/lib/sms";
 import { buildResetEmailHtml } from "../phone-forgot-password/route";
+import { generateResetToken } from "@/lib/resetToken";
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.yeeeyelashes.com";
 
@@ -27,23 +28,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, sentEmail: false, sentSMS: false });
   }
 
-  // Get auth user to find their auth email (may be synthetic)
-  const { data: { user } } = await db.auth.admin.getUserById(profile.id);
-  const authEmail = user?.email;
-  if (!authEmail) return NextResponse.json({ ok: true, sentEmail: false, sentSMS: false });
-
-  // Generate recovery link
-  const { data: linkData, error: linkError } = await db.auth.admin.generateLink({
-    type: "recovery",
-    email: authEmail,
-    options: { redirectTo: `${SITE}/member/auth/callback` },
-  });
-
-  if (linkError || !linkData?.properties?.action_link) {
-    return NextResponse.json({ error: "Failed to generate reset link." }, { status: 500 });
-  }
-
-  const resetLink = linkData.properties.action_link;
+  // Generate custom reset token — direct link, no Supabase redirect needed
+  const token = generateResetToken(profile.id);
+  const resetLink = `${SITE}/member/reset-password?token=${token}`;
   const firstName = profile?.first_name ?? "there";
 
   // Send email

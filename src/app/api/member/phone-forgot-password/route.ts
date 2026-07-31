@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { Resend } from "resend";
 import { sendSMS } from "@/lib/sms";
+import { generateResetToken } from "@/lib/resetToken";
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.yeeeyelashes.com";
 
@@ -38,18 +39,9 @@ export async function POST(req: NextRequest) {
   const profilePhone = profile?.phone?.trim();
   const firstName = profile?.first_name ?? "there";
 
-  // Generate Supabase recovery link
-  const { data: linkData, error: linkError } = await db.auth.admin.generateLink({
-    type: "recovery",
-    email: syntheticEmail,
-    options: { redirectTo: `${SITE}/member/auth/callback` },
-  });
-
-  if (linkError || !linkData?.properties?.action_link) {
-    return NextResponse.json({ error: "Failed to generate reset link." }, { status: 500 });
-  }
-
-  const resetLink = linkData.properties.action_link;
+  // Generate custom reset token — direct link, no Supabase redirect needed
+  const token = generateResetToken(userId);
+  const resetLink = `${SITE}/member/reset-password?token=${token}`;
 
   // Send email if real email on file
   const hasEmail = !!(realEmail && realEmail !== syntheticEmail);
@@ -64,7 +56,7 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  // Send SMS if phone on file (always true when entering phone, but be safe)
+  // Send SMS if phone on file
   if (profilePhone) {
     const phoneE164 = profilePhone.startsWith("+") ? profilePhone : `+1${profilePhone.replace(/\D/g, "").slice(-10)}`;
     try {
