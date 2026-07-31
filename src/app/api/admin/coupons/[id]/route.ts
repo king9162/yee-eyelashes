@@ -15,7 +15,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (body.active !== undefined) update.active = body.active;
   if (body.name !== undefined) update.name = body.name;
   if (body.description !== undefined) update.description = body.description;
+  if (body.type !== undefined) update.type = body.type;
+  if (body.discount_type !== undefined) update.discount_type = body.discount_type;
   if (body.discount_value !== undefined) update.discount_value = parseFloat(body.discount_value);
+  if (body.minimum_spend !== undefined) update.minimum_spend = parseFloat(body.minimum_spend);
   if (body.valid_days !== undefined) update.valid_days = body.valid_days;
 
   const db = supabaseAdmin();
