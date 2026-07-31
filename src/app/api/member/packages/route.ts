@@ -22,14 +22,18 @@ export async function GET(req: NextRequest) {
     .single();
 
   const phone10 = (profile?.phone ?? "").replace(/\D/g, "").slice(-10);
-  if (!phone10) return NextResponse.json([]);
+  if (phone10.length !== 10) return NextResponse.json([]);
 
   const { data, error } = await db
     .from("packages")
-    .select("id, name, notes, purchase_date, use1_date, use2_date, use3_date")
-    .ilike("phone", `%${phone10}`)
+    .select("id, name, notes, purchase_date, use1_date, use2_date, use3_date, phone")
     .order("purchase_date", { ascending: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data ?? []);
+
+  // Filter in code — packages.phone may have dashes/formatting
+  const matched = (data ?? [])
+    .filter(p => (p.phone ?? "").replace(/\D/g, "").slice(-10) === phone10)
+    .map(({ phone: _phone, ...rest }) => rest);
+  return NextResponse.json(matched);
 }

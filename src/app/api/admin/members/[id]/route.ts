@@ -101,16 +101,18 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  // Fetch 3x packages linked by phone
+  // Fetch 3x packages linked by normalized phone (packages may store phone with dashes/formatting)
   const phone10 = (profileRes.data.phone ?? "").replace(/\D/g, "").slice(-10);
   let packages: unknown[] = [];
-  if (phone10) {
-    const { data: pkgs } = await db
+  if (phone10.length === 10) {
+    const { data: allPkgs } = await db
       .from("packages")
       .select("*")
-      .ilike("phone", `%${phone10}`)
       .order("purchase_date", { ascending: false });
-    packages = pkgs ?? [];
+    packages = (allPkgs ?? []).filter(
+      (p: { phone: string | null }) =>
+        (p.phone ?? "").replace(/\D/g, "").slice(-10) === phone10
+    );
   }
 
   return NextResponse.json({

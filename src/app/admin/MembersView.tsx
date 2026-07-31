@@ -124,6 +124,12 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
   // Collapsible panels
   const [showIssueCouponPanel, setShowIssueCouponPanel] = useState(false);
 
+  // Add package inline form
+  const [showAddPackage, setShowAddPackage] = useState(false);
+  const [newPkgNotes, setNewPkgNotes] = useState("");
+  const [newPkgDate, setNewPkgDate] = useState("");
+  const [savingPkg, setSavingPkg] = useState(false);
+
   // Sidebar collapse
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
@@ -197,6 +203,28 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
     setRelinking(false);
     setRelinkMsg(res.ok ? `Done — linked ${d.linked} booking${d.linked !== 1 ? "s" : ""}` : `Error: ${d.error}`);
     if (res.ok) { await loadDetail(selected); search(query); }
+  }
+
+  async function addPackageForMember() {
+    if (!selected || !detail) return;
+    setSavingPkg(true);
+    const res = await fetch("/api/admin/packages", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${adminKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: `${detail.profile.first_name} ${detail.profile.last_name}`.trim(),
+        phone: detail.profile.phone ?? "",
+        notes: newPkgNotes || null,
+        purchase_date: newPkgDate || null,
+      }),
+    });
+    setSavingPkg(false);
+    if (res.ok) {
+      const pkg = await res.json();
+      setDetail(d => d ? { ...d, packages: [pkg, ...d.packages] } : d);
+      setShowAddPackage(false);
+      setNewPkgNotes(""); setNewPkgDate("");
+    }
   }
 
   async function togglePackageSession(pkgId: string, slot: 1 | 2 | 3) {
@@ -624,11 +652,51 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
             )}
 
             {/* 3x Package */}
-            {(detail.packages ?? []).length > 0 && (
-              <div className="bg-white rounded-xl border border-neutral-100 overflow-hidden">
-                <div className="px-4 py-3 border-b border-neutral-100">
-                  <p className="text-[13px] font-bold text-[#1C1C1C]">3× Package</p>
+            <div className="bg-white rounded-xl border border-neutral-100 overflow-hidden">
+              <div className="px-4 py-3 border-b border-neutral-100 flex items-center justify-between">
+                <p className="text-[13px] font-bold text-[#1C1C1C]">3× Package</p>
+                <button
+                  onClick={() => { setShowAddPackage(p => !p); setNewPkgNotes(""); setNewPkgDate(""); }}
+                  className="text-[11px] font-semibold text-[#C9A84C] hover:underline"
+                >
+                  {showAddPackage ? "Cancel" : "+ Add"}
+                </button>
+              </div>
+
+              {/* Inline add form */}
+              {showAddPackage && (
+                <div className="px-4 py-3 border-b border-neutral-100 space-y-2 bg-neutral-50">
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-[0.1em] text-neutral-400 mb-1">Service / Notes</label>
+                    <input
+                      value={newPkgNotes}
+                      onChange={e => setNewPkgNotes(e.target.value)}
+                      placeholder="e.g. 120 pic · $290"
+                      className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-[12px] focus:outline-none focus:border-[#C9A84C]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-[0.1em] text-neutral-400 mb-1">Purchase Date</label>
+                    <input
+                      type="date"
+                      value={newPkgDate}
+                      onChange={e => setNewPkgDate(e.target.value)}
+                      className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-[12px] focus:outline-none focus:border-[#C9A84C]"
+                    />
+                  </div>
+                  <button
+                    onClick={addPackageForMember}
+                    disabled={savingPkg}
+                    className="w-full py-2 bg-[#1C1C1C] text-white text-[12px] font-semibold rounded-lg hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all disabled:opacity-40"
+                  >
+                    {savingPkg ? "Saving…" : "Add Package"}
+                  </button>
                 </div>
+              )}
+
+              {(detail.packages ?? []).length === 0 && !showAddPackage ? (
+                <p className="text-[12px] text-neutral-400 text-center py-5">No packages</p>
+              ) : (
                 <div className="divide-y divide-neutral-50">
                   {(detail.packages ?? []).map(pkg => {
                     const used = [pkg.use1_date, pkg.use2_date, pkg.use3_date].filter(Boolean).length;
@@ -687,8 +755,8 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
                     );
                   })}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* Visit history */}
             <div className="bg-white rounded-xl border border-neutral-100 overflow-hidden">
