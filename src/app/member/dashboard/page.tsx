@@ -133,6 +133,18 @@ export default function MemberDashboardPage() {
   const visitsInCycle = visits % 5;
   const visitsToNextCoupon = 5 - visitsInCycle;
 
+  // Birthday countdown
+  let birthdayCountdown: number | null = null;
+  if (profile.birthday) {
+    const today = new Date();
+    const [bdayMonth, bdayDay] = profile.birthday.split("/").map(Number);
+    if (!isNaN(bdayMonth) && !isNaN(bdayDay)) {
+      let next = new Date(today.getFullYear(), bdayMonth - 1, bdayDay);
+      if (next < today) next = new Date(today.getFullYear() + 1, bdayMonth - 1, bdayDay);
+      birthdayCountdown = Math.ceil((next.getTime() - today.setHours(0,0,0,0)) / 86400000);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[#F8F5EF]" style={{ fontFamily: "var(--font-montserrat), sans-serif" }}>
       {/* Header */}
@@ -149,24 +161,26 @@ export default function MemberDashboardPage() {
       <div className="max-w-lg mx-auto px-4 py-6 space-y-4">
         {/* Member card */}
         <div
-          className="rounded-2xl p-5 text-white relative overflow-hidden"
-          style={{ background: "linear-gradient(135deg, #1C1C1C 0%, #2D2008 100%)" }}
+          className="rounded-2xl p-5 relative overflow-hidden border border-[#E8E4DC]"
+          style={{ background: "#F8F5EF" }}
         >
-          <div className="absolute top-0 right-0 w-48 h-48 rounded-full opacity-5"
-            style={{ background: "#C9A84C", transform: "translate(30%, -30%)" }} />
+          {/* Subtle gold top bar */}
+          <div className="absolute top-0 left-0 right-0 h-[3px] rounded-t-2xl"
+            style={{ background: "linear-gradient(90deg, #C9A84C, #e8c97a)" }} />
 
-          <div className="flex items-start justify-between mb-6">
+          <div className="flex items-start justify-between mb-5 pt-1">
             <div className="flex items-center gap-3">
               {avatarUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={avatarUrl} alt="" className="w-10 h-10 rounded-full object-cover" />
+                <img src={avatarUrl} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-[#C9A84C]/30" />
               ) : (
-                <div className="w-10 h-10 rounded-full bg-[#C9A84C]/20 flex items-center justify-center text-[#C9A84C] font-bold text-[16px]">
+                <div className="w-10 h-10 rounded-full border-2 border-[#C9A84C]/40 flex items-center justify-center font-bold text-[16px]"
+                  style={{ background: "#EDE9DF", color: "#C9A84C" }}>
                   {profile.first_name[0] ?? "M"}
                 </div>
               )}
               <div>
-                <p className="text-[15px] font-semibold">{profile.first_name} {profile.last_name}</p>
+                <p className="text-[15px] font-semibold text-[#1C1C1C]">{profile.first_name} {profile.last_name}</p>
                 <p className="text-[11px] text-neutral-400">{profile.member_id}</p>
               </div>
             </div>
@@ -174,47 +188,66 @@ export default function MemberDashboardPage() {
           </div>
 
           {/* Visit progress toward next coupon */}
-          <div>
-            <p className="text-[11px] text-neutral-400 mb-1">Progress to 20% Off Coupon</p>
+          <div className="mb-4">
+            <p className="text-[10px] uppercase tracking-[0.12em] text-neutral-400 mb-1.5">Progress to 20% Off Coupon</p>
             <div className="flex items-end gap-2 mb-2">
-              <p className="text-[40px] font-light leading-none" style={{ fontFamily: "var(--font-cormorant)" }}>
+              <p className="text-[40px] font-light leading-none text-[#1C1C1C]" style={{ fontFamily: "var(--font-cormorant)" }}>
                 {visitsInCycle}<span className="text-[18px] text-neutral-400"> / 5</span>
               </p>
               {visitsInCycle === 0 && visits > 0 && (
                 <p className="text-[12px] text-[#C9A84C] font-semibold mb-1">Coupon issued!</p>
               )}
             </div>
-            <div className="flex gap-1.5 mb-1">
+            <div className="flex gap-1.5 mb-1.5">
               {[1, 2, 3, 4, 5].map(i => (
                 <div key={i} className="flex-1 h-1.5 rounded-full transition-all"
-                  style={{ background: i <= visitsInCycle ? "#C9A84C" : "rgba(255,255,255,0.15)" }} />
+                  style={{ background: i <= visitsInCycle ? "#C9A84C" : "#D4CCC0" }} />
               ))}
             </div>
-            <p className="text-[11px] text-neutral-500">
+            <p className="text-[11px] text-neutral-400">
               {visitsInCycle === 0 && visits > 0
                 ? `${visits} total visits — keep it up!`
                 : `${visitsToNextCoupon} more visit${visitsToNextCoupon !== 1 ? "s" : ""} to earn 20% off`}
             </p>
           </div>
 
-          {/* Tier progress */}
-          {tier.next && tier.threshold && (
-            <div className="mt-5">
-              <div className="flex justify-between text-[10px] text-neutral-400 mb-1.5">
-                <span>To {tier.next}</span>
-                <span>{visits < tier.threshold ? `${tier.threshold - visits} visits away` : "Reached"}</span>
+          {/* Birthday countdown + Tier progress row */}
+          <div className="border-t border-[#D4CCC0]/50 pt-3 mt-1 flex items-end justify-between gap-4">
+            {/* Birthday countdown */}
+            {birthdayCountdown !== null && (
+              <div className="flex-1">
+                <p className="text-[10px] uppercase tracking-[0.1em] text-neutral-400 mb-0.5">Birthday</p>
+                <p className="text-[13px] font-semibold text-[#1C1C1C]">
+                  {birthdayCountdown === 0
+                    ? "🎂 Today!"
+                    : birthdayCountdown === 1
+                    ? "🎉 Tomorrow!"
+                    : birthdayCountdown <= 30
+                    ? `🎂 ${birthdayCountdown} days away`
+                    : `${birthdayCountdown} days away`}
+                </p>
               </div>
-              <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                <div
-                  className="h-full rounded-full transition-all"
-                  style={{
-                    background: tier.color,
-                    width: `${Math.min(100, (visits / tier.threshold) * 100)}%`,
-                  }}
-                />
+            )}
+
+            {/* Tier progress */}
+            {tier.next && tier.threshold && (
+              <div className={birthdayCountdown !== null ? "flex-1" : "w-full"}>
+                <div className="flex justify-between text-[10px] text-neutral-400 mb-1">
+                  <span>To {tier.next}</span>
+                  <span>{visits < tier.threshold ? `${tier.threshold - visits} visits away` : "Reached"}</span>
+                </div>
+                <div className="h-1 bg-[#D4CCC0] rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{
+                      background: tier.color === "#888" ? "#C9A84C" : tier.color,
+                      width: `${Math.min(100, (visits / tier.threshold) * 100)}%`,
+                    }}
+                  />
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* Stats row */}
