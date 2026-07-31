@@ -40,6 +40,15 @@ type LashRecord = {
   technician_notes: string | null;
 };
 
+type MemberBooking = {
+  id: string;
+  date: string;
+  time: string | null;
+  service: string | null;
+  status: string;
+  price: number | null;
+};
+
 type MemberCoupon = {
   id: string;
   status: string;
@@ -95,7 +104,7 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Member | null>(null);
-  const [detail, setDetail] = useState<{ profile: Member; txns: Transaction[]; coupons: MemberCoupon[] } | null>(null);
+  const [detail, setDetail] = useState<{ profile: Member; txns: Transaction[]; coupons: MemberCoupon[]; bookings: MemberBooking[] } | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [couponTemplates, setCouponTemplates] = useState<CouponTemplate[]>([]);
 
@@ -825,33 +834,42 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
               )}
             </div>
 
-            {/* Transaction history */}
+            {/* Visit history */}
             <div className="bg-white rounded-xl border border-neutral-100 overflow-hidden">
               <div className="px-4 py-3 border-b border-neutral-100">
-                <p className="text-[13px] font-bold text-[#1C1C1C]">Points History</p>
+                <p className="text-[13px] font-bold text-[#1C1C1C]">Visit History</p>
               </div>
-              {detail.txns.length === 0 ? (
-                <p className="text-[12px] text-neutral-400 text-center py-6">No transactions yet</p>
+              {(detail.bookings ?? []).length === 0 ? (
+                <p className="text-[12px] text-neutral-400 text-center py-6">No visits yet</p>
               ) : (
                 <div className="divide-y divide-neutral-50">
-                  {detail.txns.map(t => (
-                    <div key={t.id} className="flex items-center justify-between px-4 py-3">
-                      <div>
-                        <p className="text-[12px] font-medium text-[#1C1C1C]">{TXN_LABELS[t.type] ?? t.type}</p>
-                        <p className="text-[11px] text-neutral-400 mt-0.5">
-                          {new Date(t.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                          {t.notes && ` · ${t.notes}`}
-                          {" · "}<span className="text-neutral-300">{t.created_by}</span>
-                        </p>
+                  {(detail.bookings ?? []).map(b => {
+                    const statusColor: Record<string, string> = {
+                      completed: "#22C55E", cancelled: "#EF4444", no_show: "#F59E0B", booked: "#C9A84C",
+                    };
+                    return (
+                      <div key={b.id} className="flex items-center justify-between px-4 py-3">
+                        <div>
+                          <p className="text-[12px] font-medium text-[#1C1C1C]">
+                            {b.service ?? "Appointment"}
+                          </p>
+                          <p className="text-[11px] text-neutral-400 mt-0.5">
+                            {new Date(b.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                            {b.time && ` · ${b.time}`}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          {b.price != null && (
+                            <p className="text-[12px] font-semibold text-[#1C1C1C]">${b.price}</p>
+                          )}
+                          <p className="text-[10px] font-medium mt-0.5 capitalize"
+                            style={{ color: statusColor[b.status] ?? "#888" }}>
+                            {b.status.replace("_", " ")}
+                          </p>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className={`text-[13px] font-semibold ${t.amount > 0 ? "text-[#C9A84C]" : "text-neutral-500"}`}>
-                          {t.amount > 0 ? `+${t.amount}` : t.amount} pts
-                        </p>
-                        <p className="text-[10px] text-neutral-300">{t.balance_after} rem</p>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

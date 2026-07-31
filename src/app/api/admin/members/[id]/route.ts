@@ -82,7 +82,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const { id } = await params;
   const db = supabaseAdmin();
 
-  const [profileRes, txnsRes, couponsRes] = await Promise.all([
+  const [profileRes, txnsRes, couponsRes, bookingsRes] = await Promise.all([
     db.from("profiles").select("*").eq("id", id).single(),
     db.from("points_transactions")
       .select("id, type, amount, balance_after, notes, created_by, created_at")
@@ -94,6 +94,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       .eq("member_id", id)
       .order("issued_at", { ascending: false })
       .limit(20),
+    db.from("bookings")
+      .select("id, date, time, service, status, price")
+      .eq("member_id", id)
+      .order("date", { ascending: false })
+      .limit(50),
   ]);
 
   if (profileRes.error || !profileRes.data) {
@@ -104,5 +109,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     profile: profileRes.data,
     txns: txnsRes.data ?? [],
     coupons: couponsRes.data ?? [],
+    bookings: bookingsRes.data ?? [],
   });
 }
