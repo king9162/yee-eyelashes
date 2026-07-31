@@ -236,7 +236,7 @@ function LoginContent() {
               <div className="flex items-center justify-between mb-1.5">
                 <label className={labelCls.replace(" mb-1.5","")}>Password</label>
                 <button type="button"
-                  onClick={() => { setShowForgot(true); setForgotInput(phone); setForgotDone(null); setError(""); }}
+                  onClick={() => { setShowForgot(true); setForgotInput(phone); setForgotSent(null); setError(""); }}
                   className="text-[11px] text-neutral-400 hover:text-[#C9A84C] transition-colors">
                   Forgot password?
                 </button>
