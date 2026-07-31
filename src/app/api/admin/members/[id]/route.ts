@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { linkMemberBookings } from "@/lib/linkMemberBookings";
 
 function auth(req: NextRequest) {
   return req.headers.get("authorization")?.replace("Bearer ", "") === process.env.ADMIN_SECRET_KEY;
@@ -40,6 +41,14 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const { error } = await db.from("profiles").update(updates).eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // If phone or email changed, auto-link any newly matching bookings
+  if (phone !== undefined || email !== undefined) {
+    const { data: updated } = await db.from("profiles").select("phone, email").eq("id", id).single();
+    if (updated) {
+      await linkMemberBookings(db, id, updated.phone ?? null, updated.email ?? null);
+    }
+  }
 
   return NextResponse.json({ ok: true });
 }

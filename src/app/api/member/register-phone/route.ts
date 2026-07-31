@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { linkMemberBookings } from "@/lib/linkMemberBookings";
 import crypto from "crypto";
 
 function verifyOtp(phone: string, code: string, token: string): boolean {
@@ -74,6 +75,10 @@ export async function POST(req: NextRequest) {
   if ((email ?? "").trim()) updateFields.email = (email ?? "").trim();
 
   await db.from("clients").update(updateFields).ilike("phone", `%${digits}`);
+
+  // Auto-link any existing Square bookings to this new member
+  const realEmail = (email ?? "").trim() || null;
+  await linkMemberBookings(db, userId, phoneE164, realEmail);
 
   return NextResponse.json({ ok: true });
 }
