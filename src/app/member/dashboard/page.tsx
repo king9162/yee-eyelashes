@@ -135,6 +135,7 @@ export default function MemberDashboardPage() {
 
   // Birthday countdown — birthday stored as YYYY-MM-DD
   let birthdayCountdown: number | null = null;
+  let birthdayDisplay: string | null = null;
   if (profile.birthday) {
     const parts = profile.birthday.split("-").map(Number);
     const bdayMonth = parts[1], bdayDay = parts[2];
@@ -144,6 +145,7 @@ export default function MemberDashboardPage() {
       let next = new Date(today.getFullYear(), bdayMonth - 1, bdayDay);
       if (next < todayMidnight) next = new Date(today.getFullYear() + 1, bdayMonth - 1, bdayDay);
       birthdayCountdown = Math.ceil((next.getTime() - todayMidnight.getTime()) / 86400000);
+      birthdayDisplay = next.toLocaleDateString("en-US", { month: "short", day: "numeric" });
     }
   }
 
@@ -219,15 +221,18 @@ export default function MemberDashboardPage() {
             <div className="flex-1">
               <p className="text-[10px] uppercase tracking-[0.1em] text-neutral-400 mb-0.5">Birthday</p>
               {birthdayCountdown !== null ? (
-                <p className="text-[13px] font-semibold text-[#1C1C1C]">
-                  {birthdayCountdown === 0
-                    ? "🎂 Today!"
-                    : birthdayCountdown === 1
-                    ? "🎉 Tomorrow!"
-                    : birthdayCountdown <= 30
-                    ? `🎂 ${birthdayCountdown} days away`
-                    : `${birthdayCountdown} days away`}
-                </p>
+                <div>
+                  <p className="text-[13px] font-semibold text-[#1C1C1C]">{birthdayDisplay}</p>
+                  <p className="text-[11px] text-neutral-400 mt-0.5">
+                    {birthdayCountdown === 0
+                      ? "🎂 Today!"
+                      : birthdayCountdown === 1
+                      ? "🎉 Tomorrow!"
+                      : birthdayCountdown <= 30
+                      ? `🎂 ${birthdayCountdown} days away`
+                      : `${birthdayCountdown} days away`}
+                  </p>
+                </div>
               ) : (
                 <a href="/member/profile"
                   className="text-[11px] text-[#C9A84C] font-semibold hover:underline">

@@ -126,6 +126,10 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
   // Seed coupons
   const [seeding, setSeeding] = useState(false);
 
+  // Collapsible panels
+  const [showAwardPanel, setShowAwardPanel] = useState(false);
+  const [showIssueCouponPanel, setShowIssueCouponPanel] = useState(false);
+
   const search = useCallback(async (q: string) => {
     setLoading(true);
     const res = await fetch(`/api/admin/members?q=${encodeURIComponent(q)}`, {
@@ -371,7 +375,6 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
                 {[
                   { label: "Email", value: detail.profile.email ?? "—" },
                   { label: "Phone", value: detail.profile.phone ?? "—" },
-                  { label: "Birthday", value: detail.profile.birthday ?? "—" },
                   { label: "Joined", value: new Date(detail.profile.joined_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) },
                   { label: "Referral Code", value: detail.profile.referral_code ?? "—" },
                   { label: "Last Visit", value: detail.profile.last_visit_date ?? "—" },
@@ -381,6 +384,21 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
                     <p className="text-[#1C1C1C] font-medium font-mono">{f.value}</p>
                   </div>
                 ))}
+                {/* Birthday with countdown */}
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.1em] text-neutral-400 mb-0.5">Birthday</p>
+                  {(() => {
+                    const b = birthdayInfo(detail.profile.birthday);
+                    if (!b) return <p className="text-neutral-300 font-mono">—</p>;
+                    const { display, countdown } = b;
+                    const cdText = countdown === 0 ? "🎂 Today!" : countdown === 1 ? "🎉 Tomorrow" : `${countdown}d away`;
+                    return (
+                      <p className="font-mono font-medium" style={{ color: countdown !== null && countdown <= 14 ? "#C9A84C" : "#1C1C1C" }}>
+                        {display} <span className="text-[11px] text-neutral-400">· {cdText}</span>
+                      </p>
+                    );
+                  })()}
+                </div>
               </div>
 
               {/* Re-link bookings */}
@@ -414,112 +432,130 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
               ))}
             </div>
 
-            {/* Award points */}
-            <div className="bg-white rounded-xl border border-neutral-100 p-5">
-              <p className="text-[13px] font-bold text-[#1C1C1C] mb-4">Award / Adjust Points</p>
-              <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[10px] uppercase tracking-[0.1em] text-neutral-400 mb-1">Amount</label>
-                    <input
-                      value={awardAmount}
-                      onChange={e => setAwardAmount(e.target.value)}
-                      placeholder="e.g. 150 or -50"
-                      type="number"
-                      className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:border-[#C9A84C]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] uppercase tracking-[0.1em] text-neutral-400 mb-1">Type</label>
-                    <select
-                      value={awardType}
-                      onChange={e => setAwardType(e.target.value)}
-                      className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:border-[#C9A84C] bg-white"
-                    >
-                      <option value="purchase_earned">Purchase Earned</option>
-                      <option value="birthday_bonus">Birthday Bonus</option>
-                      <option value="referral_reward">Referral Reward</option>
-                      <option value="promotion_bonus">Promotion</option>
-                      <option value="manual_adjustment">Manual Adjustment</option>
-                      <option value="redemption">Redemption</option>
-                    </select>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-[10px] uppercase tracking-[0.1em] text-neutral-400 mb-1">Notes (optional)</label>
-                  <input
-                    value={awardNotes}
-                    onChange={e => setAwardNotes(e.target.value)}
-                    placeholder="e.g. Classic Full Set $120"
-                    className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:border-[#C9A84C]"
-                  />
-                </div>
-                {awardMsg && (
-                  <p className={`text-[12px] font-semibold ${awardMsg.startsWith("Error") ? "text-red-500" : "text-green-600"}`}>
-                    {awardMsg}
-                  </p>
-                )}
-                <button
-                  onClick={awardPoints}
-                  disabled={awarding || !awardAmount}
-                  className="w-full py-2.5 bg-[#1C1C1C] text-white text-[12px] font-semibold rounded-lg hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all disabled:opacity-40"
-                >
-                  {awarding ? "Processing…" : "Confirm"}
-                </button>
-              </div>
-            </div>
-
-            {/* Issue coupon */}
-            <div className="bg-white rounded-xl border border-neutral-100 p-5">
-              <p className="text-[13px] font-bold text-[#1C1C1C] mb-4">Issue Coupon</p>
-              {couponTemplates.length === 0 ? (
-                <div className="text-center py-3">
-                  <p className="text-[12px] text-neutral-400 mb-2">No coupon templates yet.</p>
-                  <button
-                    onClick={seedCoupons}
-                    disabled={seeding}
-                    className="text-[12px] text-[#C9A84C] hover:underline disabled:opacity-40"
-                  >
-                    {seeding ? "Creating…" : "Create default templates"}
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-[10px] uppercase tracking-[0.1em] text-neutral-400 mb-1">Coupon</label>
-                    <select
-                      value={issueCouponId}
-                      onChange={e => setIssueCouponId(e.target.value)}
-                      className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:border-[#C9A84C] bg-white"
-                    >
-                      {couponTemplates.map(t => (
-                        <option key={t.id} value={t.id}>
-                          {t.name} ({discountLabel(t)})
-                        </option>
-                      ))}
-                    </select>
+            {/* Award points — collapsible */}
+            <div className="bg-white rounded-xl border border-neutral-100 overflow-hidden">
+              <button
+                onClick={() => setShowAwardPanel(p => !p)}
+                className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-neutral-50 transition-colors"
+              >
+                <p className="text-[13px] font-bold text-[#1C1C1C]">Award / Adjust Points</p>
+                <span className="text-neutral-400 text-[12px]">{showAwardPanel ? "▲" : "▼"}</span>
+              </button>
+              {showAwardPanel && (
+                <div className="px-5 pb-5 space-y-3 border-t border-neutral-100 pt-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-[0.1em] text-neutral-400 mb-1">Amount</label>
+                      <input
+                        value={awardAmount}
+                        onChange={e => setAwardAmount(e.target.value)}
+                        placeholder="e.g. 150 or -50"
+                        type="number"
+                        className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:border-[#C9A84C]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-[0.1em] text-neutral-400 mb-1">Type</label>
+                      <select
+                        value={awardType}
+                        onChange={e => setAwardType(e.target.value)}
+                        className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:border-[#C9A84C] bg-white"
+                      >
+                        <option value="purchase_earned">Purchase Earned</option>
+                        <option value="birthday_bonus">Birthday Bonus</option>
+                        <option value="referral_reward">Referral Reward</option>
+                        <option value="promotion_bonus">Promotion</option>
+                        <option value="manual_adjustment">Manual Adjustment</option>
+                        <option value="redemption">Redemption</option>
+                      </select>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-[10px] uppercase tracking-[0.1em] text-neutral-400 mb-1">Notes (optional)</label>
                     <input
-                      value={issueCouponNotes}
-                      onChange={e => setIssueCouponNotes(e.target.value)}
-                      placeholder="e.g. Loyalty reward"
+                      value={awardNotes}
+                      onChange={e => setAwardNotes(e.target.value)}
+                      placeholder="e.g. Classic Full Set $120"
                       className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:border-[#C9A84C]"
                     />
                   </div>
-                  {issueMsg && (
-                    <p className={`text-[12px] font-semibold ${issueMsg.startsWith("Error") ? "text-red-500" : "text-green-600"}`}>
-                      {issueMsg}
+                  {awardMsg && (
+                    <p className={`text-[12px] font-semibold ${awardMsg.startsWith("Error") ? "text-red-500" : "text-green-600"}`}>
+                      {awardMsg}
                     </p>
                   )}
                   <button
-                    onClick={issueCoupon}
-                    disabled={issuing || !issueCouponId}
+                    onClick={awardPoints}
+                    disabled={awarding || !awardAmount}
                     className="w-full py-2.5 bg-[#1C1C1C] text-white text-[12px] font-semibold rounded-lg hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all disabled:opacity-40"
                   >
-                    {issuing ? "Issuing…" : "Issue Coupon"}
+                    {awarding ? "Processing…" : "Confirm"}
                   </button>
+                </div>
+              )}
+            </div>
+
+            {/* Issue coupon — collapsible */}
+            <div className="bg-white rounded-xl border border-neutral-100 overflow-hidden">
+              <button
+                onClick={() => setShowIssueCouponPanel(p => !p)}
+                className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-neutral-50 transition-colors"
+              >
+                <p className="text-[13px] font-bold text-[#1C1C1C]">Issue Coupon</p>
+                <span className="text-neutral-400 text-[12px]">{showIssueCouponPanel ? "▲" : "▼"}</span>
+              </button>
+              {showIssueCouponPanel && (
+                <div className="px-5 pb-5 border-t border-neutral-100 pt-4">
+                  {couponTemplates.length === 0 ? (
+                    <div className="text-center py-3">
+                      <p className="text-[12px] text-neutral-400 mb-2">No coupon templates yet.</p>
+                      <button
+                        onClick={seedCoupons}
+                        disabled={seeding}
+                        className="text-[12px] text-[#C9A84C] hover:underline disabled:opacity-40"
+                      >
+                        {seeding ? "Creating…" : "Create default templates"}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-[10px] uppercase tracking-[0.1em] text-neutral-400 mb-1">Coupon</label>
+                        <select
+                          value={issueCouponId}
+                          onChange={e => setIssueCouponId(e.target.value)}
+                          className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:border-[#C9A84C] bg-white"
+                        >
+                          {couponTemplates.map(t => (
+                            <option key={t.id} value={t.id}>
+                              {t.name} ({discountLabel(t)})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-[10px] uppercase tracking-[0.1em] text-neutral-400 mb-1">Notes (optional)</label>
+                        <input
+                          value={issueCouponNotes}
+                          onChange={e => setIssueCouponNotes(e.target.value)}
+                          placeholder="e.g. Loyalty reward"
+                          className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:border-[#C9A84C]"
+                        />
+                      </div>
+                      {issueMsg && (
+                        <p className={`text-[12px] font-semibold ${issueMsg.startsWith("Error") ? "text-red-500" : "text-green-600"}`}>
+                          {issueMsg}
+                        </p>
+                      )}
+                      <button
+                        onClick={issueCoupon}
+                        disabled={issuing || !issueCouponId}
+                        className="w-full py-2.5 bg-[#1C1C1C] text-white text-[12px] font-semibold rounded-lg hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all disabled:opacity-40"
+                      >
+                        {issuing ? "Issuing…" : "Issue Coupon"}
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
