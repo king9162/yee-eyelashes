@@ -16,6 +16,7 @@ type Profile = {
   referral_code: string | null;
   referred_by: string | null;
   birthday: string | null;
+  admin_notes: string | null;
 };
 
 type Booking = {
@@ -261,6 +262,14 @@ export default function MemberDashboardPage() {
             )}
           </div>
         </div>
+
+        {/* Admin notes — read-only */}
+        {profile.admin_notes && (
+          <div className="bg-white rounded-xl border border-neutral-100 px-4 py-3">
+            <p className="text-[9px] uppercase tracking-[0.15em] text-neutral-400 mb-1">Notes from Yee</p>
+            <p className="text-[13px] text-[#1C1C1C] leading-relaxed">{profile.admin_notes}</p>
+          </div>
+        )}
 
         {/* Stats row */}
         <div className="grid grid-cols-2 gap-3">

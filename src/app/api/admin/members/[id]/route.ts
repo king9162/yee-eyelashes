@@ -10,7 +10,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (!auth(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
-  const { first_name, last_name, email, phone, birthday, member_id } = await req.json();
+  const { first_name, last_name, email, phone, birthday, member_id, admin_notes } = await req.json();
 
   const db = supabaseAdmin();
   const updates: Record<string, unknown> = {};
@@ -18,7 +18,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (first_name !== undefined) updates.first_name = (first_name ?? "").trim();
   if (last_name  !== undefined) updates.last_name  = (last_name  ?? "").trim();
   if (email      !== undefined) updates.email      = (email      ?? "").trim();
-  if (birthday   !== undefined) updates.birthday   = birthday || null;
+  if (birthday     !== undefined) updates.birthday     = birthday || null;
+  if (admin_notes  !== undefined) updates.admin_notes  = (admin_notes ?? "").trim() || null;
   if (member_id !== undefined) {
     const newMid = (member_id ?? "").trim().toUpperCase();
     // Clear old value first to avoid unique constraint conflict, then set new one

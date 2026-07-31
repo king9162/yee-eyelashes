@@ -135,7 +135,7 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
 
   // Edit member modal
   const [editingMember, setEditingMember] = useState<Member | null>(null);
-  const [editForm, setEditForm] = useState({ first_name: "", last_name: "", email: "", phone: "", birthday: "", member_id: "" });
+  const [editForm, setEditForm] = useState({ first_name: "", last_name: "", email: "", phone: "", birthday: "", member_id: "", admin_notes: "" });
   const [editSaving, setEditSaving] = useState(false);
   const [editError, setEditError] = useState("");
 
@@ -306,12 +306,13 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
   function openEdit(m: Member) {
     setEditingMember(m);
     setEditForm({
-      first_name: m.first_name ?? "",
-      last_name:  m.last_name  ?? "",
-      email:      m.email      ?? "",
-      phone:      m.phone      ?? "",
-      birthday:   m.birthday   ?? "",
-      member_id:  m.member_id  ?? "",
+      first_name:   m.first_name   ?? "",
+      last_name:    m.last_name    ?? "",
+      email:        m.email        ?? "",
+      phone:        m.phone        ?? "",
+      birthday:     m.birthday     ?? "",
+      member_id:    m.member_id    ?? "",
+      admin_notes:  (m as Member & { admin_notes?: string }).admin_notes ?? "",
     });
     setEditError("");
   }
@@ -974,6 +975,14 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
                 placeholder="YEE-00001  or  just  1"
                 className="w-full border border-neutral-200 rounded-xl px-3 py-2.5 text-[13px] focus:outline-none focus:border-[#C9A84C] font-mono" />
               <p className="text-[10px] text-neutral-400 mt-0.5">Enter &quot;1&quot; to auto-format as YEE-00001.</p>
+            </div>
+
+            <div>
+              <label className="block text-[10px] uppercase tracking-[0.12em] text-neutral-400 mb-1">Notes for Member</label>
+              <textarea value={editForm.admin_notes} onChange={e => setEditForm(p => ({ ...p, admin_notes: e.target.value }))}
+                placeholder="Visible to member on their dashboard (read-only)"
+                rows={3}
+                className="w-full border border-neutral-200 rounded-xl px-3 py-2.5 text-[13px] focus:outline-none focus:border-[#C9A84C] resize-none" />
             </div>
           </div>
 
