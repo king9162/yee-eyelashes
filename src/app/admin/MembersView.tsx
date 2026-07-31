@@ -130,6 +130,9 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
   const [showAwardPanel, setShowAwardPanel] = useState(false);
   const [showIssueCouponPanel, setShowIssueCouponPanel] = useState(false);
 
+  // Sidebar collapse
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
   const search = useCallback(async (q: string) => {
     setLoading(true);
     const res = await fetch(`/api/admin/members?q=${encodeURIComponent(q)}`, {
@@ -275,9 +278,34 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
   return (
     <div className="flex h-[calc(100vh-64px)]" style={{ fontFamily: "var(--font-montserrat), sans-serif" }}>
       {/* Left: list */}
-      <div className="w-80 border-r border-neutral-100 flex flex-col flex-shrink-0">
+      <div className={`border-r border-neutral-100 flex flex-col flex-shrink-0 transition-all duration-200 ${sidebarCollapsed ? "w-10" : "w-80"}`}>
+        {sidebarCollapsed ? (
+          /* Collapsed — just a thin strip with expand button */
+          <div className="flex flex-col items-center pt-4 gap-3">
+            <button
+              onClick={() => setSidebarCollapsed(false)}
+              className="w-7 h-7 flex items-center justify-center rounded-lg bg-neutral-100 hover:bg-neutral-200 transition-colors text-neutral-500 text-[12px]"
+              title="Expand member list"
+            >
+              ▶
+            </button>
+            <p className="text-[9px] text-neutral-300 uppercase tracking-widest" style={{ writingMode: "vertical-rl" }}>
+              Members
+            </p>
+          </div>
+        ) : (
+        <>
         <div className="p-4 border-b border-neutral-100">
-          <h2 className="text-[15px] font-bold text-[#1C1C1C] mb-3">Members</h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-[15px] font-bold text-[#1C1C1C]">Members</h2>
+            <button
+              onClick={() => setSidebarCollapsed(true)}
+              className="w-7 h-7 flex items-center justify-center rounded-lg bg-neutral-100 hover:bg-neutral-200 transition-colors text-neutral-500 text-[12px]"
+              title="Collapse member list"
+            >
+              ◀
+            </button>
+          </div>
           <input
             value={query}
             onChange={e => setQuery(e.target.value)}
@@ -336,6 +364,8 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
             </button>
           )}
         </div>
+        </>
+        )}
       </div>
 
       {/* Right: detail */}
