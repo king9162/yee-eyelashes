@@ -133,15 +133,17 @@ export default function MemberDashboardPage() {
   const visitsInCycle = visits % 5;
   const visitsToNextCoupon = 5 - visitsInCycle;
 
-  // Birthday countdown
+  // Birthday countdown — birthday stored as YYYY-MM-DD
   let birthdayCountdown: number | null = null;
   if (profile.birthday) {
-    const today = new Date();
-    const [bdayMonth, bdayDay] = profile.birthday.split("/").map(Number);
-    if (!isNaN(bdayMonth) && !isNaN(bdayDay)) {
+    const parts = profile.birthday.split("-").map(Number);
+    const bdayMonth = parts[1], bdayDay = parts[2];
+    if (bdayMonth && bdayDay) {
+      const today = new Date();
+      const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
       let next = new Date(today.getFullYear(), bdayMonth - 1, bdayDay);
-      if (next < today) next = new Date(today.getFullYear() + 1, bdayMonth - 1, bdayDay);
-      birthdayCountdown = Math.ceil((next.getTime() - today.setHours(0,0,0,0)) / 86400000);
+      if (next < todayMidnight) next = new Date(today.getFullYear() + 1, bdayMonth - 1, bdayDay);
+      birthdayCountdown = Math.ceil((next.getTime() - todayMidnight.getTime()) / 86400000);
     }
   }
 

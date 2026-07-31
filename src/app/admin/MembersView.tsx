@@ -76,6 +76,20 @@ function discountLabel(c: CouponTemplate | MemberCoupon["coupons"]) {
   return c.discount_type === "fixed" ? `$${c.discount_value} off` : `${c.discount_value}% off`;
 }
 
+function birthdayInfo(birthday: string | null): { display: string; countdown: number | null } | null {
+  if (!birthday) return null;
+  const parts = birthday.split("-").map(Number);
+  const bdayMonth = parts[1], bdayDay = parts[2];
+  if (!bdayMonth || !bdayDay) return null;
+  const today = new Date();
+  const todayMid = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  let next = new Date(today.getFullYear(), bdayMonth - 1, bdayDay);
+  if (next < todayMid) next = new Date(today.getFullYear() + 1, bdayMonth - 1, bdayDay);
+  const days = Math.ceil((next.getTime() - todayMid.getTime()) / 86400000);
+  const display = `${String(bdayMonth).padStart(2, "0")}/${String(bdayDay).padStart(2, "0")}`;
+  return { display, countdown: days };
+}
+
 export default function MembersView({ adminKey }: { adminKey: string }) {
   const [query, setQuery] = useState("");
   const [members, setMembers] = useState<Member[]>([]);
@@ -274,27 +288,35 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
           ) : members.length === 0 ? (
             <p className="text-[12px] text-neutral-400 text-center py-8">No members found</p>
           ) : (
-            members.map(m => (
-              <button
-                key={m.id}
-                onClick={() => loadDetail(m)}
-                className={`w-full text-left px-4 py-3 border-b border-neutral-50 hover:bg-neutral-50 transition-colors ${selected?.id === m.id ? "bg-neutral-50" : ""}`}
-              >
-                <div className="flex items-center justify-between">
-                  <p className="text-[13px] font-semibold text-[#1C1C1C]">
-                    {m.first_name} {m.last_name}
-                  </p>
-                  <span className="text-[10px] font-bold uppercase" style={{ color: TIER_COLORS[m.vip_tier] }}>
-                    {m.vip_tier}
-                  </span>
-                </div>
-                <p className="text-[11px] text-neutral-400 mt-0.5">{m.member_id}</p>
-                <div className="flex items-center gap-3 mt-1">
-                  <span className="text-[11px] text-[#C9A84C] font-semibold">{m.points_balance} pts</span>
-                  <span className="text-[11px] text-neutral-400">${m.total_spend_all_time.toFixed(0)} spent</span>
-                </div>
-              </button>
-            ))
+            members.map(m => {
+              const bday = birthdayInfo(m.birthday);
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => loadDetail(m)}
+                  className={`w-full text-left px-4 py-3 border-b border-neutral-50 hover:bg-neutral-50 transition-colors ${selected?.id === m.id ? "bg-neutral-50" : ""}`}
+                >
+                  <div className="flex items-center justify-between">
+                    <p className="text-[13px] font-semibold text-[#1C1C1C]">
+                      {m.first_name} {m.last_name}
+                    </p>
+                    <span className="text-[10px] font-bold uppercase" style={{ color: TIER_COLORS[m.vip_tier] }}>
+                      {m.vip_tier}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-neutral-400 mt-0.5">{m.member_id}</p>
+                  <div className="flex items-center gap-3 mt-1">
+                    <span className="text-[11px] text-neutral-400">{m.total_visits_all_time} visits</span>
+                    {bday && (
+                      <span className={`text-[11px] font-semibold ${bday.countdown !== null && bday.countdown <= 14 ? "text-[#C9A84C]" : "text-neutral-400"}`}>
+                        🎂 {bday.display}
+                        {bday.countdown === 0 ? " · Today!" : bday.countdown === 1 ? " · Tomorrow!" : bday.countdown !== null && bday.countdown <= 30 ? ` · ${bday.countdown}d` : ""}
+                      </span>
+                    )}
+                  </div>
+                </button>
+              );
+            })
           )}
         </div>
 

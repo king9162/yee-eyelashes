@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
     .from("profiles")
     .select("id, member_id, first_name, last_name, email, phone, birthday, vip_tier, points_balance, total_spend_all_time, total_visits_all_time, last_visit_date, joined_at")
     .is("deleted_at", null)
-    .order("joined_at", { ascending: false })
+    .order("joined_at", { ascending: true })
     .limit(50);
 
   if (q) {
