@@ -14,6 +14,24 @@ const TAG_LABEL: Record<Tag, string> = { new: "NEW", fix: "FIX", improve: "+" };
 
 const DAYS: Day[] = [
   {
+    date: "Jul 30, 2026 (Part 3)", label: "2026-07-30c",
+    changes: [
+      { tag: "improve", text: "Bookings 視圖改為下拉式群組：第一層為月份（如 July 2026），第二層為每天日期（如 Jul 30 · Wed），點日期才展開當天所有預約，適用 UPCOMING 和 ALL 兩個分頁" },
+      { tag: "fix",     text: "修復 Bookings 時間排序錯誤：同一天內的預約改依時間由早到晚排序（原本字串比較導致 1:30 PM 排在 9:45 AM 前面）" },
+    ],
+  },
+  {
+    date: "Jul 30, 2026 (Part 2)", label: "2026-07-30b",
+    changes: [
+      { tag: "new",     text: "會員登入改為電話+密碼：移除 OTP 簡訊驗證和 Email/Google 登入標籤，改為電話號碼＋密碼，不需收簡訊驗證碼" },
+      { tag: "new",     text: "會員註冊收集姓名、生日、Email（選填）：建立帳號後自動同步更新 clients 資料表對應的客人資料（以電話匹配）" },
+      { tag: "improve", text: "會員登入電話兼容性：無論客人輸入 +1(516)902-2205 或純 5169022205，均正規化為相同帳號（取末 10 碼）；Admin 系統電話維持 +1XXXXXXXXXX 格式" },
+      { tag: "new",     text: "Members admin 新增刪除會員功能：在客人詳細資料右上角新增 Delete 按鈕，點擊後確認並刪除帳號（軟刪除 profile + 刪除 auth user）" },
+      { tag: "new",     text: "Members admin 若登入頁填寫的姓名/Email，自動更新 clients 資料庫中對應電話的客人資料" },
+      { tag: "fix",     text: "修復 Square 取消預約仍出現在 My Clients 的 bug：Square Sync 後現在會同步刪除 clients 表中取消預約對應的紀錄，不再計入當日到訪人數" },
+    ],
+  },
+  {
     date: "Jul 30, 2026", label: "2026-07-30",
     changes: [
       { tag: "improve", text: "Points 機制完全移除：改為每 5 次到訪自動發 20% off 優惠券，不再計點、不顯示點數餘額" },

@@ -123,6 +123,12 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
   const [savingLash, setSavingLash] = useState(false);
   const [lashMsg, setLashMsg] = useState("");
 
+  // Delete member modal
+  const [deletingMember, setDeletingMember] = useState<Member | null>(null);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deleteError, setDeleteError] = useState("");
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
   // Seed coupons
   const [seeding, setSeeding] = useState(false);
 
@@ -260,6 +266,24 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
     if (res.ok) await loadDetail(selected);
   }
 
+  async function confirmDelete() {
+    if (!deletingMember || !deletePassword) return;
+    setDeleteLoading(true);
+    setDeleteError("");
+    const res = await fetch(`/api/admin/members/${deletingMember.id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${deletePassword}` },
+    });
+    setDeleteLoading(false);
+    if (res.status === 401) { setDeleteError("Incorrect password."); return; }
+    if (!res.ok) { const d = await res.json(); setDeleteError(d.error ?? "Delete failed."); return; }
+    if (selected?.id === deletingMember.id) { setSelected(null); setDetail(null); }
+    setMembers(prev => prev.filter(m => m.id !== deletingMember.id));
+    setDeletingMember(null);
+    setDeletePassword("");
+    setDeleteError("");
+  }
+
   async function seedCoupons() {
     setSeeding(true);
     await fetch("/api/admin/seed-coupons", {
@@ -276,6 +300,7 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
   }
 
   return (
+    <>
     <div className="flex h-[calc(100vh-64px)]" style={{ fontFamily: "var(--font-montserrat), sans-serif" }}>
       {/* Left: list */}
       <div className="w-80 border-r border-neutral-100 flex flex-col flex-shrink-0">
@@ -298,30 +323,41 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
             members.map(m => {
               const bday = birthdayInfo(m.birthday);
               return (
-                <button
+                <div
                   key={m.id}
-                  onClick={() => loadDetail(m)}
-                  className={`w-full text-left px-4 py-3 border-b border-neutral-50 hover:bg-neutral-50 transition-colors ${selected?.id === m.id ? "bg-neutral-50" : ""}`}
+                  className={`relative group border-b border-neutral-50 transition-colors ${selected?.id === m.id ? "bg-neutral-50" : "hover:bg-neutral-50"}`}
                 >
-                  <div className="flex items-center justify-between">
-                    <p className="text-[13px] font-semibold text-[#1C1C1C]">
-                      {m.first_name} {m.last_name}
-                    </p>
-                    <span className="text-[10px] font-bold uppercase" style={{ color: TIER_COLORS[m.vip_tier] }}>
-                      {m.vip_tier}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-neutral-400 mt-0.5">{m.member_id}</p>
-                  <div className="flex items-center gap-3 mt-1">
-                    <span className="text-[11px] text-neutral-400">{m.total_visits_all_time} visits</span>
-                    {bday && (
-                      <span className={`text-[11px] font-semibold ${bday.countdown !== null && bday.countdown <= 14 ? "text-[#C9A84C]" : "text-neutral-400"}`}>
-                        🎂 {bday.display}
-                        {bday.countdown === 0 ? " · Today!" : bday.countdown === 1 ? " · Tomorrow!" : bday.countdown !== null && bday.countdown <= 30 ? ` · ${bday.countdown}d` : ""}
+                  <button
+                    onClick={() => loadDetail(m)}
+                    className="w-full text-left px-4 py-3 pr-10"
+                  >
+                    <div className="flex items-center justify-between">
+                      <p className="text-[13px] font-semibold text-[#1C1C1C]">
+                        {m.first_name} {m.last_name}
+                      </p>
+                      <span className="text-[10px] font-bold uppercase" style={{ color: TIER_COLORS[m.vip_tier] }}>
+                        {m.vip_tier}
                       </span>
-                    )}
-                  </div>
-                </button>
+                    </div>
+                    <p className="text-[11px] text-neutral-400 mt-0.5">{m.member_id}</p>
+                    <div className="flex items-center gap-3 mt-1">
+                      <span className="text-[11px] text-neutral-400">{m.total_visits_all_time} visits</span>
+                      {bday && (
+                        <span className={`text-[11px] font-semibold ${bday.countdown !== null && bday.countdown <= 14 ? "text-[#C9A84C]" : "text-neutral-400"}`}>
+                          🎂 {bday.display}
+                          {bday.countdown === 0 ? " · Today!" : bday.countdown === 1 ? " · Tomorrow!" : bday.countdown !== null && bday.countdown <= 30 ? ` · ${bday.countdown}d` : ""}
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                  <button
+                    onClick={e => { e.stopPropagation(); setDeletingMember(m); setDeletePassword(""); setDeleteError(""); }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity w-6 h-6 flex items-center justify-center rounded text-neutral-300 hover:text-red-400 hover:bg-red-50 text-[15px]"
+                    title="Delete member"
+                  >
+                    ×
+                  </button>
+                </div>
               );
             })
           )}
@@ -743,5 +779,49 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
         ) : null}
       </div>
     </div>
+
+    {/* Delete member modal */}
+    {deletingMember && (
+      <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
+        <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
+          <h3 className="text-[16px] font-bold text-[#1C1C1C] mb-1">Delete Member</h3>
+          <p className="text-[12px] text-neutral-500 mb-1">
+            You are about to permanently delete:
+          </p>
+          <p className="text-[13px] font-semibold text-[#1C1C1C] mb-4">
+            {deletingMember.first_name} {deletingMember.last_name} ({deletingMember.member_id})
+          </p>
+          <label className="block text-[10px] uppercase tracking-[0.12em] text-neutral-400 mb-1.5">
+            Admin Password to Confirm
+          </label>
+          <input
+            type="password"
+            value={deletePassword}
+            onChange={e => setDeletePassword(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && confirmDelete()}
+            placeholder="Enter admin password"
+            autoFocus
+            className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-[13px] focus:outline-none focus:border-red-400 transition-colors mb-3"
+          />
+          {deleteError && <p className="text-[12px] text-red-500 mb-3">{deleteError}</p>}
+          <div className="flex gap-2">
+            <button
+              onClick={() => { setDeletingMember(null); setDeletePassword(""); setDeleteError(""); }}
+              className="flex-1 py-2.5 rounded-xl text-[12px] font-semibold text-neutral-500 bg-neutral-100 hover:bg-neutral-200 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={confirmDelete}
+              disabled={deleteLoading || !deletePassword}
+              className="flex-1 py-2.5 rounded-xl text-[12px] font-semibold text-white bg-red-500 hover:bg-red-600 transition-colors disabled:opacity-40"
+            >
+              {deleteLoading ? "Deleting…" : "Delete"}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }

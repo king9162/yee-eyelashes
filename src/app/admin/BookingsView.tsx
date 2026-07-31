@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, Fragment } from "react";
 
 type Booking = {
   id: string; name: string; phone: string; email: string;
@@ -31,18 +31,67 @@ type NewAppt = {
 };
 const EMPTY: NewAppt = { name:"", phone:"", email:"", service_label:"", date:"", time:"9:30 AM", duration_min:60, notes:"" };
 
+function parseTimeToMinutes(t: string): number {
+  const parts = (t ?? "").trim().split(" ");
+  if (parts.length < 2) return 0;
+  const [timePart, ampm] = parts;
+  const [hStr, mStr] = timePart.split(":");
+  const h = parseInt(hStr) || 0;
+  const m = parseInt(mStr) || 0;
+  const hours24 = ampm.toUpperCase() === "PM"
+    ? (h === 12 ? 12 : h + 12)
+    : (h === 12 ? 0 : h);
+  return hours24 * 60 + m;
+}
+
+type DateGroup = { date: string; label: string; weekday: string; bookings: Booking[] };
+type MonthGroup = { month: string; label: string; dates: DateGroup[] };
+
+function groupBookings(sortedBookings: Booking[]): MonthGroup[] {
+  const months = new Map<string, MonthGroup>();
+  for (const b of sortedBookings) {
+    const monthKey = b.date.slice(0, 7);
+    if (!months.has(monthKey)) {
+      const d = new Date(b.date + "T12:00:00");
+      months.set(monthKey, {
+        month: monthKey,
+        label: d.toLocaleDateString("en-US", { month: "long", year: "numeric" }),
+        dates: [],
+      });
+    }
+    const mg = months.get(monthKey)!;
+    let dg = mg.dates.find(d => d.date === b.date);
+    if (!dg) {
+      const dateObj = new Date(b.date + "T12:00:00");
+      dg = {
+        date: b.date,
+        label: dateObj.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+        weekday: dateObj.toLocaleDateString("en-US", { weekday: "short" }),
+        bookings: [],
+      };
+      mg.dates.push(dg);
+    }
+    dg.bookings.push(b);
+  }
+  return Array.from(months.values());
+}
+
 export default function BookingsView({ adminKey, onClientClick }: { adminKey: string; onClientClick?: (name: string) => void }) {
-  const [bookings,    setBookings]   = useState<Booking[]>([]);
-  const [loading,     setLoading]    = useState(true);
-  const [filter,      setFilter]     = useState<"upcoming"|"all">("upcoming");
-  const [saving,      setSaving]     = useState<string|null>(null);
-  const [search,      setSearch]     = useState("");
-  const [syncing,     setSyncing]    = useState(false);
-  const [creating,    setCreating]   = useState(false);
-  const [form,        setForm]       = useState<NewAppt>(EMPTY);
-  const [submitting,  setSubmitting] = useState(false);
-  const [createError, setCreateError]= useState("");
-  const [detail,      setDetail]     = useState<Booking|null>(null);
+  const [bookings,       setBookings]       = useState<Booking[]>([]);
+  const [loading,        setLoading]        = useState(true);
+  const [filter,         setFilter]         = useState<"upcoming"|"all">("upcoming");
+  const [saving,         setSaving]         = useState<string|null>(null);
+  const [search,         setSearch]         = useState("");
+  const [syncing,        setSyncing]        = useState(false);
+  const [creating,       setCreating]       = useState(false);
+  const [form,           setForm]           = useState<NewAppt>(EMPTY);
+  const [submitting,     setSubmitting]     = useState(false);
+  const [createError,    setCreateError]    = useState("");
+  const [detail,         setDetail]         = useState<Booking|null>(null);
+  const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set());
+  const [expandedDates,  setExpandedDates]  = useState<Set<string>>(new Set());
+
+  const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
 
   useEffect(() => {
     fetch("/api/bookings", { headers: { Authorization: `Bearer ${adminKey}` } })
@@ -50,6 +99,36 @@ export default function BookingsView({ adminKey, onClientClick }: { adminKey: st
       .then(d => { setBookings(Array.isArray(d) ? d : []); setLoading(false); })
       .catch(() => setLoading(false));
   }, [adminKey]);
+
+  // Auto-expand first month + today (or first date) when data loads or filter changes
+  useEffect(() => {
+    if (loading || bookings.length === 0) return;
+    const filtered = bookings
+      .filter(b => filter === "upcoming" ? b.date >= today : true)
+      .sort((a, b) => a.date.localeCompare(b.date) || parseTimeToMinutes(a.time) - parseTimeToMinutes(b.time));
+    if (filtered.length === 0) return;
+    const firstMonth = filtered[0].date.slice(0, 7);
+    const todayItem = filtered.find(b => b.date === today);
+    const firstDate = todayItem ? today : filtered[0].date;
+    setExpandedMonths(new Set([firstMonth]));
+    setExpandedDates(new Set([firstDate]));
+  }, [bookings, filter, loading]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function toggleMonth(key: string) {
+    setExpandedMonths(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  }
+
+  function toggleDate(key: string) {
+    setExpandedDates(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  }
 
   async function updateStatus(id: string, status: string) {
     setSaving(id);
@@ -109,7 +188,7 @@ export default function BookingsView({ adminKey, onClientClick }: { adminKey: st
           service_label: form.service_label, date: form.date, time: form.time,
           duration_min: form.duration_min, notes: form.notes || undefined, status: "confirmed",
         };
-        setBookings(prev => [...prev, nb].sort((a,b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time)));
+        setBookings(prev => [...prev, nb].sort((a,b) => a.date.localeCompare(b.date) || parseTimeToMinutes(a.time) - parseTimeToMinutes(b.time)));
         setCreating(false); setForm(EMPTY);
       } else {
         setCreateError("Failed to create. Please try again.");
@@ -120,8 +199,7 @@ export default function BookingsView({ adminKey, onClientClick }: { adminKey: st
 
   function set(k: keyof NewAppt, v: string|number) { setForm(p => ({ ...p, [k]: v })); }
 
-  const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
-  const shown = bookings
+  const shown = useMemo(() => bookings
     .filter(b => {
       if (filter === "upcoming" && b.date < today) return false;
       if (search) {
@@ -131,7 +209,45 @@ export default function BookingsView({ adminKey, onClientClick }: { adminKey: st
       }
       return true;
     })
-    .sort((a,b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
+    .sort((a, b) => a.date.localeCompare(b.date) || parseTimeToMinutes(a.time) - parseTimeToMinutes(b.time)),
+  [bookings, filter, search]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const grouped = useMemo(() => groupBookings(shown), [shown]);
+
+  const isGrouped = !search;
+
+  function BookingActions({ b }: { b: Booking }) {
+    return (
+      <div className="flex gap-1.5 flex-wrap">
+        {b.status === "pending" && (
+          <button disabled={saving === b.id}
+            onClick={() => updateStatus(b.id, "confirmed")}
+            className="text-[10px] font-bold px-3 py-1.5 bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 rounded transition-colors disabled:opacity-40">
+            Confirm
+          </button>
+        )}
+        {b.status === "confirmed" && (
+          <button disabled={saving === b.id}
+            onClick={() => updateStatus(b.id, "noshow")}
+            className="text-[10px] font-bold px-3 py-1.5 bg-red-50 text-red-400 border border-red-200 hover:bg-red-100 rounded transition-colors disabled:opacity-40">
+            No-show
+          </button>
+        )}
+        {b.status !== "cancelled" && (
+          <button disabled={saving === b.id}
+            onClick={() => { if (confirm("Cancel this booking?")) updateStatus(b.id, "cancelled"); }}
+            className="text-[10px] font-bold px-3 py-1.5 bg-neutral-100 text-neutral-500 border border-neutral-200 hover:bg-neutral-200 rounded transition-colors disabled:opacity-40">
+            Cancel
+          </button>
+        )}
+        <button disabled={saving === b.id}
+          onClick={() => deleteBooking(b.id)}
+          className="text-[10px] font-bold px-3 py-1.5 bg-red-50 text-red-500 border border-red-200 hover:bg-red-100 rounded transition-colors disabled:opacity-40">
+          Delete
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -182,137 +298,276 @@ export default function BookingsView({ adminKey, onClientClick }: { adminKey: st
         </button>
       </div>
 
-      {/* ── Table ──────────────────────────────────────────────── */}
+      {/* ── Content ────────────────────────────────────────────── */}
       <div className="flex-1 overflow-auto bg-white">
         {loading && <p className="px-6 py-8 text-[13px] text-neutral-400">Loading…</p>}
         {!loading && shown.length === 0 && (
           <p className="px-6 py-16 text-center text-[13px] text-neutral-300">No bookings found</p>
         )}
 
-        {/* Desktop */}
-        <div className="hidden md:block">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="border-b border-neutral-100 bg-neutral-50">
-                {["Date","Time","Client","Service","Status","Actions"].map(h => (
-                  <th key={h} className="px-5 py-3 text-[9px] uppercase tracking-[0.3em] text-neutral-400 font-semibold">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {shown.map(b => (
-                <tr key={b.id}
-                  onClick={() => setDetail(b)}
-                  className="border-b border-neutral-50 hover:bg-neutral-50 transition-colors cursor-pointer">
-                  <td className="px-5 py-4 text-[13px] font-semibold text-[#1C1C1C] whitespace-nowrap">{b.date}</td>
-                  <td className="px-5 py-4 text-[13px] text-[#1C1C1C] whitespace-nowrap">{b.time}</td>
-                  <td className="px-5 py-4">
-                    {onClientClick ? (
-                      <button
-                        onClick={e => { e.stopPropagation(); onClientClick(b.name); }}
-                        className="text-[13px] font-bold text-[#1C1C1C] hover:text-[#C9A84C] hover:underline transition-colors text-left">
-                        {b.name}
-                      </button>
-                    ) : (
-                      <p className="text-[13px] font-bold text-[#1C1C1C]">{b.name}</p>
-                    )}
-                    {b.phone && <p className="text-[11px] text-neutral-400">{b.phone}</p>}
-                    {b.notes && <p className="text-[11px] text-[#C9A84C] mt-0.5 truncate max-w-[180px]">{b.notes}</p>}
-                  </td>
-                  <td className="px-5 py-4">
-                    <p className="text-[12px] font-semibold text-neutral-700 max-w-[200px] leading-snug">{b.service_label}</p>
-                    <p className="text-[11px] text-neutral-400">{b.duration_min} min</p>
-                  </td>
-                  <td className="px-5 py-4">
-                    <span className={`text-[10px] uppercase tracking-[0.12em] font-bold px-2.5 py-1 rounded-full ${STATUS_STYLE[b.status] ?? STATUS_STYLE.pending}`}>
-                      {STATUS_LABEL[b.status] ?? b.status}
+        {/* ── Desktop ── */}
+        {!loading && shown.length > 0 && (
+          <div className="hidden md:block">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-neutral-100 bg-neutral-50">
+                  {(isGrouped
+                    ? ["Time","Client","Service","Status","Actions"]
+                    : ["Date","Time","Client","Service","Status","Actions"]
+                  ).map(h => (
+                    <th key={h} className="px-5 py-3 text-[9px] uppercase tracking-[0.3em] text-neutral-400 font-semibold">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {isGrouped ? (
+                  grouped.map(mg => (
+                    <Fragment key={mg.month}>
+                      {/* Month row */}
+                      <tr
+                        onClick={() => toggleMonth(mg.month)}
+                        className="cursor-pointer bg-[#F8F5EF] hover:bg-[#f0e9dd] border-b border-neutral-200 select-none"
+                      >
+                        <td colSpan={5} className="px-5 py-3">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[12px] text-[#C9A84C] w-3 shrink-0">
+                              {expandedMonths.has(mg.month) ? "▾" : "▸"}
+                            </span>
+                            <span className="text-[13px] font-bold text-[#1C1C1C]">{mg.label}</span>
+                            <span className="text-[11px] text-neutral-400 ml-1">
+                              · {mg.dates.reduce((s, d) => s + d.bookings.length, 0)} bookings
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+
+                      {expandedMonths.has(mg.month) && mg.dates.map(dg => (
+                        <Fragment key={dg.date}>
+                          {/* Date row */}
+                          <tr
+                            onClick={() => toggleDate(dg.date)}
+                            className="cursor-pointer bg-white hover:bg-neutral-50 border-b border-neutral-100 select-none"
+                          >
+                            <td colSpan={5} className="px-5 py-2.5 pl-10">
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] text-neutral-400 w-3 shrink-0">
+                                  {expandedDates.has(dg.date) ? "▾" : "▸"}
+                                </span>
+                                <span className="text-[13px] font-semibold text-[#1C1C1C]">{dg.label}</span>
+                                <span className="text-[11px] text-neutral-400">·</span>
+                                <span className="text-[11px] text-neutral-500">{dg.weekday}</span>
+                                <span className="text-[10px] text-neutral-400 bg-neutral-100 px-2 py-0.5 rounded-full font-semibold ml-1">
+                                  {dg.bookings.length}
+                                </span>
+                              </div>
+                            </td>
+                          </tr>
+
+                          {expandedDates.has(dg.date) && dg.bookings.map(b => (
+                            <tr key={b.id}
+                              onClick={() => setDetail(b)}
+                              className="border-b border-neutral-50 hover:bg-neutral-50 transition-colors cursor-pointer">
+                              <td className="px-5 py-4 pl-16 text-[13px] text-[#1C1C1C] whitespace-nowrap">{b.time}</td>
+                              <td className="px-5 py-4">
+                                {onClientClick ? (
+                                  <button
+                                    onClick={e => { e.stopPropagation(); onClientClick(b.name); }}
+                                    className="text-[13px] font-bold text-[#1C1C1C] hover:text-[#C9A84C] hover:underline transition-colors text-left">
+                                    {b.name}
+                                  </button>
+                                ) : (
+                                  <p className="text-[13px] font-bold text-[#1C1C1C]">{b.name}</p>
+                                )}
+                                {b.phone && <p className="text-[11px] text-neutral-400">{b.phone}</p>}
+                                {b.notes && <p className="text-[11px] text-[#C9A84C] mt-0.5 truncate max-w-[180px]">{b.notes}</p>}
+                              </td>
+                              <td className="px-5 py-4">
+                                <p className="text-[12px] font-semibold text-neutral-700 max-w-[200px] leading-snug">{b.service_label}</p>
+                                <p className="text-[11px] text-neutral-400">{b.duration_min} min</p>
+                              </td>
+                              <td className="px-5 py-4">
+                                <span className={`text-[10px] uppercase tracking-[0.12em] font-bold px-2.5 py-1 rounded-full ${STATUS_STYLE[b.status] ?? STATUS_STYLE.pending}`}>
+                                  {STATUS_LABEL[b.status] ?? b.status}
+                                </span>
+                              </td>
+                              <td className="px-5 py-4" onClick={e => e.stopPropagation()}>
+                                <BookingActions b={b} />
+                              </td>
+                            </tr>
+                          ))}
+                        </Fragment>
+                      ))}
+                    </Fragment>
+                  ))
+                ) : (
+                  /* Flat search results */
+                  shown.map(b => (
+                    <tr key={b.id}
+                      onClick={() => setDetail(b)}
+                      className="border-b border-neutral-50 hover:bg-neutral-50 transition-colors cursor-pointer">
+                      <td className="px-5 py-4 text-[13px] font-semibold text-[#1C1C1C] whitespace-nowrap">{b.date}</td>
+                      <td className="px-5 py-4 text-[13px] text-[#1C1C1C] whitespace-nowrap">{b.time}</td>
+                      <td className="px-5 py-4">
+                        {onClientClick ? (
+                          <button
+                            onClick={e => { e.stopPropagation(); onClientClick(b.name); }}
+                            className="text-[13px] font-bold text-[#1C1C1C] hover:text-[#C9A84C] hover:underline transition-colors text-left">
+                            {b.name}
+                          </button>
+                        ) : (
+                          <p className="text-[13px] font-bold text-[#1C1C1C]">{b.name}</p>
+                        )}
+                        {b.phone && <p className="text-[11px] text-neutral-400">{b.phone}</p>}
+                        {b.notes && <p className="text-[11px] text-[#C9A84C] mt-0.5 truncate max-w-[180px]">{b.notes}</p>}
+                      </td>
+                      <td className="px-5 py-4">
+                        <p className="text-[12px] font-semibold text-neutral-700 max-w-[200px] leading-snug">{b.service_label}</p>
+                        <p className="text-[11px] text-neutral-400">{b.duration_min} min</p>
+                      </td>
+                      <td className="px-5 py-4">
+                        <span className={`text-[10px] uppercase tracking-[0.12em] font-bold px-2.5 py-1 rounded-full ${STATUS_STYLE[b.status] ?? STATUS_STYLE.pending}`}>
+                          {STATUS_LABEL[b.status] ?? b.status}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4" onClick={e => e.stopPropagation()}>
+                        <BookingActions b={b} />
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* ── Mobile ── */}
+        {!loading && shown.length > 0 && (
+          <div className="md:hidden">
+            {isGrouped ? (
+              grouped.map(mg => (
+                <div key={mg.month}>
+                  {/* Month header */}
+                  <button
+                    onClick={() => toggleMonth(mg.month)}
+                    className="w-full text-left px-4 py-3 bg-[#F8F5EF] border-b border-neutral-200 flex items-center gap-2 select-none">
+                    <span className="text-[12px] text-[#C9A84C]">
+                      {expandedMonths.has(mg.month) ? "▾" : "▸"}
                     </span>
-                  </td>
-                  <td className="px-5 py-4" onClick={e => e.stopPropagation()}>
-                    <div className="flex gap-1.5 flex-wrap">
+                    <span className="text-[14px] font-bold text-[#1C1C1C]">{mg.label}</span>
+                    <span className="text-[11px] text-neutral-400 ml-1">
+                      · {mg.dates.reduce((s, d) => s + d.bookings.length, 0)}
+                    </span>
+                  </button>
+
+                  {expandedMonths.has(mg.month) && mg.dates.map(dg => (
+                    <div key={dg.date}>
+                      {/* Date header */}
+                      <button
+                        onClick={() => toggleDate(dg.date)}
+                        className="w-full text-left px-4 py-2.5 pl-8 bg-white border-b border-neutral-100 flex items-center gap-2 select-none">
+                        <span className="text-[10px] text-neutral-400">
+                          {expandedDates.has(dg.date) ? "▾" : "▸"}
+                        </span>
+                        <span className="text-[13px] font-semibold text-[#1C1C1C]">{dg.label}</span>
+                        <span className="text-[11px] text-neutral-400">· {dg.weekday}</span>
+                        <span className="text-[10px] text-neutral-400 bg-neutral-100 px-2 py-0.5 rounded-full font-semibold ml-auto">
+                          {dg.bookings.length}
+                        </span>
+                      </button>
+
+                      {expandedDates.has(dg.date) && dg.bookings.map(b => (
+                        <div key={b.id} className="bg-white px-4 py-4 pl-10 border-b border-neutral-50" onClick={() => setDetail(b)}>
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            <div className="min-w-0">
+                              <p className="text-[14px] font-bold text-[#1C1C1C] truncate">{b.name}</p>
+                              <p className="text-[12px] text-neutral-400">{b.time}</p>
+                              {b.phone && <p className="text-[11px] text-neutral-400">{b.phone}</p>}
+                            </div>
+                            <span className={`text-[9px] uppercase tracking-[0.1em] font-bold px-2 py-1 rounded-full shrink-0 ${STATUS_STYLE[b.status] ?? STATUS_STYLE.pending}`}>
+                              {STATUS_LABEL[b.status] ?? b.status}
+                            </span>
+                          </div>
+                          <p className="text-[12px] font-semibold text-neutral-600 mb-0.5">{b.service_label}</p>
+                          <p className="text-[11px] text-neutral-400 mb-2">{b.duration_min} min</p>
+                          {b.notes && <p className="text-[11px] text-[#C9A84C] mb-3 line-clamp-2">{b.notes}</p>}
+                          <div className="flex gap-2 flex-wrap" onClick={e => e.stopPropagation()}>
+                            {b.status === "pending" && (
+                              <button disabled={saving === b.id} onClick={() => updateStatus(b.id, "confirmed")}
+                                className="flex-1 py-2 text-[11px] font-bold bg-green-50 text-green-700 border border-green-200 rounded-lg disabled:opacity-40">
+                                Confirm
+                              </button>
+                            )}
+                            {b.status === "confirmed" && (
+                              <button disabled={saving === b.id} onClick={() => updateStatus(b.id, "noshow")}
+                                className="flex-1 py-2 text-[11px] font-bold bg-red-50 text-red-400 border border-red-200 rounded-lg disabled:opacity-40">
+                                No-show
+                              </button>
+                            )}
+                            {b.status !== "cancelled" && (
+                              <button disabled={saving === b.id} onClick={() => { if (confirm("Cancel?")) updateStatus(b.id, "cancelled"); }}
+                                className="flex-1 py-2 text-[11px] font-bold bg-neutral-100 text-neutral-500 border border-neutral-200 rounded-lg disabled:opacity-40">
+                                Cancel
+                              </button>
+                            )}
+                            <button disabled={saving === b.id} onClick={() => deleteBooking(b.id)}
+                              className="py-2 px-3 text-[13px] bg-red-50 text-red-400 border border-red-200 rounded-lg disabled:opacity-40">
+                              🗑
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              ))
+            ) : (
+              /* Flat search results on mobile */
+              <div className="divide-y divide-neutral-100">
+                {shown.map(b => (
+                  <div key={b.id} className="bg-white px-4 py-4" onClick={() => setDetail(b)}>
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <div className="min-w-0">
+                        <p className="text-[14px] font-bold text-[#1C1C1C] truncate">{b.name}</p>
+                        <p className="text-[12px] text-neutral-400">{b.date} · {b.time}</p>
+                        {b.phone && <p className="text-[11px] text-neutral-400">{b.phone}</p>}
+                      </div>
+                      <span className={`text-[9px] uppercase tracking-[0.1em] font-bold px-2 py-1 rounded-full shrink-0 ${STATUS_STYLE[b.status] ?? STATUS_STYLE.pending}`}>
+                        {STATUS_LABEL[b.status] ?? b.status}
+                      </span>
+                    </div>
+                    <p className="text-[12px] font-semibold text-neutral-600 mb-0.5">{b.service_label}</p>
+                    <p className="text-[11px] text-neutral-400 mb-2">{b.duration_min} min</p>
+                    {b.notes && <p className="text-[11px] text-[#C9A84C] mb-3 line-clamp-2">{b.notes}</p>}
+                    <div className="flex gap-2 flex-wrap" onClick={e => e.stopPropagation()}>
                       {b.status === "pending" && (
-                        <button disabled={saving === b.id}
-                          onClick={() => updateStatus(b.id, "confirmed")}
-                          className="text-[10px] font-bold px-3 py-1.5 bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 rounded transition-colors disabled:opacity-40">
+                        <button disabled={saving === b.id} onClick={() => updateStatus(b.id, "confirmed")}
+                          className="flex-1 py-2 text-[11px] font-bold bg-green-50 text-green-700 border border-green-200 rounded-lg disabled:opacity-40">
                           Confirm
                         </button>
                       )}
                       {b.status === "confirmed" && (
-                        <button disabled={saving === b.id}
-                          onClick={() => updateStatus(b.id, "noshow")}
-                          className="text-[10px] font-bold px-3 py-1.5 bg-red-50 text-red-400 border border-red-200 hover:bg-red-100 rounded transition-colors disabled:opacity-40">
+                        <button disabled={saving === b.id} onClick={() => updateStatus(b.id, "noshow")}
+                          className="flex-1 py-2 text-[11px] font-bold bg-red-50 text-red-400 border border-red-200 rounded-lg disabled:opacity-40">
                           No-show
                         </button>
                       )}
                       {b.status !== "cancelled" && (
-                        <button disabled={saving === b.id}
-                          onClick={() => { if (confirm("Cancel this booking?")) updateStatus(b.id, "cancelled"); }}
-                          className="text-[10px] font-bold px-3 py-1.5 bg-neutral-100 text-neutral-500 border border-neutral-200 hover:bg-neutral-200 rounded transition-colors disabled:opacity-40">
+                        <button disabled={saving === b.id} onClick={() => { if (confirm("Cancel?")) updateStatus(b.id, "cancelled"); }}
+                          className="flex-1 py-2 text-[11px] font-bold bg-neutral-100 text-neutral-500 border border-neutral-200 rounded-lg disabled:opacity-40">
                           Cancel
                         </button>
                       )}
-                      <button disabled={saving === b.id}
-                        onClick={() => deleteBooking(b.id)}
-                        className="text-[10px] font-bold px-3 py-1.5 bg-red-50 text-red-500 border border-red-200 hover:bg-red-100 rounded transition-colors disabled:opacity-40">
-                        Delete
+                      <button disabled={saving === b.id} onClick={() => deleteBooking(b.id)}
+                        className="py-2 px-3 text-[13px] bg-red-50 text-red-400 border border-red-200 rounded-lg disabled:opacity-40">
+                        🗑
                       </button>
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Mobile */}
-        <div className="md:hidden divide-y divide-neutral-100">
-          {shown.map(b => (
-            <div key={b.id} className="bg-white px-4 py-4" onClick={() => setDetail(b)}>
-              {/* Top row */}
-              <div className="flex items-start justify-between gap-2 mb-1">
-                <div className="min-w-0">
-                  <p className="text-[14px] font-bold text-[#1C1C1C] truncate">{b.name}</p>
-                  <p className="text-[12px] text-neutral-400">{b.date} · {b.time}</p>
-                  {b.phone && <p className="text-[11px] text-neutral-400">{b.phone}</p>}
-                </div>
-                <span className={`text-[9px] uppercase tracking-[0.1em] font-bold px-2 py-1 rounded-full shrink-0 ${STATUS_STYLE[b.status] ?? STATUS_STYLE.pending}`}>
-                  {STATUS_LABEL[b.status] ?? b.status}
-                </span>
+                  </div>
+                ))}
               </div>
-
-              {/* Service */}
-              <p className="text-[12px] font-semibold text-neutral-600 mb-0.5">{b.service_label}</p>
-              <p className="text-[11px] text-neutral-400 mb-2">{b.duration_min} min</p>
-              {b.notes && <p className="text-[11px] text-[#C9A84C] mb-3 line-clamp-2">{b.notes}</p>}
-
-              {/* Action buttons */}
-              <div className="flex gap-2 flex-wrap" onClick={e => e.stopPropagation()}>
-                {b.status === "pending" && (
-                  <button disabled={saving === b.id} onClick={() => updateStatus(b.id, "confirmed")}
-                    className="flex-1 py-2 text-[11px] font-bold bg-green-50 text-green-700 border border-green-200 rounded-lg disabled:opacity-40">
-                    Confirm
-                  </button>
-                )}
-                {b.status === "confirmed" && (
-                  <button disabled={saving === b.id} onClick={() => updateStatus(b.id, "noshow")}
-                    className="flex-1 py-2 text-[11px] font-bold bg-red-50 text-red-400 border border-red-200 rounded-lg disabled:opacity-40">
-                    No-show
-                  </button>
-                )}
-                {b.status !== "cancelled" && (
-                  <button disabled={saving === b.id} onClick={() => { if (confirm("Cancel?")) updateStatus(b.id, "cancelled"); }}
-                    className="flex-1 py-2 text-[11px] font-bold bg-neutral-100 text-neutral-500 border border-neutral-200 rounded-lg disabled:opacity-40">
-                    Cancel
-                  </button>
-                )}
-                <button disabled={saving === b.id} onClick={() => deleteBooking(b.id)}
-                  className="py-2 px-3 text-[13px] bg-red-50 text-red-400 border border-red-200 rounded-lg disabled:opacity-40">
-                  🗑
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ── Detail modal ───────────────────────────────────────── */}
@@ -392,7 +647,6 @@ export default function BookingsView({ adminKey, onClientClick }: { adminKey: st
             </div>
 
             <div className="px-6 py-5 space-y-4 max-h-[70vh] overflow-y-auto">
-              {/* Client */}
               <p className="text-[10px] uppercase tracking-[0.25em] text-neutral-400 font-semibold">Client Info</p>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -412,7 +666,6 @@ export default function BookingsView({ adminKey, onClientClick }: { adminKey: st
                   className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:border-[#C9A84C]" />
               </div>
 
-              {/* Appointment */}
               <p className="text-[10px] uppercase tracking-[0.25em] text-neutral-400 font-semibold pt-1">Appointment</p>
               <div>
                 <label className="block text-[11px] font-semibold text-neutral-500 mb-1">Service *</label>

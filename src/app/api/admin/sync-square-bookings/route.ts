@@ -260,6 +260,17 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Remove client records for future cancelled bookings so they don't inflate visit counts
+  const { data: cancelledFutureBookings } = await db
+    .from("bookings")
+    .select("id")
+    .eq("status", "cancelled")
+    .gte("date", todayET);
+  const cancelledIds = (cancelledFutureBookings ?? []).map((b: { id: string }) => b.id).filter(Boolean);
+  if (cancelledIds.length > 0) {
+    await db.from("clients").delete().in("booking_id", cancelledIds);
+  }
+
   // Auto-sync new Square bookings into clients table (today and future only)
   const { data: allSquareBookings } = await db.from("bookings").select("*")
     .not("square_booking_id", "is", null)

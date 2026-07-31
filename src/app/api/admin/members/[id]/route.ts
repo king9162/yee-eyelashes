@@ -1,6 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const key = req.headers.get("authorization")?.replace("Bearer ", "");
+  if (key !== process.env.ADMIN_SECRET_KEY) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id } = await params;
+  const db = supabaseAdmin();
+
+  // Soft-delete the profile
+  const { error: profileError } = await db
+    .from("profiles")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", id);
+
+  if (profileError) return NextResponse.json({ error: profileError.message }, { status: 500 });
+
+  // Delete the auth user so they can't log back in
+  const { error: authError } = await db.auth.admin.deleteUser(id);
+  if (authError) {
+    console.error("Auth delete error (profile already soft-deleted):", authError.message);
+  }
+
+  return NextResponse.json({ ok: true });
+}
+
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const key = req.headers.get("authorization")?.replace("Bearer ", "");
   if (key !== process.env.ADMIN_SECRET_KEY) {

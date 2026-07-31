@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     { count: pendingReferrals },
     { count: completedReferrals },
   ] = await Promise.all([
-    db.from("profiles").select("id", { count: "exact", head: true }).not("referral_code", "is", null),
+    db.from("profiles").select("id", { count: "exact", head: true }).not("referral_code", "is", null).is("deleted_at", null),
     db.from("member_coupons").select("id", { count: "exact", head: true }).eq("status", "available"),
     db.from("referrals").select("id", { count: "exact", head: true }).eq("status", "pending"),
     db.from("referrals").select("id", { count: "exact", head: true }).eq("status", "completed"),
