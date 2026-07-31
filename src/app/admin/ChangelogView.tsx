@@ -14,6 +14,14 @@ const TAG_LABEL: Record<Tag, string> = { new: "NEW", fix: "FIX", improve: "+" };
 
 const DAYS: Day[] = [
   {
+    date: "Jul 30, 2026 (Part 4)", label: "2026-07-30d",
+    changes: [
+      { tag: "improve", text: "移除「Sign in with email instead →」連結：登入頁面不再顯示 email 登入入口，以手機號+密碼為唯一主要登入方式" },
+      { tag: "new",     text: "建立帳號加入手機驗證碼：步驟一輸入手機號→收到 6 位數 SMS 驗證碼，步驟二填入驗證碼＋姓名/生日/Email/密碼，伺服器驗證碼後才建立帳號，有效期 10 分鐘，支援重新發送" },
+      { tag: "improve", text: "忘記密碼支援電話或 Email：可輸入手機號或 Email 任一項，系統自動判斷並寄送重設連結到對應的 Email" },
+    ],
+  },
+  {
     date: "Jul 30, 2026 (Part 3)", label: "2026-07-30c",
     changes: [
       { tag: "improve", text: "Bookings 視圖改為下拉式群組：第一層為月份（如 July 2026），第二層為每天日期（如 Jul 30 · Wed），點日期才展開當天所有預約，適用 UPCOMING 和 ALL 兩個分頁" },

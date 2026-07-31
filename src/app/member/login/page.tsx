@@ -10,30 +10,29 @@ function LoginContent() {
   const [mode, setMode] = useState<"signin" | "register">("signin");
 
   // Shared
-  const [phone, setPhone]     = useState("");
+  const [phone, setPhone]       = useState("");
   const [password, setPassword] = useState("");
-  const [showPw, setShowPw]   = useState(false);
-  const [error, setError]     = useState("");
-  const [loading, setLoading] = useState(false);
+  const [showPw, setShowPw]     = useState(false);
+  const [error, setError]       = useState("");
+  const [loading, setLoading]   = useState(false);
 
   // Register-only
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName]   = useState("");
-  const [email, setEmail]         = useState("");
-  const [birthday, setBirthday]   = useState("");
-  const [confirm, setConfirm]     = useState("");
+  const [regStep, setRegStep]         = useState<"phone" | "otp">("phone");
+  const [otpToken, setOtpToken]       = useState("");
+  const [otpCode, setOtpCode]         = useState("");
+  const [otpLoading, setOtpLoading]   = useState(false);
+  const [firstName, setFirstName]     = useState("");
+  const [lastName, setLastName]       = useState("");
+  const [email, setEmail]             = useState("");
+  const [birthday, setBirthday]       = useState("");
+  const [confirm, setConfirm]         = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
 
-  // Legacy email toggle
-  const [showEmailLogin, setShowEmailLogin] = useState(false);
-  const [legacyEmail, setLegacyEmail]       = useState("");
-  const [legacyPw, setLegacyPw]             = useState(false);
-
   // Forgot password
-  const [showForgot, setShowForgot]         = useState(false);
-  const [forgotPhone, setForgotPhone]       = useState("");
-  const [forgotLoading, setForgotLoading]   = useState(false);
-  const [forgotDone, setForgotDone]         = useState<"email" | "no-email" | null>(null);
+  const [showForgot, setShowForgot]       = useState(false);
+  const [forgotInput, setForgotInput]     = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotDone, setForgotDone]       = useState<"sent" | "no-account" | null>(null);
 
   useEffect(() => {
     const ref = searchParams.get("ref");
@@ -77,16 +76,34 @@ function LoginContent() {
     }
   }
 
-  async function register(e: React.FormEvent) {
+  async function sendOtp(e: React.FormEvent) {
     e.preventDefault();
     const digits = getDigits(phone);
     if (digits.length !== 10) { setError("Please enter a valid 10-digit phone number."); return; }
+    setOtpLoading(true); setError("");
+    const res = await fetch("/api/member/send-phone-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone: digits }),
+    });
+    const d = await res.json();
+    setOtpLoading(false);
+    if (!res.ok) { setError(d.error ?? "Failed to send code. Please try again."); return; }
+    setOtpToken(d.token);
+    setOtpCode("");
+    setRegStep("otp");
+  }
+
+  async function register(e: React.FormEvent) {
+    e.preventDefault();
+    if (!otpCode.trim()) { setError("Please enter the verification code."); return; }
     if (!firstName.trim()) { setError("Please enter your first name."); return; }
     if (!birthday) { setError("Please enter your birthday."); return; }
     if (password.length < 8) { setError("Password must be at least 8 characters."); return; }
     if (password !== confirm) { setError("Passwords do not match."); return; }
 
     setLoading(true); setError("");
+    const digits = getDigits(phone);
     const res = await fetch("/api/member/register-phone", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -97,11 +114,13 @@ function LoginContent() {
         last_name: lastName.trim(),
         email: email.trim() || null,
         birthday: birthday || null,
+        otp_code: otpCode.trim(),
+        otp_token: otpToken,
       }),
     });
-    const d = await res.json();
+    const data = await res.json();
     if (!res.ok) {
-      setError(d.error ?? "Registration failed. Please try again.");
+      setError(data.error ?? "Registration failed. Please try again.");
       setLoading(false);
       return;
     }
@@ -123,39 +142,50 @@ function LoginContent() {
 
   async function sendForgotPassword(e: React.FormEvent) {
     e.preventDefault();
-    const digits = getDigits(forgotPhone);
-    if (digits.length !== 10) { setError("Please enter a valid 10-digit phone number."); return; }
+    const input = forgotInput.trim();
+    if (!input) { setError("Please enter your phone number or email."); return; }
+
     setForgotLoading(true); setError("");
-    const res = await fetch("/api/member/phone-forgot-password", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone: digits }),
-    });
+
+    const isEmail = input.includes("@");
+    let res: Response;
+
+    if (isEmail) {
+      res = await fetch("/api/member/email-forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: input }),
+      });
+    } else {
+      const digits = getDigits(input);
+      if (digits.length !== 10) {
+        setForgotLoading(false);
+        setError("Please enter a valid phone number or email address.");
+        return;
+      }
+      res = await fetch("/api/member/phone-forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: digits }),
+      });
+    }
+
     const d = await res.json();
     setForgotLoading(false);
     if (!res.ok) { setError(d.error ?? "Something went wrong."); return; }
-    setForgotDone(d.hasEmail ? "email" : "no-email");
-  }
 
-  async function signInLegacy(e: React.FormEvent) {
-    e.preventDefault();
-    if (!legacyEmail.trim() || !password) { setError("Please enter your email and password."); return; }
-    setLoading(true); setError("");
-    const { error: err } = await getSupabase().auth.signInWithPassword({
-      email: legacyEmail.trim(),
-      password,
-    });
-    setLoading(false);
-    if (err) {
-      setError("Incorrect email or password.");
+    // phone-forgot-password returns hasEmail; email-forgot returns ok:true
+    if (!isEmail && d.hasEmail === false) {
+      setForgotDone("no-account");
     } else {
-      router.replace("/member/dashboard");
+      setForgotDone("sent");
     }
   }
 
   function switchMode(m: typeof mode) {
     setMode(m); setError("");
     setPassword(""); setConfirm(""); setShowPw(false); setShowConfirm(false);
+    setRegStep("phone"); setOtpToken(""); setOtpCode("");
   }
 
   const benefits = [
@@ -164,6 +194,9 @@ function LoginContent() {
     "Silver, Gold & Diamond tiers unlocked by visits",
     "Priority booking & exclusive coupons",
   ];
+
+  const inputCls = "w-full border border-[#D4CCC0] bg-white rounded-xl px-4 py-3 text-[13px] text-[#1C1C1C] placeholder:text-neutral-300 focus:outline-none focus:border-[#C9A84C] transition-colors";
+  const labelCls = "block text-[10px] uppercase tracking-[0.12em] text-neutral-400 mb-1.5";
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-10"
@@ -194,24 +227,20 @@ function LoginContent() {
           ))}
         </div>
 
-        {/* Sign In */}
-        {mode === "signin" && !showEmailLogin && !showForgot && (
+        {/* ── Sign In ── */}
+        {mode === "signin" && !showForgot && (
           <form onSubmit={signIn} className="space-y-3">
             <div>
-              <label className="block text-[10px] uppercase tracking-[0.12em] text-neutral-400 mb-1.5">
-                Phone Number
-              </label>
+              <label className={labelCls}>Phone Number</label>
               <input type="tel" value={phone} onChange={onPhoneChange}
                 placeholder="(516) 000-0000" autoComplete="tel"
-                className="w-full border border-[#D4CCC0] bg-white rounded-xl px-4 py-3 text-[13px] text-[#1C1C1C] placeholder:text-neutral-300 focus:outline-none focus:border-[#C9A84C] transition-colors" />
+                className={inputCls} />
             </div>
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-[10px] uppercase tracking-[0.12em] text-neutral-400">
-                  Password
-                </label>
+                <label className={labelCls.replace(" mb-1.5","")}>Password</label>
                 <button type="button"
-                  onClick={() => { setShowForgot(true); setForgotPhone(phone); setForgotDone(null); setError(""); }}
+                  onClick={() => { setShowForgot(true); setForgotInput(phone); setForgotDone(null); setError(""); }}
                   className="text-[11px] text-neutral-400 hover:text-[#C9A84C] transition-colors">
                   Forgot password?
                 </button>
@@ -220,7 +249,7 @@ function LoginContent() {
                 <input type={showPw ? "text" : "password"} value={password}
                   onChange={e => setPassword(e.target.value)}
                   placeholder="••••••••" autoComplete="current-password"
-                  className="w-full border border-[#D4CCC0] bg-white rounded-xl px-4 py-3 text-[13px] text-[#1C1C1C] placeholder:text-neutral-300 focus:outline-none focus:border-[#C9A84C] transition-colors pr-11" />
+                  className={inputCls + " pr-11"} />
                 <button type="button" tabIndex={-1} onClick={() => setShowPw(p => !p)}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-300 hover:text-neutral-500 transition-colors">
                   {showPw ? <EyeOff /> : <Eye />}
@@ -248,16 +277,11 @@ function LoginContent() {
                 </div>
               ))}
             </div>
-
-            <button type="button" onClick={() => setShowEmailLogin(true)}
-              className="w-full text-center text-[11px] text-neutral-300 hover:text-neutral-500 transition-colors pt-4">
-              Sign in with email instead →
-            </button>
           </form>
         )}
 
-        {/* Forgot password */}
-        {mode === "signin" && !showEmailLogin && showForgot && (
+        {/* ── Forgot Password ── */}
+        {mode === "signin" && showForgot && (
           <div className="space-y-3">
             <button type="button" onClick={() => { setShowForgot(false); setForgotDone(null); setError(""); }}
               className="text-[11px] text-[#C9A84C] hover:underline flex items-center gap-1 mb-2">
@@ -269,20 +293,22 @@ function LoginContent() {
                 <div className="text-center mb-4">
                   <p className="text-[14px] font-semibold text-[#1C1C1C] mb-1">Reset Password</p>
                   <p className="text-[12px] text-neutral-400 leading-relaxed">
-                    Enter your phone number and we&apos;ll send a reset link to your email on file.
+                    Enter your phone number or email — we&apos;ll send a reset link to your email on file.
                   </p>
                 </div>
                 <div>
-                  <label className="block text-[10px] uppercase tracking-[0.12em] text-neutral-400 mb-1.5">
-                    Phone Number
-                  </label>
-                  <input type="tel" value={forgotPhone}
-                    onChange={e => setForgotPhone(formatDisplay(e.target.value))}
-                    placeholder="(516) 000-0000" autoComplete="tel"
-                    className="w-full border border-[#D4CCC0] bg-white rounded-xl px-4 py-3 text-[13px] text-[#1C1C1C] placeholder:text-neutral-300 focus:outline-none focus:border-[#C9A84C] transition-colors" />
+                  <label className={labelCls}>Phone Number or Email</label>
+                  <input
+                    type="text"
+                    value={forgotInput}
+                    onChange={e => setForgotInput(e.target.value)}
+                    placeholder="(516) 000-0000  or  you@example.com"
+                    autoComplete="off"
+                    className={inputCls}
+                  />
                 </div>
                 {error && <p className="text-[12px] text-red-500">{error}</p>}
-                <button type="submit" disabled={forgotLoading || !forgotPhone.trim()}
+                <button type="submit" disabled={forgotLoading || !forgotInput.trim()}
                   className="w-full py-3.5 rounded-xl text-[13px] font-semibold text-white bg-[#1C1C1C] hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all disabled:opacity-50">
                   {forgotLoading
                     ? <span className="flex items-center justify-center gap-2">
@@ -292,7 +318,7 @@ function LoginContent() {
                     : "Send Reset Link"}
                 </button>
               </form>
-            ) : forgotDone === "email" ? (
+            ) : forgotDone === "sent" ? (
               <div className="text-center py-4">
                 <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4"
                   style={{ background: "#FEF9EC", border: "1px solid #F0DFA0" }}>
@@ -300,7 +326,7 @@ function LoginContent() {
                 </div>
                 <p className="text-[14px] font-semibold text-[#1C1C1C] mb-2">Check your email</p>
                 <p className="text-[12px] text-neutral-400 leading-relaxed">
-                  We sent a password reset link to the email on file for your account. Click the link to set a new password.
+                  If we found an account, we sent a password reset link to the email on file. Click the link to set a new password.
                 </p>
               </div>
             ) : (
@@ -322,97 +348,107 @@ function LoginContent() {
           </div>
         )}
 
-        {/* Legacy email sign in */}
-        {mode === "signin" && showEmailLogin && (
-          <form onSubmit={signInLegacy} className="space-y-3">
-            <button type="button" onClick={() => { setShowEmailLogin(false); setError(""); }}
-              className="text-[11px] text-[#C9A84C] hover:underline flex items-center gap-1 mb-2">
-              ← Back to phone sign in
-            </button>
+        {/* ── Create Account: Step 1 — Enter Phone ── */}
+        {mode === "register" && regStep === "phone" && (
+          <form onSubmit={sendOtp} className="space-y-3">
             <div>
-              <label className="block text-[10px] uppercase tracking-[0.12em] text-neutral-400 mb-1.5">Email</label>
-              <input type="email" value={legacyEmail} onChange={e => setLegacyEmail(e.target.value)}
-                placeholder="you@example.com" autoComplete="email"
-                className="w-full border border-[#D4CCC0] bg-white rounded-xl px-4 py-3 text-[13px] text-[#1C1C1C] placeholder:text-neutral-300 focus:outline-none focus:border-[#C9A84C] transition-colors" />
+              <label className={labelCls}>Phone Number <span className="text-red-400">*</span></label>
+              <input type="tel" value={phone} onChange={onPhoneChange}
+                placeholder="(516) 000-0000" autoComplete="tel"
+                className={inputCls} />
             </div>
-            <div>
-              <label className="block text-[10px] uppercase tracking-[0.12em] text-neutral-400 mb-1.5">Password</label>
-              <div className="relative">
-                <input type={legacyPw ? "text" : "password"} value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  placeholder="••••••••" autoComplete="current-password"
-                  className="w-full border border-[#D4CCC0] bg-white rounded-xl px-4 py-3 text-[13px] text-[#1C1C1C] placeholder:text-neutral-300 focus:outline-none focus:border-[#C9A84C] transition-colors pr-11" />
-                <button type="button" tabIndex={-1} onClick={() => setLegacyPw(p => !p)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-300 hover:text-neutral-500 transition-colors">
-                  {legacyPw ? <EyeOff /> : <Eye />}
-                </button>
-              </div>
-            </div>
+
             {error && <p className="text-[12px] text-red-500">{error}</p>}
-            <button type="submit" disabled={loading}
+
+            <button type="submit" disabled={otpLoading}
               className="w-full py-3.5 rounded-xl text-[13px] font-semibold text-white bg-[#1C1C1C] hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all disabled:opacity-50 mt-1">
-              {loading ? "Signing in…" : "Sign In with Email"}
+              {otpLoading
+                ? <span className="flex items-center justify-center gap-2">
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Sending code…
+                  </span>
+                : "Send Verification Code"}
             </button>
+
+            <p className="text-[11px] text-neutral-400 text-center mt-2">
+              We&apos;ll text a 6-digit code to verify your number.
+            </p>
           </form>
         )}
 
-        {/* Create Account */}
-        {mode === "register" && (
+        {/* ── Create Account: Step 2 — Code + Form ── */}
+        {mode === "register" && regStep === "otp" && (
           <form onSubmit={register} className="space-y-3">
-            <div>
-              <label className="block text-[10px] uppercase tracking-[0.12em] text-neutral-400 mb-1.5">
-                Phone Number <span className="text-red-400">*</span>
-              </label>
-              <input type="tel" value={phone} onChange={onPhoneChange}
-                placeholder="(516) 000-0000" autoComplete="tel"
-                className="w-full border border-[#D4CCC0] bg-white rounded-xl px-4 py-3 text-[13px] text-[#1C1C1C] placeholder:text-neutral-300 focus:outline-none focus:border-[#C9A84C] transition-colors" />
+            {/* Locked phone + change link */}
+            <div className="flex items-center justify-between px-4 py-3 bg-white border border-[#D4CCC0] rounded-xl">
+              <div>
+                <p className="text-[9px] uppercase tracking-[0.15em] text-neutral-400 mb-0.5">Phone</p>
+                <p className="text-[13px] text-[#1C1C1C] font-semibold">{phone}</p>
+              </div>
+              <button type="button"
+                onClick={() => { setRegStep("phone"); setOtpToken(""); setOtpCode(""); setError(""); }}
+                className="text-[11px] text-[#C9A84C] hover:underline">
+                Change
+              </button>
             </div>
+
+            {/* Verification code */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className={labelCls.replace(" mb-1.5","")}>
+                  Verification Code <span className="text-red-400">*</span>
+                </label>
+                <button type="button" onClick={sendOtp}
+                  className="text-[11px] text-neutral-400 hover:text-[#C9A84C] transition-colors">
+                  Resend code
+                </button>
+              </div>
+              <input type="text" inputMode="numeric" pattern="[0-9]*" maxLength={6}
+                value={otpCode} onChange={e => setOtpCode(e.target.value.replace(/\D/g, "").slice(0,6))}
+                placeholder="6-digit code"
+                className={inputCls + " tracking-widest text-center text-[18px]"} />
+              <p className="text-[11px] text-neutral-400 mt-1">Code sent to {phone}. Valid for 10 minutes.</p>
+            </div>
+
+            <div className="pt-1 border-t border-[#D4CCC0]" />
 
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-[10px] uppercase tracking-[0.12em] text-neutral-400 mb-1.5">
-                  First Name <span className="text-red-400">*</span>
-                </label>
+                <label className={labelCls}>First Name <span className="text-red-400">*</span></label>
                 <input type="text" value={firstName} onChange={e => setFirstName(e.target.value)}
-                  placeholder="Jane" autoComplete="given-name"
-                  className="w-full border border-[#D4CCC0] bg-white rounded-xl px-4 py-3 text-[13px] text-[#1C1C1C] placeholder:text-neutral-300 focus:outline-none focus:border-[#C9A84C] transition-colors" />
+                  placeholder="Jane" autoComplete="given-name" className={inputCls} />
               </div>
               <div>
-                <label className="block text-[10px] uppercase tracking-[0.12em] text-neutral-400 mb-1.5">
-                  Last Name
-                </label>
+                <label className={labelCls}>Last Name</label>
                 <input type="text" value={lastName} onChange={e => setLastName(e.target.value)}
-                  placeholder="Smith" autoComplete="family-name"
-                  className="w-full border border-[#D4CCC0] bg-white rounded-xl px-4 py-3 text-[13px] text-[#1C1C1C] placeholder:text-neutral-300 focus:outline-none focus:border-[#C9A84C] transition-colors" />
+                  placeholder="Smith" autoComplete="family-name" className={inputCls} />
               </div>
             </div>
 
             <div>
-              <label className="block text-[10px] uppercase tracking-[0.12em] text-neutral-400 mb-1.5">
+              <label className={labelCls}>
                 Birthday <span className="text-red-400">*</span>
+                <span className="text-neutral-300 normal-case tracking-normal ml-1">(for birthday coupon)</span>
               </label>
               <input type="date" value={birthday} onChange={e => setBirthday(e.target.value)}
-                className="w-full border border-[#D4CCC0] bg-white rounded-xl px-4 py-3 text-[13px] text-[#1C1C1C] focus:outline-none focus:border-[#C9A84C] transition-colors" />
+                className={inputCls} />
             </div>
 
             <div>
-              <label className="block text-[10px] uppercase tracking-[0.12em] text-neutral-400 mb-1.5">
+              <label className={labelCls}>
                 Email <span className="text-neutral-300 normal-case tracking-normal">(optional)</span>
               </label>
               <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-                placeholder="you@example.com" autoComplete="email"
-                className="w-full border border-[#D4CCC0] bg-white rounded-xl px-4 py-3 text-[13px] text-[#1C1C1C] placeholder:text-neutral-300 focus:outline-none focus:border-[#C9A84C] transition-colors" />
+                placeholder="you@example.com" autoComplete="email" className={inputCls} />
             </div>
 
             <div>
-              <label className="block text-[10px] uppercase tracking-[0.12em] text-neutral-400 mb-1.5">
-                Password <span className="text-red-400">*</span>
-              </label>
+              <label className={labelCls}>Password <span className="text-red-400">*</span></label>
               <div className="relative">
                 <input type={showPw ? "text" : "password"} value={password}
                   onChange={e => setPassword(e.target.value)}
                   placeholder="At least 8 characters" autoComplete="new-password"
-                  className="w-full border border-[#D4CCC0] bg-white rounded-xl px-4 py-3 text-[13px] text-[#1C1C1C] placeholder:text-neutral-300 focus:outline-none focus:border-[#C9A84C] transition-colors pr-11" />
+                  className={inputCls + " pr-11"} />
                 <button type="button" tabIndex={-1} onClick={() => setShowPw(p => !p)}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-300 hover:text-neutral-500 transition-colors">
                   {showPw ? <EyeOff /> : <Eye />}
@@ -421,9 +457,7 @@ function LoginContent() {
             </div>
 
             <div>
-              <label className="block text-[10px] uppercase tracking-[0.12em] text-neutral-400 mb-1.5">
-                Confirm Password <span className="text-red-400">*</span>
-              </label>
+              <label className={labelCls}>Confirm Password <span className="text-red-400">*</span></label>
               <div className="relative">
                 <input type={showConfirm ? "text" : "password"} value={confirm}
                   onChange={e => setConfirm(e.target.value)}
