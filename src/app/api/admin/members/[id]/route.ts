@@ -83,13 +83,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const { id } = await params;
   const db = supabaseAdmin();
 
-  const [profileRes, txnsRes, couponsRes, bookingsRes] = await Promise.all([
+  const [profileRes, couponsRes, bookingsRes] = await Promise.all([
     db.from("profiles").select("*").eq("id", id).single(),
-    db.from("points_transactions")
-      .select("id, type, amount, balance_after, notes, created_by, created_at")
-      .eq("member_id", id)
-      .order("created_at", { ascending: false })
-      .limit(20),
     db.from("member_coupons")
       .select("id, status, issued_at, expires_at, used_at, notes, coupons(id, name, description, discount_type, discount_value)")
       .eq("member_id", id)
@@ -106,10 +101,22 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
+  // Fetch 3x packages linked by phone
+  const phone10 = (profileRes.data.phone ?? "").replace(/\D/g, "").slice(-10);
+  let packages: unknown[] = [];
+  if (phone10) {
+    const { data: pkgs } = await db
+      .from("packages")
+      .select("*")
+      .ilike("phone", `%${phone10}`)
+      .order("purchase_date", { ascending: false });
+    packages = pkgs ?? [];
+  }
+
   return NextResponse.json({
     profile: profileRes.data,
-    txns: txnsRes.data ?? [],
     coupons: couponsRes.data ?? [],
     bookings: bookingsRes.data ?? [],
+    packages,
   });
 }

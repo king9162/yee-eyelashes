@@ -18,6 +18,16 @@ type Member = {
 };
 
 
+type MemberPackage = {
+  id: string;
+  name: string;
+  notes: string | null;
+  purchase_date: string | null;
+  use1_date: string | null;
+  use2_date: string | null;
+  use3_date: string | null;
+};
+
 type MemberBooking = {
   id: string;
   date: string;
@@ -76,7 +86,7 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Member | null>(null);
-  const [detail, setDetail] = useState<{ profile: Member; coupons: MemberCoupon[]; bookings: MemberBooking[] } | null>(null);
+  const [detail, setDetail] = useState<{ profile: Member; coupons: MemberCoupon[]; bookings: MemberBooking[]; packages: MemberPackage[] } | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [couponTemplates, setCouponTemplates] = useState<CouponTemplate[]>([]);
 
@@ -187,6 +197,20 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
     setRelinking(false);
     setRelinkMsg(res.ok ? `Done — linked ${d.linked} booking${d.linked !== 1 ? "s" : ""}` : `Error: ${d.error}`);
     if (res.ok) { await loadDetail(selected); search(query); }
+  }
+
+  async function togglePackageSession(pkgId: string, slot: 1 | 2 | 3) {
+    if (!detail) return;
+    const pkg = detail.packages.find(p => p.id === pkgId);
+    if (!pkg) return;
+    const key = `use${slot}_date` as "use1_date" | "use2_date" | "use3_date";
+    const newVal = pkg[key] ? null : new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+    setDetail(d => d ? { ...d, packages: d.packages.map(p => p.id === pkgId ? { ...p, [key]: newVal } : p) } : d);
+    await fetch(`/api/admin/packages/${pkgId}`, {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${adminKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ [key]: newVal }),
+    });
   }
 
   async function redeemCoupon(couponId: string) {
@@ -591,6 +615,73 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
                               Redeem
                             </button>
                           )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* 3x Package */}
+            {(detail.packages ?? []).length > 0 && (
+              <div className="bg-white rounded-xl border border-neutral-100 overflow-hidden">
+                <div className="px-4 py-3 border-b border-neutral-100">
+                  <p className="text-[13px] font-bold text-[#1C1C1C]">3× Package</p>
+                </div>
+                <div className="divide-y divide-neutral-50">
+                  {(detail.packages ?? []).map(pkg => {
+                    const used = [pkg.use1_date, pkg.use2_date, pkg.use3_date].filter(Boolean).length;
+                    const done = used === 3;
+                    const fmtD = (d: string | null) => d
+                      ? new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })
+                      : null;
+                    return (
+                      <div key={pkg.id} className={`px-4 py-3 ${done ? "opacity-60" : ""}`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div>
+                            <p className="text-[12px] font-semibold text-[#1C1C1C]">{pkg.notes || pkg.name}</p>
+                            {pkg.purchase_date && (
+                              <p className="text-[10px] text-neutral-400 mt-0.5">
+                                Purchased {fmtD(pkg.purchase_date)}
+                              </p>
+                            )}
+                          </div>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            done ? "bg-neutral-100 text-neutral-400" : "bg-amber-50 text-amber-700"
+                          }`}>
+                            {done ? "Completed" : `${3 - used} left`}
+                          </span>
+                        </div>
+                        <div className="flex gap-2">
+                          {([1, 2, 3] as const).map(slot => {
+                            const key = `use${slot}_date` as "use1_date" | "use2_date" | "use3_date";
+                            const dateVal = pkg[key];
+                            const prevKey = slot === 2 ? "use1_date" : slot === 3 ? "use2_date" : null;
+                            const prevFilled = !prevKey || !!pkg[prevKey as keyof MemberPackage];
+                            const canCheck = !dateVal && prevFilled;
+                            return (
+                              <div key={slot} className="flex flex-col items-center gap-1">
+                                <button
+                                  onClick={() => togglePackageSession(pkg.id, slot)}
+                                  disabled={!dateVal && !canCheck}
+                                  className={`w-8 h-8 rounded-lg border-2 flex items-center justify-center transition-all text-[11px] font-bold
+                                    ${dateVal
+                                      ? "bg-[#1C1C1C] border-[#1C1C1C] text-white"
+                                      : canCheck
+                                        ? "border-neutral-300 hover:border-[#C9A84C] hover:bg-amber-50 text-neutral-400"
+                                        : "border-neutral-100 bg-neutral-50 text-neutral-200 cursor-not-allowed"
+                                    }`}>
+                                  {dateVal
+                                    ? <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                    : slot}
+                                </button>
+                                <span className="text-[9px] text-neutral-400 text-center leading-tight">
+                                  {fmtD(dateVal) ?? `#${slot}`}
+                                </span>
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     );

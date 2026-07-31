@@ -50,6 +50,7 @@ export default function MemberDashboardPage() {
   const [upcomingBooking, setUpcomingBooking] = useState<Booking | null>(null);
   const [couponCount, setCouponCount] = useState(0);
   const [referralStats, setReferralStats] = useState<{ pending: number; completed: number }>({ pending: 0, completed: 0 });
+  const [activePackages, setActivePackages] = useState<{ id: string; notes: string | null; purchase_date: string | null; use1_date: string | null; use2_date: string | null; use3_date: string | null }[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -69,13 +70,14 @@ export default function MemberDashboardPage() {
       setProfile(prof ?? null);
 
       const headers = { Authorization: `Bearer ${session.access_token}` };
-      const [bkRes, cpRes, refRes] = await Promise.all([
+      const [bkRes, cpRes, refRes, pkgRes] = await Promise.all([
         fetch("/api/member/bookings",        { headers }),
         fetch("/api/member/coupons",         { headers }),
         fetch("/api/member/referrals",       { headers }),
+        fetch("/api/member/packages",        { headers }),
         fetch("/api/member/birthday-check",  { method: "POST", headers }),
       ]);
-      const [bkData, cpData, refData] = await Promise.all([bkRes.json(), cpRes.json(), refRes.json()]);
+      const [bkData, cpData, refData, pkgData] = await Promise.all([bkRes.json(), cpRes.json(), refRes.json(), pkgRes.json()]);
 
       const today = new Date().toISOString().split("T")[0];
       const upcoming = (Array.isArray(bkData) ? bkData : []).filter(
@@ -91,6 +93,12 @@ export default function MemberDashboardPage() {
           pending:   refData.filter((r: { status: string }) => r.status === "pending").length,
           completed: refData.filter((r: { status: string }) => r.status === "completed").length,
         });
+      }
+
+      if (Array.isArray(pkgData)) {
+        setActivePackages(pkgData.filter((p: { use1_date: string | null; use2_date: string | null; use3_date: string | null }) =>
+          [p.use1_date, p.use2_date, p.use3_date].filter(Boolean).length < 3
+        ));
       }
 
       setLoading(false);
@@ -303,6 +311,44 @@ export default function MemberDashboardPage() {
 
         {/* Refill countdown */}
         {profile.last_visit_date && <RefillCard lastVisitDate={profile.last_visit_date} />}
+
+        {/* 3x Package cards — only shown if member has active packages */}
+        {activePackages.map(pkg => {
+          const used = [pkg.use1_date, pkg.use2_date, pkg.use3_date].filter(Boolean).length;
+          const fmtD = (d: string | null) => d
+            ? new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })
+            : null;
+          return (
+            <div key={pkg.id} className="bg-white rounded-2xl border border-[#C9A84C]/20 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.15em] text-[#C9A84C] mb-0.5">3× Package</p>
+                  <p className="text-[13px] font-semibold text-[#1C1C1C]">{pkg.notes ?? "Package"}</p>
+                </div>
+                <span className="text-[11px] font-semibold text-neutral-500">{used}/3 used</span>
+              </div>
+              <div className="flex gap-3">
+                {([1, 2, 3] as const).map(slot => {
+                  const key = `use${slot}_date` as "use1_date" | "use2_date" | "use3_date";
+                  const dateVal = pkg[key];
+                  return (
+                    <div key={slot} className="flex-1 flex flex-col items-center gap-1.5">
+                      <div className={`w-10 h-10 rounded-xl border-2 flex items-center justify-center
+                        ${dateVal ? "bg-[#1C1C1C] border-[#1C1C1C]" : "border-[#D4CCC0]"}`}>
+                        {dateVal
+                          ? <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+                          : <span className="text-[13px] font-bold text-[#C9A84C]">{slot}</span>}
+                      </div>
+                      <p className="text-[10px] text-neutral-400 text-center">
+                        {fmtD(dateVal) ?? `Session ${slot}`}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
 
         {/* Quick links row */}
         <div className="grid grid-cols-2 gap-3">
