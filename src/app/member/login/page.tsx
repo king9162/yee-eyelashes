@@ -156,7 +156,7 @@ function LoginContent() {
                     autoComplete="tel"
                     className="w-full border border-[#D4CCC0] bg-white rounded-xl px-4 py-3 text-[13px] text-[#1C1C1C] placeholder:text-neutral-300 focus:outline-none focus:border-[#C9A84C] transition-colors"
                   />
-                  <p className="text-[11px] text-neutral-400 mt-1.5">US numbers only · We&apos;ll text you a 6-digit code</p>
+                  <p className="text-[11px] text-neutral-400 mt-1.5 text-center">US numbers only · We&apos;ll text you a 6-digit code</p>
                 </div>
 
                 {error && <p className="text-[12px] text-red-500">{error}</p>}
@@ -303,7 +303,7 @@ function LoginContent() {
 
         {error && tab === "google" && <p className="text-[12px] text-red-500 mt-3">{error}</p>}
 
-        <p className="text-center text-[11px] text-neutral-400 mt-8">
+        <p className="text-center text-[11px] text-neutral-400 mt-8 leading-relaxed">
           By signing in you agree to our{" "}
           <a href="/en/terms" className="underline hover:text-neutral-600">Terms</a>
           {" "}&amp;{" "}
