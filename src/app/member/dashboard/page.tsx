@@ -309,7 +309,6 @@ export default function MemberDashboardPage() {
           {[
             { label: "Appointments", icon: "📅", href: "/member/bookings" },
             { label: `Coupons${couponCount > 0 ? ` (${couponCount})` : ""}`, icon: "🎟", href: "/member/coupons" },
-            { label: "Lash Passport", icon: "✦", href: "/member/lash-records" },
             { label: "Edit Profile",  icon: "👤", href: "/member/profile" },
           ].map(item => (
             <a key={item.label} href={item.href}
