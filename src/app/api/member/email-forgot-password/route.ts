@@ -24,19 +24,19 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (!profile) {
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, sentEmail: false, sentSMS: false });
   }
 
   // Get auth user to find their auth email (may be synthetic)
   const { data: { user } } = await db.auth.admin.getUserById(profile.id);
   const authEmail = user?.email;
-  if (!authEmail) return NextResponse.json({ ok: true });
+  if (!authEmail) return NextResponse.json({ ok: true, sentEmail: false, sentSMS: false });
 
   // Generate recovery link
   const { data: linkData, error: linkError } = await db.auth.admin.generateLink({
     type: "recovery",
     email: authEmail,
-    options: { redirectTo: `${SITE}/member/auth/callback?type=recovery` },
+    options: { redirectTo: `${SITE}/member/auth/callback` },
   });
 
   if (linkError || !linkData?.properties?.action_link) {
@@ -63,5 +63,5 @@ export async function POST(req: NextRequest) {
     } catch { /* non-fatal */ }
   }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, sentEmail: true, sentSMS: !!profile.phone });
 }

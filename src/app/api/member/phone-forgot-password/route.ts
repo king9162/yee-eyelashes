@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
   } catch { /* non-fatal */ }
 
   if (!userId) {
-    return NextResponse.json({ ok: true, hasEmail: false });
+    return NextResponse.json({ ok: true, sentSMS: false, sentEmail: false });
   }
 
   // Get profile
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
   const { data: linkData, error: linkError } = await db.auth.admin.generateLink({
     type: "recovery",
     email: syntheticEmail,
-    options: { redirectTo: `${SITE}/member/auth/callback?type=recovery` },
+    options: { redirectTo: `${SITE}/member/auth/callback` },
   });
 
   if (linkError || !linkData?.properties?.action_link) {
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
     } catch { /* non-fatal */ }
   }
 
-  return NextResponse.json({ ok: true, hasEmail });
+  return NextResponse.json({ ok: true, sentSMS: !!profilePhone, sentEmail: hasEmail });
 }
 
 export function buildResetEmailHtml(firstName: string, resetLink: string): string {

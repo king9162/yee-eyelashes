@@ -32,7 +32,7 @@ function LoginContent() {
   const [showForgot, setShowForgot]       = useState(false);
   const [forgotInput, setForgotInput]     = useState("");
   const [forgotLoading, setForgotLoading] = useState(false);
-  const [forgotDone, setForgotDone]       = useState<"sent" | "no-account" | null>(null);
+  const [forgotSent, setForgotSent]       = useState<{ sms: boolean; email: boolean } | null>(null);
 
   useEffect(() => {
     const ref = searchParams.get("ref");
@@ -174,18 +174,14 @@ function LoginContent() {
     setForgotLoading(false);
     if (!res.ok) { setError(d.error ?? "Something went wrong."); return; }
 
-    // phone-forgot-password returns hasEmail; email-forgot returns ok:true
-    if (!isEmail && d.hasEmail === false) {
-      setForgotDone("no-account");
-    } else {
-      setForgotDone("sent");
-    }
+    setForgotSent({ sms: d.sentSMS === true, email: d.sentEmail === true });
   }
 
   function switchMode(m: typeof mode) {
     setMode(m); setError("");
     setPassword(""); setConfirm(""); setShowPw(false); setShowConfirm(false);
     setRegStep("phone"); setOtpToken(""); setOtpCode("");
+    setForgotSent(null); setForgotInput("");
   }
 
   const benefits = [
@@ -283,17 +279,17 @@ function LoginContent() {
         {/* ── Forgot Password ── */}
         {mode === "signin" && showForgot && (
           <div className="space-y-3">
-            <button type="button" onClick={() => { setShowForgot(false); setForgotDone(null); setError(""); }}
+            <button type="button" onClick={() => { setShowForgot(false); setForgotSent(null); setForgotInput(""); setError(""); }}
               className="text-[11px] text-[#C9A84C] hover:underline flex items-center gap-1 mb-2">
               ← Back to sign in
             </button>
 
-            {!forgotDone ? (
+            {!forgotSent ? (
               <form onSubmit={sendForgotPassword} className="space-y-3">
                 <div className="text-center mb-4">
                   <p className="text-[14px] font-semibold text-[#1C1C1C] mb-1">Reset Password</p>
                   <p className="text-[12px] text-neutral-400 leading-relaxed">
-                    Enter your phone number or email — we&apos;ll send a reset link to your email on file.
+                    Enter your phone number or email — we&apos;ll send a reset link.
                   </p>
                 </div>
                 <div>
@@ -318,26 +314,30 @@ function LoginContent() {
                     : "Send Reset Link"}
                 </button>
               </form>
-            ) : forgotDone === "sent" ? (
+            ) : (forgotSent.sms || forgotSent.email) ? (
               <div className="text-center py-4">
                 <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4"
                   style={{ background: "#FEF9EC", border: "1px solid #F0DFA0" }}>
-                  <span className="text-[20px]">✉️</span>
+                  <span className="text-[20px]">{forgotSent.email ? "✉️" : "💬"}</span>
                 </div>
-                <p className="text-[14px] font-semibold text-[#1C1C1C] mb-2">Check your email</p>
+                <p className="text-[14px] font-semibold text-[#1C1C1C] mb-2">Reset link sent!</p>
                 <p className="text-[12px] text-neutral-400 leading-relaxed">
-                  If we found an account, we sent a password reset link to the email on file. Click the link to set a new password.
+                  {forgotSent.sms && forgotSent.email
+                    ? "We sent a password reset link via text message and email. Click the link to set a new password."
+                    : forgotSent.sms
+                    ? "We sent a password reset link to your phone via text message. Click the link to set a new password."
+                    : "We sent a password reset link to your email on file. Click the link to set a new password."}
                 </p>
               </div>
             ) : (
               <div className="text-center py-4">
                 <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4"
                   style={{ background: "#F8F5EF", border: "1px solid #D4CCC0" }}>
-                  <span className="text-[20px]">📞</span>
+                  <span className="text-[20px]">🔍</span>
                 </div>
-                <p className="text-[14px] font-semibold text-[#1C1C1C] mb-2">No email on file</p>
+                <p className="text-[14px] font-semibold text-[#1C1C1C] mb-2">No account found</p>
                 <p className="text-[12px] text-neutral-400 leading-relaxed">
-                  Your account doesn&apos;t have an email saved. Please contact the salon and we&apos;ll reset it for you.
+                  We couldn&apos;t find an account with that info. Please contact the salon for help.
                 </p>
                 <a href="tel:+15168696000"
                   className="inline-block mt-4 px-6 py-2.5 rounded-xl text-[12px] font-semibold text-white bg-[#1C1C1C] hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all">

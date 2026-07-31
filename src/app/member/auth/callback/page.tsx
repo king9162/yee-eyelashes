@@ -16,7 +16,9 @@ function CallbackHandler() {
       const supabase = getSupabase();
       const code = params.get("code");
 
-      const type = params.get("type");
+      // Check for recovery type in hash BEFORE Supabase clears it
+      const hashStr = typeof window !== "undefined" ? window.location.hash : "";
+      const isRecovery = hashStr.includes("type=recovery");
 
       if (code) {
         // PKCE flow: exchange code for session
@@ -26,7 +28,7 @@ function CallbackHandler() {
           router.replace("/member/login");
           return;
         }
-        if (type === "recovery") {
+        if (isRecovery) {
           router.replace("/member/reset-password");
           return;
         }
@@ -39,15 +41,13 @@ function CallbackHandler() {
       // The Supabase client auto-processes the hash on init — just wait and read it
       await new Promise((r) => setTimeout(r, 800));
 
-      // Check hash for recovery type (implicit flow reset links)
-      if (typeof window !== "undefined" && window.location.hash.includes("type=recovery")) {
-        router.replace("/member/reset-password");
-        return;
-      }
-
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         router.replace("/member/login");
+        return;
+      }
+      if (isRecovery) {
+        router.replace("/member/reset-password");
         return;
       }
       const isNew2 = await ensureProfile(session.access_token);
