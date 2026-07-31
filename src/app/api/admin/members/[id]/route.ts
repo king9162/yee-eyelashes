@@ -96,7 +96,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       .order("issued_at", { ascending: false })
       .limit(20),
     db.from("bookings")
-      .select("id, date, time, service, status, price")
+      .select("id, date, time, service, service_label, status, price")
       .eq("member_id", id)
       .order("date", { ascending: false })
       .limit(50),

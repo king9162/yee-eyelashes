@@ -34,6 +34,7 @@ type MemberBooking = {
   date: string;
   time: string | null;
   service: string | null;
+  service_label: string | null;
   status: string;
   price: number | null;
 };
@@ -724,7 +725,7 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
                       <div key={b.id} className="flex items-center justify-between px-4 py-3">
                         <div>
                           <p className="text-[12px] font-medium text-[#1C1C1C]">
-                            {b.service ?? "Appointment"}
+                            {b.service_label ?? b.service ?? "Appointment"}
                           </p>
                           <p className="text-[11px] text-neutral-400 mt-0.5">
                             {new Date(b.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}

@@ -25,20 +25,22 @@ export async function linkMemberBookings(
   const ids = bookings.map((b: { id: string }) => b.id);
   await db.from("bookings").update({ member_id: userId }).in("id", ids);
 
-  // Recalculate visit stats from all completed bookings now linked
+  // Recalculate visit stats from all non-cancelled bookings (Square never marks "completed")
   const { data: completed } = await db
     .from("bookings")
     .select("date")
     .eq("member_id", userId)
-    .eq("status", "completed")
+    .neq("status", "cancelled")
     .order("date", { ascending: false });
 
   const visits = completed?.length ?? 0;
   const lastVisit = completed?.[0]?.date ?? null;
+  const vip_tier = visits >= 20 ? "diamond" : visits >= 10 ? "gold" : visits >= 5 ? "silver" : "member";
 
   await db.from("profiles").update({
     total_visits_all_time: visits,
     last_visit_date: lastVisit,
+    vip_tier,
   }).eq("id", userId);
 
   return ids.length;
