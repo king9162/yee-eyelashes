@@ -316,9 +316,19 @@ function LoginContent() {
               </form>
             ) : (forgotSent.sms || forgotSent.email) ? (
               <div className="text-center py-4">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4"
-                  style={{ background: "#FEF9EC", border: "1px solid #F0DFA0" }}>
-                  <span className="text-[20px]">{forgotSent.email ? "✉️" : "💬"}</span>
+                <div className="flex items-center justify-center gap-3 mb-4">
+                  {forgotSent.sms && (
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center"
+                      style={{ background: "#FEF9EC", border: "1px solid #F0DFA0" }}>
+                      <span className="text-[20px]">💬</span>
+                    </div>
+                  )}
+                  {forgotSent.email && (
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center"
+                      style={{ background: "#FEF9EC", border: "1px solid #F0DFA0" }}>
+                      <span className="text-[20px]">✉️</span>
+                    </div>
+                  )}
                 </div>
                 <p className="text-[14px] font-semibold text-[#1C1C1C] mb-2">Reset link sent!</p>
                 <p className="text-[12px] text-neutral-400 leading-relaxed">
