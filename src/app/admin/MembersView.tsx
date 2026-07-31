@@ -278,34 +278,9 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
   return (
     <div className="flex h-[calc(100vh-64px)]" style={{ fontFamily: "var(--font-montserrat), sans-serif" }}>
       {/* Left: list */}
-      <div className={`border-r border-neutral-100 flex flex-col flex-shrink-0 transition-all duration-200 ${sidebarCollapsed ? "w-10" : "w-80"}`}>
-        {sidebarCollapsed ? (
-          /* Collapsed — just a thin strip with expand button */
-          <div className="flex flex-col items-center pt-4 gap-3">
-            <button
-              onClick={() => setSidebarCollapsed(false)}
-              className="w-7 h-7 flex items-center justify-center rounded-lg bg-neutral-100 hover:bg-neutral-200 transition-colors text-neutral-500 text-[12px]"
-              title="Expand member list"
-            >
-              ▶
-            </button>
-            <p className="text-[9px] text-neutral-300 uppercase tracking-widest" style={{ writingMode: "vertical-rl" }}>
-              Members
-            </p>
-          </div>
-        ) : (
-        <>
+      <div className="w-80 border-r border-neutral-100 flex flex-col flex-shrink-0">
         <div className="p-4 border-b border-neutral-100">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-[15px] font-bold text-[#1C1C1C]">Members</h2>
-            <button
-              onClick={() => setSidebarCollapsed(true)}
-              className="w-7 h-7 flex items-center justify-center rounded-lg bg-neutral-100 hover:bg-neutral-200 transition-colors text-neutral-500 text-[12px]"
-              title="Collapse member list"
-            >
-              ◀
-            </button>
-          </div>
+          <h2 className="text-[15px] font-bold text-[#1C1C1C] mb-3">Members</h2>
           <input
             value={query}
             onChange={e => setQuery(e.target.value)}
@@ -364,8 +339,6 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
             </button>
           )}
         </div>
-        </>
-        )}
       </div>
 
       {/* Right: detail */}
@@ -389,6 +362,7 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
                   </p>
                   <p className="text-[12px] text-neutral-400">{detail.profile.member_id}</p>
                 </div>
+                <div className="flex items-center gap-2">
                 <span
                   className="text-[11px] font-bold uppercase px-2.5 py-1 rounded-full"
                   style={{
@@ -399,6 +373,14 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
                 >
                   {detail.profile.vip_tier}
                 </span>
+                <button
+                  onClick={() => { setSelected(null); setDetail(null); }}
+                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-neutral-100 hover:bg-neutral-200 transition-colors text-neutral-500 text-[14px] leading-none"
+                  title="Close"
+                >
+                  ×
+                </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-[12px]">
