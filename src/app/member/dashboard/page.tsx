@@ -214,9 +214,9 @@ export default function MemberDashboardPage() {
           {/* Birthday countdown + Tier progress row */}
           <div className="border-t border-[#D4CCC0]/50 pt-3 mt-1 flex items-end justify-between gap-4">
             {/* Birthday countdown */}
-            {birthdayCountdown !== null && (
-              <div className="flex-1">
-                <p className="text-[10px] uppercase tracking-[0.1em] text-neutral-400 mb-0.5">Birthday</p>
+            <div className="flex-1">
+              <p className="text-[10px] uppercase tracking-[0.1em] text-neutral-400 mb-0.5">Birthday</p>
+              {birthdayCountdown !== null ? (
                 <p className="text-[13px] font-semibold text-[#1C1C1C]">
                   {birthdayCountdown === 0
                     ? "🎂 Today!"
@@ -226,12 +226,17 @@ export default function MemberDashboardPage() {
                     ? `🎂 ${birthdayCountdown} days away`
                     : `${birthdayCountdown} days away`}
                 </p>
-              </div>
-            )}
+              ) : (
+                <a href="/member/profile"
+                  className="text-[11px] text-[#C9A84C] font-semibold hover:underline">
+                  + Add birthday →
+                </a>
+              )}
+            </div>
 
             {/* Tier progress */}
             {tier.next && tier.threshold && (
-              <div className={birthdayCountdown !== null ? "flex-1" : "w-full"}>
+              <div className="flex-1">
                 <div className="flex justify-between text-[10px] text-neutral-400 mb-1">
                   <span>To {tier.next}</span>
                   <span>{visits < tier.threshold ? `${tier.threshold - visits} visits away` : "Reached"}</span>
