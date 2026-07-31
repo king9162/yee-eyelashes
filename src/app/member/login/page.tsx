@@ -289,7 +289,7 @@ function LoginContent() {
                 <div className="text-center mb-4">
                   <p className="text-[14px] font-semibold text-[#1C1C1C] mb-1">Reset Password</p>
                   <p className="text-[12px] text-neutral-400 leading-relaxed">
-                    Enter your phone number or email — we&apos;ll send a reset link.
+                    Enter your phone number or email, we&apos;ll send a reset link.
                   </p>
                 </div>
                 <div>
@@ -320,7 +320,7 @@ function LoginContent() {
                   {forgotSent.sms && (
                     <div className="w-12 h-12 rounded-full flex items-center justify-center"
                       style={{ background: "#FEF9EC", border: "1px solid #F0DFA0" }}>
-                      <span className="text-[20px]">💬</span>
+                      <span className="text-[20px]">📱</span>
                     </div>
                   )}
                   {forgotSent.email && (
