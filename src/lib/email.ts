@@ -624,6 +624,7 @@ export async function sendMemberWelcomeEmail(data: {
   referralCode: string;
 }) {
   const dashUrl = `${BASE}/member/dashboard`;
+  const shareUrl = `${BASE}/member?ref=${data.referralCode}`;
   const html = `<!DOCTYPE html>
 <html>
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -631,65 +632,79 @@ export async function sendMemberWelcomeEmail(data: {
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f5ef;padding:40px 20px;">
     <tr><td align="center">
       <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;max-width:560px;width:100%;">
-        <tr><td style="background:linear-gradient(135deg,#1C1C1C 0%,#2D2008 100%);padding:48px 48px 40px;text-align:center;">
-          <p style="margin:0 0 12px;font-size:10px;letter-spacing:0.5em;text-transform:uppercase;color:#C9A84C;">Yee Eyelashes</p>
-          <h1 style="margin:0 0 8px;font-size:30px;font-weight:300;color:#ffffff;letter-spacing:-0.01em;">Welcome, ${data.name}</h1>
-          <p style="margin:0;font-size:13px;color:#aaa;">Your Member Club account is ready</p>
+
+        <!-- Gold accent bar -->
+        <tr><td style="background:linear-gradient(90deg,#C9A84C,#e8c97a);height:4px;"></td></tr>
+
+        <!-- Header -->
+        <tr><td style="padding:48px 48px 32px;text-align:center;border-bottom:1px solid #f0ece4;">
+          <p style="margin:0 0 10px;font-size:10px;letter-spacing:0.5em;text-transform:uppercase;color:#C9A84C;">Yee Eyelashes</p>
+          <h1 style="margin:0 0 8px;font-size:30px;font-weight:300;color:#1c1c1c;letter-spacing:-0.01em;">Welcome, ${data.name}</h1>
+          <p style="margin:0;font-size:13px;color:#999;">Your Member Club account is ready</p>
         </td></tr>
+
+        <!-- Body -->
         <tr><td style="padding:40px 48px;">
-          <p style="margin:0 0 24px;font-size:14px;color:#777;line-height:1.9;">
-            You're now a member of the Yee Eyelashes Member Club — every visit brings you closer to exclusive rewards, and your tier unlocks more perks as you come back.
+          <p style="margin:0 0 28px;font-size:14px;color:#666;line-height:1.9;">
+            You're now a member of the Yee Eyelashes Member Club — every visit brings you closer to exclusive rewards, and your tier unlocks more perks as you return.
           </p>
 
           <!-- How it works -->
-          <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #f0ece4;margin-bottom:28px;">
-            <tr><td style="padding:16px 20px;border-bottom:1px solid #f0ece4;background:#fafaf8;">
-              <p style="margin:0;font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:#C9A84C;">How It Works</p>
+          <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #ede9e0;border-radius:8px;margin-bottom:28px;overflow:hidden;">
+            <tr><td style="padding:14px 20px;background:#f8f5ef;border-bottom:1px solid #ede9e0;">
+              <p style="margin:0;font-size:10px;letter-spacing:0.35em;text-transform:uppercase;color:#C9A84C;">How It Works</p>
             </td></tr>
-            <tr><td style="padding:20px 20px 4px;">
+            <tr><td style="padding:20px 20px 4px;background:#ffffff;">
               <table width="100%" cellpadding="0" cellspacing="0">
-                <tr><td style="padding:8px 0;font-size:13px;color:#1c1c1c;border-bottom:1px solid #f7f7f7;">
-                  <strong>Every 5 visits</strong> <span style="color:#999;margin:0 8px;">→</span> <strong style="color:#C9A84C;">20% off coupon, automatically</strong>
+                <tr><td style="padding:9px 0;font-size:13px;color:#1c1c1c;border-bottom:1px solid #f5f2ec;">
+                  <strong>Every 5 visits</strong> <span style="color:#C9A84C;margin:0 8px;">✦</span> <span style="color:#C9A84C;font-weight:600;">20% off coupon, automatically</span>
                 </td></tr>
-                <tr><td style="padding:8px 0;font-size:13px;color:#1c1c1c;border-bottom:1px solid #f7f7f7;">
-                  <strong>Birthday month</strong> <span style="color:#999;margin:0 8px;">→</span> <strong style="color:#C9A84C;">30% off coupon issued</strong>
+                <tr><td style="padding:9px 0;font-size:13px;color:#1c1c1c;border-bottom:1px solid #f5f2ec;">
+                  <strong>Birthday month</strong> <span style="color:#C9A84C;margin:0 8px;">✦</span> <span style="color:#C9A84C;font-weight:600;">20% off coupon issued</span>
                 </td></tr>
-                <tr><td style="padding:8px 0;font-size:13px;color:#1c1c1c;border-bottom:1px solid #f7f7f7;">
-                  <strong>5+ visits</strong> <span style="color:#999;margin:0 8px;">→</span> <strong style="color:#C9A84C;">Silver tier perks</strong>
+                <tr><td style="padding:9px 0;font-size:13px;color:#1c1c1c;border-bottom:1px solid #f5f2ec;">
+                  <strong>5+ visits</strong> <span style="color:#C9A84C;margin:0 8px;">✦</span> <span style="color:#C9A84C;font-weight:600;">Silver tier perks</span>
                 </td></tr>
-                <tr><td style="padding:8px 0;font-size:13px;color:#1c1c1c;">
-                  <strong>10+ visits</strong> <span style="color:#999;margin:0 8px;">→</span> <strong style="color:#C9A84C;">Gold tier &amp; above perks</strong>
+                <tr><td style="padding:9px 0;font-size:13px;color:#1c1c1c;">
+                  <strong>10+ visits</strong> <span style="color:#C9A84C;margin:0 8px;">✦</span> <span style="color:#C9A84C;font-weight:600;">Gold tier &amp; above perks</span>
                 </td></tr>
               </table>
             </td></tr>
           </table>
 
           <!-- Referral code -->
-          <table width="100%" cellpadding="0" cellspacing="0" style="background:#fef9ec;border:1px solid #f0dfa0;border-radius:8px;margin-bottom:28px;">
-            <tr><td style="padding:24px 28px;text-align:center;">
-              <p style="margin:0 0 8px;font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:#C9A84C;">Your Referral Code</p>
-              <p style="margin:0 0 8px;font-size:28px;font-weight:700;color:#1c1c1c;letter-spacing:0.15em;font-family:monospace;">${data.referralCode}</p>
-              <p style="margin:0;font-size:12px;color:#999;line-height:1.7;">Share this code with friends and help them discover Yee Eyelashes.</p>
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f5ef;border:1px solid #ede9e0;border-radius:8px;margin-bottom:28px;">
+            <tr><td style="padding:28px;text-align:center;">
+              <p style="margin:0 0 10px;font-size:10px;letter-spacing:0.35em;text-transform:uppercase;color:#C9A84C;">Your Referral Link</p>
+              <p style="margin:0 0 6px;font-size:26px;font-weight:700;color:#1c1c1c;letter-spacing:0.15em;font-family:monospace;">${data.referralCode}</p>
+              <p style="margin:0 0 14px;font-size:12px;color:#999;line-height:1.7;">Share this link with friends to introduce them to Yee Eyelashes:</p>
+              <p style="margin:0;font-size:11px;color:#C9A84C;word-break:break-all;">${shareUrl}</p>
             </td></tr>
           </table>
 
-          <table cellpadding="0" cellspacing="0" style="margin:0 auto 28px;">
+          <!-- CTA -->
+          <table cellpadding="0" cellspacing="0" style="margin:0 auto 32px;">
             <tr><td style="background:#1c1c1c;text-align:center;">
               <a href="${dashUrl}" style="display:inline-block;padding:14px 44px;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:#ffffff;text-decoration:none;">
                 View My Dashboard →
               </a>
             </td></tr>
           </table>
-          <p style="margin:0;font-size:13px;color:#bbb;text-align:center;line-height:1.8;">
-            📍 278 Plandome Rd, 2F, Manhasset, NY 11030<br/>
-            📷 <a href="https://www.instagram.com/yee_lashesny" style="color:#C9A84C;text-decoration:none;">@yee_lashesny</a>
+
+          <p style="margin:0;font-size:12px;color:#bbb;text-align:center;line-height:1.9;">
+            278 Plandome Rd, 2F · Manhasset, NY 11030<br/>
+            <a href="tel:5169843859" style="color:#C9A84C;text-decoration:none;">(516) 984-3859</a> &nbsp;·&nbsp;
+            <a href="https://www.instagram.com/yee_lashesny" style="color:#C9A84C;text-decoration:none;">@yee_lashesny</a>
           </p>
         </td></tr>
-        <tr><td style="padding:24px 48px;background:#1c1c1c;text-align:center;">
-          <p style="margin:0;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:#555;">
+
+        <!-- Footer -->
+        <tr><td style="padding:20px 48px;background:#f8f5ef;border-top:1px solid #ede9e0;text-align:center;">
+          <p style="margin:0;font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:#bbb;">
             © ${new Date().getFullYear()} Yee Eyelashes · Manhasset, NY
           </p>
         </td></tr>
+
       </table>
     </td></tr>
   </table>

@@ -161,7 +161,7 @@ export default function OnboardingPage() {
           <div>
             <label className="block text-[10px] uppercase tracking-[0.12em] text-neutral-400 mb-1.5">
               Birthday
-              <span className="ml-2 text-[#C9A84C] normal-case tracking-normal">✦ unlocks your 30% birthday reward</span>
+              <span className="ml-2 text-[#C9A84C] normal-case tracking-normal">✦ unlocks your 20% birthday reward</span>
             </label>
             <input
               value={birthday}

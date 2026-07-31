@@ -11,11 +11,11 @@ export async function POST(req: NextRequest) {
 
   const defaults = [
     {
-      name: "Birthday Reward — 30% Off",
-      description: "Happy Birthday! Enjoy 30% off any service during your birthday month.",
+      name: "Birthday Reward — 20% Off",
+      description: "Happy Birthday! Enjoy 20% off any service during your birthday month.",
       type: "birthday",
       discount_type: "percentage",
-      discount_value: 30,
+      discount_value: 20,
       minimum_spend: 0,
       valid_days: null,
       max_uses_per_member: 1,

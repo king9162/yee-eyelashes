@@ -185,7 +185,7 @@ export default function MemberProfilePage() {
             <label className="block text-[10px] uppercase tracking-[0.12em] text-neutral-400 mb-1.5">
               Birthday
               {birthdayLocked && <span className="ml-2 text-neutral-300 normal-case tracking-normal">(locked after first save)</span>}
-              {!birthdayLocked && <span className="ml-2 text-[#C9A84C] normal-case tracking-normal">✦ unlocks your 30% birthday reward</span>}
+              {!birthdayLocked && <span className="ml-2 text-[#C9A84C] normal-case tracking-normal">✦ unlocks your 20% birthday reward</span>}
             </label>
             <input value={birthday} onChange={e => setBirthday(e.target.value)} type="date" disabled={birthdayLocked}
               className={`w-full border rounded-xl px-3.5 py-3 text-[13px] focus:outline-none focus:border-[#C9A84C] transition-colors ${

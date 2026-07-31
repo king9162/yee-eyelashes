@@ -383,6 +383,7 @@ function ReferralCard({ code, referredBy, stats, token }: {
   token: string;
 }) {
   const [copied, setCopied] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
   const [inputCode, setInputCode] = useState("");
   const [applying, setApplying] = useState(false);
   const [applyMsg, setApplyMsg] = useState("");
@@ -393,6 +394,15 @@ function ReferralCard({ code, referredBy, stats, token }: {
     navigator.clipboard.writeText(code).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    });
+  }
+
+  function copyLink() {
+    if (!code) return;
+    const url = `https://www.yeeeyelashes.com/member?ref=${code}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
     });
   }
 
@@ -430,8 +440,8 @@ function ReferralCard({ code, referredBy, stats, token }: {
               </span>
             )}
           </div>
-          <p className="text-[11px] text-neutral-400 mb-2">Share your code and help friends discover Yee Eyelashes.</p>
-          <div className="flex items-center gap-2">
+          <p className="text-[11px] text-neutral-400 mb-2">Share your link and help friends discover Yee Eyelashes.</p>
+          <div className="flex items-center gap-2 mb-2">
             <div className="flex-1 bg-[#F8F5EF] rounded-xl px-4 py-2.5 text-center">
               <p className="text-[17px] font-bold tracking-[0.2em] text-[#1C1C1C]" style={{ fontFamily: "var(--font-cormorant)" }}>
                 {code}
@@ -443,6 +453,15 @@ function ReferralCard({ code, referredBy, stats, token }: {
               {copied ? "Copied!" : "Copy"}
             </button>
           </div>
+          <button onClick={copyLink}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-[11px] font-semibold border transition-all"
+            style={{
+              background: copiedLink ? "#22C55E22" : "#F8F5EF",
+              borderColor: copiedLink ? "#22C55E" : "#C9A84C",
+              color: copiedLink ? "#22C55E" : "#C9A84C",
+            }}>
+            {copiedLink ? "✓ Link Copied!" : "✦ Copy Share Link"}
+          </button>
           {total > 0 && (
             <div className="flex gap-3 pt-2 border-t border-neutral-50 mt-2">
               {stats.completed > 0 && <p className="text-[11px] text-emerald-600 font-semibold">✓ {stats.completed} completed</p>}
@@ -490,10 +509,10 @@ function ReferralCard({ code, referredBy, stats, token }: {
 
 function TierBenefitsCard({ tier }: { tier: Profile["vip_tier"] }) {
   const benefits: Record<Profile["vip_tier"], string[]> = {
-    member:  ["Every 5 visits → 20% off coupon", "Birthday reward — 30% off", "Member-only promotions"],
-    silver:  ["Every 5 visits → 20% off coupon", "Birthday reward — 30% off", "Priority booking", "Exclusive Silver coupons"],
-    gold:    ["Every 5 visits → 20% off coupon", "Birthday reward — 35% off", "Priority booking", "Seasonal VIP gift"],
-    diamond: ["Every 5 visits → 20% off coupon", "Birthday reward — 40% off", "VIP priority booking", "Monthly exclusive gift", "Free treatment upgrade"],
+    member:  ["Every 5 visits → 20% off coupon", "Birthday reward — 20% off", "Member-only promotions"],
+    silver:  ["Every 5 visits → 20% off coupon", "Birthday reward — 20% off", "Priority booking", "Exclusive Silver coupons"],
+    gold:    ["Every 5 visits → 20% off coupon", "Birthday reward — 20% off", "Priority booking", "Seasonal VIP gift"],
+    diamond: ["Every 5 visits → 20% off coupon", "Birthday reward — 20% off", "VIP priority booking", "Monthly exclusive gift", "Free treatment upgrade"],
   };
 
   const config = TIER_CONFIG[tier];
