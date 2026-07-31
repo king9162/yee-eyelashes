@@ -107,18 +107,23 @@ export default function CouponsPage() {
               const st = STATUS_STYLE[mc.status];
               const c = mc.coupons;
               const isActive = mc.status === "available";
+              // Generate description from data so it's always accurate
+              const displayDesc = c?.type === "birthday"
+                ? `Happy Birthday! Enjoy ${c.discount_value}% off any service during your birthday month.`
+                : c?.description ?? null;
+
               return (
                 <div key={mc.id}
-                  className={`rounded-2xl border overflow-hidden ${isActive ? "border-[#C9A84C]/30" : "border-neutral-100"}`}>
-                  {/* Top band */}
+                  className={`rounded-2xl border overflow-hidden ${isActive ? "border-[#C9A84C]/40" : "border-neutral-100"}`}>
+                  {/* Top band — light cream theme */}
                   <div className="px-4 py-3 flex items-center justify-between"
-                    style={{ background: isActive ? "linear-gradient(135deg, #1C1C1C 0%, #2D2008 100%)" : "#F9F9F9" }}>
+                    style={{ background: isActive ? "#F8F5EF" : "#F9F9F9" }}>
                     <div>
-                      <p className={`text-[18px] font-light ${isActive ? "text-[#C9A84C]" : "text-neutral-400"}`}
+                      <p className="text-[22px] font-light text-[#C9A84C]"
                         style={{ fontFamily: "var(--font-cormorant)" }}>
                         {c ? discountLabel(c) : "Coupon"}
                       </p>
-                      <p className={`text-[11px] mt-0.5 ${isActive ? "text-neutral-300" : "text-neutral-400"}`}>
+                      <p className="text-[11px] mt-0.5 text-[#1C1C1C] font-medium">
                         {c?.name ?? "Coupon"}
                       </p>
                     </div>
@@ -128,9 +133,9 @@ export default function CouponsPage() {
                   </div>
 
                   {/* Details */}
-                  <div className="bg-white px-4 py-3 space-y-1.5">
-                    {c?.description && (
-                      <p className="text-[12px] text-neutral-600">{c.description}</p>
+                  <div className="bg-white px-4 py-3 space-y-1.5 border-t border-[#EDE9DF]">
+                    {displayDesc && (
+                      <p className="text-[12px] text-neutral-600">{displayDesc}</p>
                     )}
                     {(c?.minimum_spend ?? 0) > 0 && c && (
                       <p className="text-[11px] text-neutral-400">Min. spend: ${c.minimum_spend}</p>
