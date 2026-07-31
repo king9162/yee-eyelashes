@@ -14,6 +14,12 @@ const TAG_LABEL: Record<Tag, string> = { new: "NEW", fix: "FIX", improve: "+" };
 
 const DAYS: Day[] = [
   {
+    date: "Jul 30, 2026 (Part 5)", label: "2026-07-30e",
+    changes: [
+      { tag: "new", text: "Members admin 新增 Edit 功能：點擊會員詳細頁右上角 Edit 按鈕，可修改姓名、Email、電話、生日、會員編號。電話號碼更新後登入用的 auth email 自動同步更新。Member Number 輸入 '1' 會自動格式化為 YEE-00001。" },
+    ],
+  },
+  {
     date: "Jul 30, 2026 (Part 4)", label: "2026-07-30d",
     changes: [
       { tag: "improve", text: "移除「Sign in with email instead →」連結：登入頁面不再顯示 email 登入入口，以手機號+密碼為唯一主要登入方式" },

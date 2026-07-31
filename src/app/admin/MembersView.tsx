@@ -123,6 +123,12 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
   const [savingLash, setSavingLash] = useState(false);
   const [lashMsg, setLashMsg] = useState("");
 
+  // Edit member modal
+  const [editingMember, setEditingMember] = useState<Member | null>(null);
+  const [editForm, setEditForm] = useState({ first_name: "", last_name: "", email: "", phone: "", birthday: "", member_id: "" });
+  const [editSaving, setEditSaving] = useState(false);
+  const [editError, setEditError] = useState("");
+
   // Delete member modal
   const [deletingMember, setDeletingMember] = useState<Member | null>(null);
   const [deletePassword, setDeletePassword] = useState("");
@@ -284,6 +290,45 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
     setDeleteError("");
   }
 
+  function openEdit(m: Member) {
+    setEditingMember(m);
+    setEditForm({
+      first_name: m.first_name ?? "",
+      last_name:  m.last_name  ?? "",
+      email:      m.email      ?? "",
+      phone:      m.phone      ?? "",
+      birthday:   m.birthday   ?? "",
+      member_id:  m.member_id  ?? "",
+    });
+    setEditError("");
+  }
+
+  async function saveEdit() {
+    if (!editingMember) return;
+    setEditSaving(true); setEditError("");
+
+    // Auto-format member_id: "1" or "001" → "YEE-00001"
+    let mid = editForm.member_id.trim().toUpperCase();
+    if (/^\d+$/.test(mid)) mid = `YEE-${mid.padStart(5, "0")}`;
+
+    const res = await fetch(`/api/admin/members/${editingMember.id}`, {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${adminKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ ...editForm, member_id: mid }),
+    });
+    const d = await res.json();
+    setEditSaving(false);
+    if (!res.ok) { setEditError(d.error ?? "Update failed."); return; }
+
+    setEditingMember(null);
+    search(query);
+    if (selected?.id === editingMember.id) {
+      const updated: Member = { ...editingMember, ...editForm, member_id: mid };
+      setSelected(updated);
+      await loadDetail(updated);
+    }
+  }
+
   async function seedCoupons() {
     setSeeding(true);
     await fetch("/api/admin/seed-coupons", {
@@ -399,23 +444,30 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
                   <p className="text-[12px] text-neutral-400">{detail.profile.member_id}</p>
                 </div>
                 <div className="flex items-center gap-2">
-                <span
-                  className="text-[11px] font-bold uppercase px-2.5 py-1 rounded-full"
-                  style={{
-                    color: TIER_COLORS[detail.profile.vip_tier],
-                    background: `${TIER_COLORS[detail.profile.vip_tier]}22`,
-                    border: `1px solid ${TIER_COLORS[detail.profile.vip_tier]}44`,
-                  }}
-                >
-                  {detail.profile.vip_tier}
-                </span>
-                <button
-                  onClick={() => { setSelected(null); setDetail(null); }}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-neutral-100 hover:bg-neutral-200 transition-colors text-neutral-500 text-[14px] leading-none"
-                  title="Close"
-                >
-                  ×
-                </button>
+                  <span
+                    className="text-[11px] font-bold uppercase px-2.5 py-1 rounded-full"
+                    style={{
+                      color: TIER_COLORS[detail.profile.vip_tier],
+                      background: `${TIER_COLORS[detail.profile.vip_tier]}22`,
+                      border: `1px solid ${TIER_COLORS[detail.profile.vip_tier]}44`,
+                    }}
+                  >
+                    {detail.profile.vip_tier}
+                  </span>
+                  <button
+                    onClick={() => openEdit(detail.profile)}
+                    className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-neutral-100 hover:bg-[#C9A84C] hover:text-white transition-colors text-neutral-500"
+                    title="Edit member info"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => { setSelected(null); setDetail(null); }}
+                    className="w-7 h-7 flex items-center justify-center rounded-lg bg-neutral-100 hover:bg-neutral-200 transition-colors text-neutral-500 text-[14px] leading-none"
+                    title="Close"
+                  >
+                    ×
+                  </button>
                 </div>
               </div>
 
@@ -779,6 +831,75 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
         ) : null}
       </div>
     </div>
+
+    {/* Edit member modal */}
+    {editingMember && (
+      <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
+        <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-[16px] font-bold text-[#1C1C1C]">Edit Member</h3>
+            <button onClick={() => setEditingMember(null)} className="text-neutral-300 hover:text-neutral-600 text-xl">✕</button>
+          </div>
+
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-[10px] uppercase tracking-[0.12em] text-neutral-400 mb-1">First Name</label>
+                <input value={editForm.first_name} onChange={e => setEditForm(p => ({ ...p, first_name: e.target.value }))}
+                  className="w-full border border-neutral-200 rounded-xl px-3 py-2.5 text-[13px] focus:outline-none focus:border-[#C9A84C]" />
+              </div>
+              <div>
+                <label className="block text-[10px] uppercase tracking-[0.12em] text-neutral-400 mb-1">Last Name</label>
+                <input value={editForm.last_name} onChange={e => setEditForm(p => ({ ...p, last_name: e.target.value }))}
+                  className="w-full border border-neutral-200 rounded-xl px-3 py-2.5 text-[13px] focus:outline-none focus:border-[#C9A84C]" />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[10px] uppercase tracking-[0.12em] text-neutral-400 mb-1">Email</label>
+              <input type="email" value={editForm.email} onChange={e => setEditForm(p => ({ ...p, email: e.target.value }))}
+                placeholder="you@example.com"
+                className="w-full border border-neutral-200 rounded-xl px-3 py-2.5 text-[13px] focus:outline-none focus:border-[#C9A84C]" />
+            </div>
+
+            <div>
+              <label className="block text-[10px] uppercase tracking-[0.12em] text-neutral-400 mb-1">Phone</label>
+              <input type="tel" value={editForm.phone} onChange={e => setEditForm(p => ({ ...p, phone: e.target.value }))}
+                placeholder="+15169022205"
+                className="w-full border border-neutral-200 rounded-xl px-3 py-2.5 text-[13px] focus:outline-none focus:border-[#C9A84C]" />
+              <p className="text-[10px] text-neutral-400 mt-0.5">Phone login will update automatically.</p>
+            </div>
+
+            <div>
+              <label className="block text-[10px] uppercase tracking-[0.12em] text-neutral-400 mb-1">Birthday</label>
+              <input type="date" value={editForm.birthday} onChange={e => setEditForm(p => ({ ...p, birthday: e.target.value }))}
+                className="w-full border border-neutral-200 rounded-xl px-3 py-2.5 text-[13px] focus:outline-none focus:border-[#C9A84C]" />
+            </div>
+
+            <div>
+              <label className="block text-[10px] uppercase tracking-[0.12em] text-neutral-400 mb-1">Member Number</label>
+              <input value={editForm.member_id} onChange={e => setEditForm(p => ({ ...p, member_id: e.target.value }))}
+                placeholder="YEE-00001  or  just  1"
+                className="w-full border border-neutral-200 rounded-xl px-3 py-2.5 text-[13px] focus:outline-none focus:border-[#C9A84C] font-mono" />
+              <p className="text-[10px] text-neutral-400 mt-0.5">Enter &quot;1&quot; to auto-format as YEE-00001.</p>
+            </div>
+          </div>
+
+          {editError && <p className="text-[12px] text-red-500 mt-3">{editError}</p>}
+
+          <div className="flex gap-2 mt-4">
+            <button onClick={() => setEditingMember(null)}
+              className="flex-1 py-2.5 rounded-xl text-[12px] font-semibold text-neutral-500 bg-neutral-100 hover:bg-neutral-200 transition-colors">
+              Cancel
+            </button>
+            <button onClick={saveEdit} disabled={editSaving}
+              className="flex-1 py-2.5 rounded-xl text-[12px] font-semibold text-white bg-[#1C1C1C] hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all disabled:opacity-40">
+              {editSaving ? "Saving…" : "Save Changes"}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
 
     {/* Delete member modal */}
     {deletingMember && (

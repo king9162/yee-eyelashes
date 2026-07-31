@@ -1,11 +1,46 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 
-export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const key = req.headers.get("authorization")?.replace("Bearer ", "");
-  if (key !== process.env.ADMIN_SECRET_KEY) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+function auth(req: NextRequest) {
+  return req.headers.get("authorization")?.replace("Bearer ", "") === process.env.ADMIN_SECRET_KEY;
+}
+
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  if (!auth(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { id } = await params;
+  const { first_name, last_name, email, phone, birthday, member_id } = await req.json();
+
+  const db = supabaseAdmin();
+  const updates: Record<string, unknown> = {};
+
+  if (first_name !== undefined) updates.first_name = (first_name ?? "").trim();
+  if (last_name  !== undefined) updates.last_name  = (last_name  ?? "").trim();
+  if (email      !== undefined) updates.email      = (email      ?? "").trim();
+  if (birthday   !== undefined) updates.birthday   = birthday || null;
+  if (member_id  !== undefined) updates.member_id  = (member_id  ?? "").trim().toUpperCase();
+
+  if (phone !== undefined) {
+    const digits = (phone ?? "").replace(/\D/g, "").slice(-10);
+    const phoneE164 = digits.length === 10 ? `+1${digits}` : (phone ?? "").trim();
+    updates.phone = phoneE164;
+    // If login uses synthetic email (p{digits}@yee.member), update auth email too
+    if (digits.length === 10) {
+      const { data: { user } } = await db.auth.admin.getUserById(id);
+      if (/^p\d{10}@yee\.member$/.test(user?.email ?? "")) {
+        await db.auth.admin.updateUserById(id, { email: `p${digits}@yee.member` });
+      }
+    }
   }
+
+  const { error } = await db.from("profiles").update(updates).eq("id", id);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  return NextResponse.json({ ok: true });
+}
+
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  if (!auth(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
   const db = supabaseAdmin();
@@ -28,10 +63,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 }
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const key = req.headers.get("authorization")?.replace("Bearer ", "");
-  if (key !== process.env.ADMIN_SECRET_KEY) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!auth(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
   const db = supabaseAdmin();
