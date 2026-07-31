@@ -56,17 +56,31 @@ export async function POST(req: NextRequest) {
     },
   ];
 
+  // Ensure birthday coupon is always 20% — update any existing row that differs
+  await db.from("coupons")
+    .update({
+      name: "Birthday Reward — 20% Off",
+      description: "Happy Birthday! Enjoy 20% off any service during your birthday month.",
+      discount_value: 20,
+    })
+    .eq("type", "birthday");
+
   const results = [];
   for (const coupon of defaults) {
-    // Only insert if no coupon with this name already exists
+    // Skip types that already exist (birthday is handled by the update above)
     const { data: existing } = await db
       .from("coupons")
       .select("id")
       .eq("name", coupon.name)
       .limit(1);
 
-    if (existing && existing.length > 0) {
-      results.push({ name: coupon.name, status: "skipped" });
+    // For birthday, also check old name
+    const { data: existingOldName } = coupon.type === "birthday"
+      ? await db.from("coupons").select("id").eq("type", "birthday").limit(1)
+      : { data: null };
+
+    if ((existing && existing.length > 0) || (existingOldName && existingOldName.length > 0)) {
+      results.push({ name: coupon.name, status: "updated/skipped" });
       continue;
     }
 
