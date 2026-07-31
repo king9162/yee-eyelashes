@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { Resend } from "resend";
+import { sendSMS } from "@/lib/sms";
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.yeeeyelashes.com";
 
@@ -14,33 +15,28 @@ export async function POST(req: NextRequest) {
   const syntheticEmail = `p${digits}@yee.member`;
   const db = supabaseAdmin();
 
-  // Check if auth user exists
-  const { data: users } = await db.auth.admin.listUsers({ perPage: 1 });
-  // Use getUserByEmail instead
+  // Find auth user by synthetic email
   let userId: string | null = null;
   try {
-    // Try to find user by synthetic email
     const { data: { users: allUsers } } = await db.auth.admin.listUsers({ perPage: 1000 });
     const match = allUsers.find(u => u.email === syntheticEmail);
     if (match) userId = match.id;
   } catch { /* non-fatal */ }
 
   if (!userId) {
-    // Don't reveal if account exists — return generic success
     return NextResponse.json({ ok: true, hasEmail: false });
   }
 
-  // Get profile to find real email
+  // Get profile
   const { data: profile } = await db
     .from("profiles")
-    .select("email, first_name")
+    .select("email, first_name, phone")
     .eq("id", userId)
     .single();
 
   const realEmail = profile?.email?.trim();
-  if (!realEmail || realEmail === syntheticEmail) {
-    return NextResponse.json({ ok: true, hasEmail: false });
-  }
+  const profilePhone = profile?.phone?.trim();
+  const firstName = profile?.first_name ?? "there";
 
   // Generate Supabase recovery link
   const { data: linkData, error: linkError } = await db.auth.admin.generateLink({
@@ -54,11 +50,33 @@ export async function POST(req: NextRequest) {
   }
 
   const resetLink = linkData.properties.action_link;
-  const firstName = profile?.first_name ?? "there";
 
-  // Send email via Resend
-  const resend = new Resend(process.env.RESEND_API_KEY ?? "");
-  const html = `
+  // Send email if real email on file
+  const hasEmail = !!(realEmail && realEmail !== syntheticEmail);
+  if (hasEmail) {
+    const resend = new Resend(process.env.RESEND_API_KEY ?? "");
+    const html = buildResetEmailHtml(firstName, resetLink);
+    await resend.emails.send({
+      from: "Yee Eyelashes <noreply@yeeeyelashes.com>",
+      to: realEmail!,
+      subject: "Reset your Yee Eyelashes password",
+      html,
+    });
+  }
+
+  // Send SMS if phone on file (always true when entering phone, but be safe)
+  if (profilePhone) {
+    const phoneE164 = profilePhone.startsWith("+") ? profilePhone : `+1${profilePhone.replace(/\D/g, "").slice(-10)}`;
+    try {
+      await sendSMS(phoneE164, `Yee Eyelashes: Reset your password here → ${resetLink}  (link expires in 1 hour)`);
+    } catch { /* non-fatal */ }
+  }
+
+  return NextResponse.json({ ok: true, hasEmail });
+}
+
+export function buildResetEmailHtml(firstName: string, resetLink: string): string {
+  return `
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -92,13 +110,4 @@ export async function POST(req: NextRequest) {
   </table>
 </body>
 </html>`;
-
-  await resend.emails.send({
-    from: "Yee Eyelashes <noreply@yeeeyelashes.com>",
-    to: realEmail,
-    subject: "Reset your Yee Eyelashes password",
-    html,
-  });
-
-  return NextResponse.json({ ok: true, hasEmail: true });
 }
