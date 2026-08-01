@@ -21,10 +21,10 @@ export async function POST(req: NextRequest) {
   const db = supabaseAdmin();
 
   // Square limits date range to 31 days per request — generate 30-day windows
-  // from today (ET) through 90 days ahead
+  // from 365 days back through 90 days ahead, so past visits are also imported
   const now = new Date();
   const todayET = now.toLocaleDateString("en-CA", { timeZone: "America/New_York" }); // "YYYY-MM-DD"
-  const rangeStart = new Date(todayET + "T00:00:00Z"); // midnight UTC = safe start for any ET day
+  const rangeStart = new Date(now.getTime() - 365 * 86400000);
   const rangeEnd   = new Date(now.getTime() + 90 * 86400000);
   const ranges: { min: Date; max: Date }[] = [];
   let cur = new Date(rangeStart);
@@ -227,9 +227,7 @@ export async function POST(req: NextRequest) {
       continue;
     }
 
-    // 3. New booking — skip past appointments (before today)
-    if (visitDate < todayET) { synced++; continue; }
-
+    // 3. Insert new booking (including past appointments, so historical visits are counted)
     // Insert — notes always start empty; admin fills them manually
     await db.from("bookings").insert({
       name, phone, email,

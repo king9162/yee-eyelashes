@@ -9,17 +9,23 @@ export async function linkMemberBookings(
 ): Promise<number> {
   if (!phone && !email) return 0;
 
-  const filters: string[] = [];
-  if (phone) filters.push(`phone.eq.${phone}`);
-  if (email && !email.endsWith("@yee.member")) filters.push(`email.eq.${email}`);
+  const phone10 = (phone ?? "").replace(/\D/g, "").slice(-10);
+  const cleanEmail = (!email || email.endsWith("@yee.member")) ? null : email;
 
-  if (filters.length === 0) return 0;
-
-  const { data: bookings } = await db
+  // Fetch all unlinked bookings and filter in code — phone formats vary (E164 vs dashes vs parens)
+  const { data: allUnlinked } = await db
     .from("bookings")
-    .select("id, date, status")
-    .is("member_id", null)
-    .or(filters.join(","));
+    .select("id, date, status, phone, email")
+    .is("member_id", null);
+
+  const bookings = (allUnlinked ?? []).filter((b: { phone: string | null; email: string | null }) => {
+    if (phone10.length === 10) {
+      const bPhone10 = (b.phone ?? "").replace(/\D/g, "").slice(-10);
+      if (bPhone10 === phone10) return true;
+    }
+    if (cleanEmail && b.email === cleanEmail) return true;
+    return false;
+  });
 
   if (!bookings || bookings.length === 0) return 0;
 
