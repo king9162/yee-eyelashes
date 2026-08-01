@@ -15,6 +15,7 @@ type Member = {
   last_visit_date: string | null;
   joined_at: string;
   referral_code: string | null;
+  admin_notes: string | null;
 };
 
 
@@ -278,7 +279,7 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
       phone:        m.phone        ?? "",
       birthday:     m.birthday     ?? "",
       member_id:    m.member_id    ?? "",
-      admin_notes:  (m as Member & { admin_notes?: string }).admin_notes ?? "",
+      admin_notes:  m.admin_notes ?? "",
     });
     setEditError("");
   }
@@ -535,6 +536,24 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
                   <p className="text-[10px] text-neutral-400 mt-0.5">{s.label}</p>
                 </div>
               ))}
+            </div>
+
+            {/* Admin Notes */}
+            <div className="bg-white rounded-xl border border-neutral-100 p-4">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[13px] font-bold text-[#1C1C1C]">Notes for Member</p>
+                <button
+                  onClick={() => openEdit(detail.profile)}
+                  className="text-[11px] text-[#C9A84C] hover:underline font-semibold"
+                >
+                  Edit
+                </button>
+              </div>
+              {detail.profile.admin_notes ? (
+                <p className="text-[13px] text-[#1C1C1C] whitespace-pre-wrap">{detail.profile.admin_notes}</p>
+              ) : (
+                <p className="text-[12px] text-neutral-300 italic">No notes yet</p>
+              )}
             </div>
 
             {/* Issue coupon — collapsible */}
