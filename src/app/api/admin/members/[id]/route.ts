@@ -103,25 +103,39 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  // Fetch 3x packages linked by normalized phone (packages may store phone with dashes/formatting)
   const phone10 = (profileRes.data.phone ?? "").replace(/\D/g, "").slice(-10);
+  const rawEmail = profileRes.data.email as string | null;
+  const cleanEmail = rawEmail && !rawEmail.endsWith("@yee.member") ? rawEmail : null;
+
   let packages: unknown[] = [];
-  if (phone10.length === 10) {
-    const { data: allPkgs } = await db
-      .from("packages")
-      .select("*")
-      .order("purchase_date", { ascending: false });
-    packages = (allPkgs ?? []).filter(
-      (p: { phone: string | null }) =>
-        (p.phone ?? "").replace(/\D/g, "").slice(-10) === phone10
-    );
+  let clientVisits: { visit_date: string; notes: string | null }[] = [];
+
+  if (phone10.length === 10 || cleanEmail) {
+    const orParts = [
+      phone10.length === 10 ? `phone.ilike.%${phone10}` : null,
+      cleanEmail ? `email.eq.${cleanEmail}` : null,
+    ].filter(Boolean).join(",");
+
+    const [pkgsRes, visitsRes] = await Promise.all([
+      phone10.length === 10
+        ? db.from("packages").select("*").order("purchase_date", { ascending: false })
+        : Promise.resolve({ data: [] as unknown[] }),
+      db.from("clients").select("visit_date, notes").not("visit_date", "is", null)
+        .or(orParts).order("visit_date", { ascending: false }),
+    ]);
+
+    if (phone10.length === 10) {
+      packages = (pkgsRes.data ?? []).filter(
+        (p: { phone: string | null }) => (p.phone ?? "").replace(/\D/g, "").slice(-10) === phone10
+      );
+    }
+    clientVisits = (visitsRes.data ?? []) as { visit_date: string; notes: string | null }[];
   }
 
   return NextResponse.json({
     profile: profileRes.data,
     coupons: couponsRes.data ?? [],
-    bookings: bookingsRes.data ?? [],
     packages,
-    _debug: { bookingsCount: bookingsRes.data?.length ?? 0, bookingsError: bookingsRes.error?.message ?? null, profileId: id },
+    clientVisits,
   });
 }

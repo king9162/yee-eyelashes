@@ -29,14 +29,9 @@ type MemberPackage = {
   use3_date: string | null;
 };
 
-type MemberBooking = {
-  id: string;
-  date: string;
-  time: string | null;
-  service: string | null;
-  service_label: string | null;
-  status: string;
-  price: number | null;
+type ClientVisit = {
+  visit_date: string;
+  notes: string | null;
 };
 
 type MemberCoupon = {
@@ -87,7 +82,7 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Member | null>(null);
-  const [detail, setDetail] = useState<{ profile: Member; coupons: MemberCoupon[]; bookings: MemberBooking[]; packages: MemberPackage[] } | null>(null);
+  const [detail, setDetail] = useState<{ profile: Member; coupons: MemberCoupon[]; packages: MemberPackage[]; clientVisits: ClientVisit[] } | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [couponTemplates, setCouponTemplates] = useState<CouponTemplate[]>([]);
 
@@ -175,7 +170,6 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
 
     const detailRes = await fetch(`/api/admin/members/${m.id}`, { headers: { Authorization: `Bearer ${adminKey}` } });
     const data = await detailRes.json();
-    console.log("[loadDetail]", data._debug, "bookings:", data.bookings?.length);
     setDetail(data);
     setDetailLoading(false);
   }
@@ -563,18 +557,24 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                { label: "Visits", value: `${detail.profile.total_visits_all_time}` },
-                { label: "Progress", value: `${detail.profile.total_visits_all_time % 5}/5` },
-                { label: "Total Spent", value: `$${detail.profile.total_spend_all_time.toFixed(0)}` },
-              ].map(s => (
-                <div key={s.label} className="bg-white rounded-xl border border-neutral-100 p-3 text-center">
-                  <p className="text-[18px] font-bold text-[#1C1C1C]">{s.value}</p>
-                  <p className="text-[10px] text-neutral-400 mt-0.5">{s.label}</p>
+            {(() => {
+              const visitCount = (detail.clientVisits ?? []).length;
+              const progress = visitCount % 5;
+              return (
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { label: "Visits", value: `${visitCount}` },
+                    { label: "Progress", value: `${progress}/5` },
+                    { label: "Total Spent", value: `$${detail.profile.total_spend_all_time.toFixed(0)}` },
+                  ].map(s => (
+                    <div key={s.label} className="bg-white rounded-xl border border-neutral-100 p-3 text-center">
+                      <p className="text-[18px] font-bold text-[#1C1C1C]">{s.value}</p>
+                      <p className="text-[10px] text-neutral-400 mt-0.5">{s.label}</p>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              );
+            })()}
 
             {/* Admin Notes */}
             <div className="bg-white rounded-xl border border-neutral-100 p-4">
@@ -816,50 +816,50 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
             </div>
 
             {/* Visit history */}
-            <div className="bg-white rounded-xl border border-neutral-100 overflow-hidden">
-              <div className="px-4 py-3 border-b border-neutral-100 flex items-center justify-between">
-                <p className="text-[13px] font-bold text-[#1C1C1C]">Visit History</p>
-                {(detail as unknown as { _debug?: { bookingsCount: number; bookingsError: string | null } })._debug && (
-                  <span className="text-[10px] text-neutral-400 font-mono">
-                    db:{(detail as unknown as { _debug: { bookingsCount: number; bookingsError: string | null } })._debug.bookingsCount}
-                    {(detail as unknown as { _debug: { bookingsCount: number; bookingsError: string | null } })._debug.bookingsError && ` err`}
-                  </span>
-                )}
-              </div>
-              {(detail.bookings ?? []).length === 0 ? (
-                <p className="text-[12px] text-neutral-400 text-center py-6">No visits yet</p>
-              ) : (
-                <div className="divide-y divide-neutral-50">
-                  {(detail.bookings ?? []).map(b => {
-                    const statusColor: Record<string, string> = {
-                      completed: "#22C55E", cancelled: "#EF4444", no_show: "#F59E0B", booked: "#C9A84C",
-                    };
-                    return (
-                      <div key={b.id} className="flex items-center justify-between px-4 py-3">
-                        <div>
+            {(() => {
+              const visits = detail.clientVisits ?? [];
+              const visitCount = visits.length;
+              const progress = visitCount % 5;
+              const toNext = progress === 0 && visitCount > 0 ? 5 : 5 - progress;
+              return (
+                <div className="bg-white rounded-xl border border-neutral-100 overflow-hidden">
+                  <div className="px-4 pt-4 pb-3 border-b border-neutral-100">
+                    <div className="flex items-center justify-between mb-2.5">
+                      <p className="text-[13px] font-bold text-[#1C1C1C]">Visit History</p>
+                      <span className="text-[12px] font-semibold text-[#C9A84C]">{visitCount} visits</span>
+                    </div>
+                    <div className="flex gap-1.5">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className="flex-1 h-2 rounded-full"
+                          style={{ background: i < (progress === 0 && visitCount > 0 ? 5 : progress) ? "#C9A84C" : "#F0F0EE" }}
+                        />
+                      ))}
+                    </div>
+                    <p className="text-[10px] text-neutral-400 mt-1.5">
+                      {toNext} more visit{toNext !== 1 ? "s" : ""} to next reward
+                    </p>
+                  </div>
+                  {visitCount === 0 ? (
+                    <p className="text-[12px] text-neutral-400 text-center py-6">No visits yet</p>
+                  ) : (
+                    <div className="divide-y divide-neutral-50">
+                      {visits.map((v, i) => (
+                        <div key={i} className="flex items-center justify-between px-4 py-2.5">
                           <p className="text-[12px] font-medium text-[#1C1C1C]">
-                            {b.service_label ?? b.service ?? "Appointment"}
+                            {new Date(v.visit_date + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                           </p>
-                          <p className="text-[11px] text-neutral-400 mt-0.5">
-                            {new Date(b.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                            {b.time && ` · ${b.time}`}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          {b.price != null && (
-                            <p className="text-[12px] font-semibold text-[#1C1C1C]">${b.price}</p>
+                          {v.notes && (
+                            <p className="text-[11px] text-neutral-400 truncate ml-3 max-w-[55%]">{v.notes}</p>
                           )}
-                          <p className="text-[10px] font-medium mt-0.5 capitalize"
-                            style={{ color: statusColor[b.status] ?? "#888" }}>
-                            {b.status.replace("_", " ")}
-                          </p>
                         </div>
-                      </div>
-                    );
-                  })}
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              );
+            })()}
           </div>
         ) : null}
       </div>
