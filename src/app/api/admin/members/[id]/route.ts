@@ -116,12 +116,15 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       cleanEmail ? `email.eq.${cleanEmail}` : null,
     ].filter(Boolean).join(",");
 
-    const [pkgsRes, visitsRes] = await Promise.all([
+    const [pkgsRes, visitsRes, bkgsRes] = await Promise.all([
       phone10.length === 10
         ? db.from("packages").select("*").order("purchase_date", { ascending: false })
         : Promise.resolve({ data: [] as unknown[] }),
       db.from("clients").select("visit_date, notes").not("visit_date", "is", null)
         .or(orParts).order("visit_date", { ascending: false }),
+      phone10.length === 10
+        ? db.from("bookings").select("date, status").ilike("phone", `%${phone10}`)
+        : Promise.resolve({ data: [] as { date: string; status: string }[] }),
     ]);
 
     if (phone10.length === 10) {
@@ -129,7 +132,16 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         (p: { phone: string | null }) => (p.phone ?? "").replace(/\D/g, "").slice(-10) === phone10
       );
     }
-    clientVisits = (visitsRes.data ?? []) as { visit_date: string; notes: string | null }[];
+
+    // Filter out dates that only have cancelled bookings (no confirmed counterpart)
+    const bkgs = (bkgsRes.data ?? []) as { date: string; status: string }[];
+    const confirmedDates = new Set(bkgs.filter(b => b.status !== "cancelled").map(b => b.date));
+    const cancelledOnlyDates = new Set(
+      bkgs.filter(b => b.status === "cancelled" && !confirmedDates.has(b.date)).map(b => b.date)
+    );
+
+    clientVisits = ((visitsRes.data ?? []) as { visit_date: string; notes: string | null }[])
+      .filter(v => !cancelledOnlyDates.has(v.visit_date));
   }
 
   return NextResponse.json({
