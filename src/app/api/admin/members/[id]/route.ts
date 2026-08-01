@@ -133,15 +133,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       );
     }
 
-    // Filter out dates that only have cancelled bookings (no confirmed counterpart)
+    // Same logic as My Clients: any cancelled booking on a date = treat that date as cancelled
     const bkgs = (bkgsRes.data ?? []) as { date: string; status: string }[];
-    const confirmedDates = new Set(bkgs.filter(b => b.status !== "cancelled").map(b => b.date));
-    const cancelledOnlyDates = new Set(
-      bkgs.filter(b => b.status === "cancelled" && !confirmedDates.has(b.date)).map(b => b.date)
-    );
+    const cancelledDates = new Set(bkgs.filter(b => b.status === "cancelled").map(b => b.date));
 
     clientVisits = ((visitsRes.data ?? []) as { visit_date: string; notes: string | null }[])
-      .filter(v => !cancelledOnlyDates.has(v.visit_date));
+      .filter(v => !cancelledDates.has(v.visit_date));
   }
 
   return NextResponse.json({
