@@ -320,6 +320,7 @@ export async function POST(req: NextRequest) {
 
   // ── Auto-link bookings to member profiles by phone / email ──────────────────
   // Find bookings with no member_id but a known phone or email, match against profiles
+  let membersLinked = 0;
   const { data: unlinked } = await db
     .from("bookings")
     .select("id, phone, email")
@@ -352,16 +353,15 @@ export async function POST(req: NextRequest) {
       }
     } catch { /* non-fatal */ }
 
-    let linked = 0;
     for (const b of unlinked as { id: string; phone: string; email: string }[]) {
       const ph = normP(b.phone ?? "");
       const memberId = (ph && phoneToMember.get(ph)) || (b.email && emailToMember.get(b.email)) || null;
       if (!memberId) continue;
       await db.from("bookings").update({ member_id: memberId }).eq("id", b.id);
-      linked++;
+      membersLinked++;
     }
 
-    if (linked > 0) {
+    if (membersLinked > 0) {
       // Refresh visit stats for affected members
       const { data: linkedBookings } = await db
         .from("bookings")
@@ -389,5 +389,5 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ synced, total: unique.length, clientsSynced });
+  return NextResponse.json({ synced, total: unique.length, clientsSynced, membersLinked });
 }

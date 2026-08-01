@@ -1098,18 +1098,24 @@ export default function AdminPage() {
               <button onClick={async () => {
                 setSyncing(true);
                 try {
-                  const res = await fetch("/api/admin/sync-square-bookings", {
+                  // Step 1: sync Square bookings → bookings table + link members
+                  const res1 = await fetch("/api/admin/sync-square-bookings", {
                     method: "POST",
                     headers: { Authorization: `Bearer ${savedKey}` },
                   });
-                  const data = await res.json();
-                  const updates: { name: string; date: string; note: string }[] = data.noteUpdates ?? [];
-                  let msg = `Synced ${data.synced ?? 0} bookings · ${data.clientsSynced ?? 0} new clients · ${updates.length} notes updated`;
+                  const data1 = await res1.json();
+
+                  // Step 2: derive client records from bookings table → clients table
+                  const res2 = await fetch("/api/admin/sync-square-clients", {
+                    method: "POST",
+                    headers: { Authorization: `Bearer ${savedKey}` },
+                  });
+                  const data2 = await res2.json();
+
+                  const updates: { name: string; date: string; note: string }[] = data1.noteUpdates ?? [];
+                  let msg = `✓ Square Sync complete\n\n• ${data1.synced ?? 0} bookings synced\n• ${data2.synced ?? 0} client records updated\n• ${data1.membersLinked ?? 0} members linked`;
                   if (updates.length > 0) {
-                    msg += "\n\nUpdated notes:";
-                    for (const u of updates) {
-                      msg += `\n• ${u.name} (${u.date}): ${u.note}`;
-                    }
+                    msg += `\n• ${updates.length} notes updated`;
                   }
                   alert(msg);
                   await fetchClients(savedKey);
