@@ -817,8 +817,14 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
 
             {/* Visit history */}
             <div className="bg-white rounded-xl border border-neutral-100 overflow-hidden">
-              <div className="px-4 py-3 border-b border-neutral-100">
+              <div className="px-4 py-3 border-b border-neutral-100 flex items-center justify-between">
                 <p className="text-[13px] font-bold text-[#1C1C1C]">Visit History</p>
+                {(detail as unknown as { _debug?: { bookingsCount: number; bookingsError: string | null } })._debug && (
+                  <span className="text-[10px] text-neutral-400 font-mono">
+                    db:{(detail as unknown as { _debug: { bookingsCount: number; bookingsError: string | null } })._debug.bookingsCount}
+                    {(detail as unknown as { _debug: { bookingsCount: number; bookingsError: string | null } })._debug.bookingsError && ` err`}
+                  </span>
+                )}
               </div>
               {(detail.bookings ?? []).length === 0 ? (
                 <p className="text-[12px] text-neutral-400 text-center py-6">No visits yet</p>
