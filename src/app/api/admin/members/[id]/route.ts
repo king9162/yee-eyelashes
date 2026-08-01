@@ -51,25 +51,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     }
   }
 
-  // Sync admin_notes → clients.notes for matching clients (by phone)
-  if (admin_notes !== undefined) {
-    const { data: profile } = await db.from("profiles").select("phone").eq("id", id).single();
-    const phone10 = (profile?.phone ?? "").replace(/\D/g, "").slice(-10);
-    if (phone10.length === 10) {
-      const { data: allClients } = await db.from("clients").select("id, phone");
-      const matchingIds = (allClients ?? [])
-        .filter((c: { phone: string | null }) =>
-          (c.phone ?? "").replace(/\D/g, "").slice(-10) === phone10
-        )
-        .map((c: { id: string }) => c.id);
-      if (matchingIds.length > 0) {
-        await db.from("clients")
-          .update({ notes: (admin_notes ?? "").trim() || null })
-          .in("id", matchingIds);
-      }
-    }
-  }
-
   return NextResponse.json({ ok: true });
 }
 

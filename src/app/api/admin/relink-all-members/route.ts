@@ -2,6 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { issueMilestoneRewards } from "@/lib/issueMilestoneRewards";
 
+type ClientRow = { visit_date?: string | null; notes?: string | null };
+
+// Aggregate per-visit notes into "MM/DD: note" lines, newest first.
+// Returns null if no rows have notes (skip update), "" if rows exist but no notes.
+function buildAggregatedNotes(rows: ClientRow[]): string | null {
+  const withNotes = rows
+    .filter(r => r.notes?.trim())
+    .sort((a, b) => (b.visit_date ?? "").localeCompare(a.visit_date ?? ""));
+  if (withNotes.length === 0) return null;
+  return withNotes.map(r => {
+    if (!r.visit_date) return r.notes!.trim();
+    const [, m, d] = r.visit_date.split("-");
+    return `${m}/${d}: ${r.notes!.trim()}`;
+  }).join("\n");
+}
+
 export async function POST(req: NextRequest) {
   const key = req.headers.get("authorization")?.replace("Bearer ", "");
   if (key !== process.env.ADMIN_SECRET_KEY) {
@@ -39,16 +55,16 @@ export async function POST(req: NextRequest) {
       totalLinked += ids.length;
     }
 
-    // 2. Sync notes: clients.notes → profiles.admin_notes (fill if profile has none)
-    if (!profile.admin_notes) {
-      const clientWithNote = (allClients ?? []).find(
-        (c: { phone: string | null; email: string | null; notes: string | null }) =>
-          (matchPhone(c.phone) || matchEmail(c.email)) && c.notes
-      );
-      if (clientWithNote?.notes) {
-        await db.from("profiles").update({ admin_notes: clientWithNote.notes }).eq("id", profile.id);
-        notesSynced++;
-      }
+    // 2. Aggregate per-visit notes from clients → profiles.admin_notes
+    // Format: "MM/DD: note text" per row, newest first
+    const aggregated = buildAggregatedNotes(
+      (allClients ?? []).filter(
+        (c: { phone: string | null; email: string | null }) => matchPhone(c.phone) || matchEmail(c.email)
+      )
+    );
+    if (aggregated !== null) {
+      await db.from("profiles").update({ admin_notes: aggregated || null }).eq("id", profile.id);
+      notesSynced++;
     }
 
     // 3. Backfill visit bookings from clients table for dates not yet in bookings
