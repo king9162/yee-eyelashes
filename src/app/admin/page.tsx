@@ -1611,17 +1611,20 @@ export default function AdminPage() {
                               <td className="px-4 py-3"><a href={`tel:${c.phone}`} className="text-[12px] text-[#1C1C1C] hover:underline">{fmtPhone(c.phone)}</a></td>
                               <td className="px-4 py-3"><a href={`mailto:${c.email}`} className="text-[12px] text-[#1C1C1C] hover:underline truncate block max-w-[160px]">{c.email}</a></td>
 
-                              {/* Notes — show all */}
+                              {/* Notes — skip cancelled visits */}
                               <td className="px-4 py-3 min-w-[140px] max-w-[220px]">
-                                {allNotes.length === 0 ? (
-                                  <span className="text-[11px] text-neutral-200">—</span>
-                                ) : (
-                                  <div className="flex flex-col gap-1.5">
-                                    {uniqueVisits.filter(v => v.notes && !isAutoNote(v.notes)).map(v => (
-                                      <p key={v.id} className="text-[11px] text-[#1C1C1C] leading-snug">{v.notes}</p>
-                                    ))}
-                                  </div>
-                                )}
+                                {(() => {
+                                  const visibleNotes = uniqueVisits.filter(v => v.notes && !isAutoNote(v.notes) && !cancelledDates.has(v.date ?? ""));
+                                  return visibleNotes.length === 0 ? (
+                                    <span className="text-[11px] text-neutral-200">—</span>
+                                  ) : (
+                                    <div className="flex flex-col gap-1.5">
+                                      {visibleNotes.map(v => (
+                                        <p key={v.id} className="text-[11px] text-[#1C1C1C] leading-snug">{v.notes}</p>
+                                      ))}
+                                    </div>
+                                  );
+                                })()}
                               </td>
 
                               <td className="px-4 py-3 max-w-[140px]"><p className="text-[11px] text-[#1C1C1C] truncate">{c.recommendation}</p></td>

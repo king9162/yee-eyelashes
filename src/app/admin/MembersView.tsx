@@ -353,24 +353,22 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
       {/* Left: list */}
       <div className="w-80 border-r border-neutral-100 flex flex-col flex-shrink-0">
         <div className="p-4 border-b border-neutral-100">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-1">
             <h2 className="text-[15px] font-bold text-[#1C1C1C]">Members</h2>
-            <div className="flex items-center gap-2">
-              {relinkAllMsg && (
-                <span className={`text-[10px] ${relinkAllMsg.startsWith("Error") ? "text-red-500" : "text-green-600"}`}>
-                  {relinkAllMsg}
-                </span>
-              )}
-              <button
-                onClick={relinkAllMembers}
-                disabled={relinkingAll}
-                className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-neutral-100 hover:bg-[#C9A84C] hover:text-white transition-colors text-neutral-500 disabled:opacity-40"
-                title="Re-link bookings and sync notes for all members"
-              >
-                {relinkingAll ? "Syncing…" : "↻ Sync All"}
-              </button>
-            </div>
+            <button
+              onClick={relinkAllMembers}
+              disabled={relinkingAll}
+              className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-neutral-100 hover:bg-[#C9A84C] hover:text-white transition-colors text-neutral-500 disabled:opacity-40"
+              title="Re-link bookings and sync notes for all members"
+            >
+              {relinkingAll ? "Syncing…" : "↻ Sync All"}
+            </button>
           </div>
+          {relinkAllMsg && (
+            <p className={`text-[10px] text-center mb-2 ${relinkAllMsg.startsWith("Error") ? "text-red-500" : "text-green-600"}`}>
+              {relinkAllMsg}
+            </p>
+          )}
           <input
             value={query}
             onChange={e => setQuery(e.target.value)}
