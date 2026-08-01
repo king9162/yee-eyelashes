@@ -297,7 +297,7 @@ export default function MemberDashboardPage() {
         {profile.admin_notes && (
           <div className="bg-white rounded-xl border border-neutral-100 px-4 py-3">
             <p className="text-[9px] uppercase tracking-[0.15em] text-neutral-400 mb-1">Notes from Yee</p>
-            <p className="text-[13px] text-[#1C1C1C] leading-relaxed">{profile.admin_notes}</p>
+            <p className="text-[13px] text-[#1C1C1C] leading-relaxed whitespace-pre-wrap">{profile.admin_notes}</p>
           </div>
         )}
 
