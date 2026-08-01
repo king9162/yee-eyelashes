@@ -108,7 +108,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const cleanEmail = rawEmail && !rawEmail.endsWith("@yee.member") ? rawEmail : null;
 
   let packages: unknown[] = [];
-  let clientVisits: { visit_date: string; notes: string | null }[] = [];
+  let clientVisits: { id: string; visit_date: string; notes: string | null }[] = [];
 
   if (phone10.length === 10 || cleanEmail) {
     const orParts = [
@@ -120,7 +120,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       phone10.length === 10
         ? db.from("packages").select("*").order("purchase_date", { ascending: false })
         : Promise.resolve({ data: [] as unknown[] }),
-      db.from("clients").select("visit_date, notes").not("visit_date", "is", null)
+      db.from("clients").select("id, visit_date, notes").not("visit_date", "is", null)
         .or(orParts).order("visit_date", { ascending: false }),
       phone10.length === 10
         ? db.from("bookings").select("date, status").ilike("phone", `%${phone10}`)
@@ -137,7 +137,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     const bkgs = (bkgsRes.data ?? []) as { date: string; status: string }[];
     const cancelledDates = new Set(bkgs.filter(b => b.status === "cancelled").map(b => b.date));
 
-    clientVisits = ((visitsRes.data ?? []) as { visit_date: string; notes: string | null }[])
+    clientVisits = ((visitsRes.data ?? []) as { id: string; visit_date: string; notes: string | null }[])
       .filter(v => !cancelledDates.has(v.visit_date));
   }
 

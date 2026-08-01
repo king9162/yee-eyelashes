@@ -30,6 +30,7 @@ type MemberPackage = {
 };
 
 type ClientVisit = {
+  id: string;
   visit_date: string;
   notes: string | null;
 };
@@ -203,6 +204,14 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
     setRelinking(false);
     setRelinkMsg(res.ok ? `Done — linked ${d.linked} booking${d.linked !== 1 ? "s" : ""}` : `Error: ${d.error}`);
     if (res.ok) { await loadDetail(selected); search(query); }
+  }
+
+  async function deleteClientVisit(clientId: string) {
+    await fetch(`/api/clients/${clientId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${adminKey}` },
+    });
+    if (selected) await loadDetail(selected);
   }
 
   async function relinkAllMembers() {
@@ -846,13 +855,22 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
                   ) : (
                     <div className="divide-y divide-neutral-50">
                       {visits.map((v, i) => (
-                        <div key={i} className="flex items-center justify-between px-4 py-2.5">
+                        <div key={i} className="group flex items-center justify-between px-4 py-2.5">
                           <p className="text-[12px] font-medium text-[#1C1C1C]">
                             {new Date(v.visit_date + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                           </p>
-                          {v.notes && (
-                            <p className="text-[11px] text-neutral-400 truncate ml-3 max-w-[55%]">{v.notes}</p>
-                          )}
+                          <div className="flex items-center gap-2 ml-3">
+                            {v.notes && (
+                              <p className="text-[11px] text-neutral-400 truncate max-w-[140px]">{v.notes}</p>
+                            )}
+                            <button
+                              onClick={() => deleteClientVisit(v.id)}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity text-neutral-300 hover:text-red-400 text-[14px] leading-none w-5 h-5 flex items-center justify-center"
+                              title="Remove this visit record"
+                            >
+                              ×
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>
