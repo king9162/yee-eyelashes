@@ -603,77 +603,62 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
               )}
             </div>
 
-            {/* Issue coupon — collapsible */}
+            {/* Member's coupons — always visible */}
             <div className="bg-white rounded-xl border border-neutral-100 overflow-hidden">
-              <button
-                onClick={() => setShowIssueCouponPanel(p => !p)}
-                className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-neutral-50 transition-colors"
-              >
-                <p className="text-[13px] font-bold text-[#1C1C1C]">Issue Coupon</p>
-                <span className="text-neutral-400 text-[12px]">{showIssueCouponPanel ? "▲" : "▼"}</span>
-              </button>
+              <div className="px-4 py-3 border-b border-neutral-100 flex items-center justify-between">
+                <p className="text-[13px] font-bold text-[#1C1C1C]">Coupons</p>
+                <button
+                  onClick={() => setShowIssueCouponPanel(p => !p)}
+                  className="text-[11px] font-semibold text-[#C9A84C] hover:underline"
+                >
+                  {showIssueCouponPanel ? "Cancel" : "+ Issue"}
+                </button>
+              </div>
+
+              {/* Issue coupon inline form */}
               {showIssueCouponPanel && (
-                <div className="px-5 pb-5 border-t border-neutral-100 pt-4">
+                <div className="px-4 py-4 border-b border-neutral-100 bg-neutral-50 space-y-3">
                   {couponTemplates.length === 0 ? (
-                    <div className="text-center py-3">
+                    <div className="text-center py-2">
                       <p className="text-[12px] text-neutral-400 mb-2">No coupon templates yet.</p>
-                      <button
-                        onClick={seedCoupons}
-                        disabled={seeding}
-                        className="text-[12px] text-[#C9A84C] hover:underline disabled:opacity-40"
-                      >
+                      <button onClick={seedCoupons} disabled={seeding}
+                        className="text-[12px] text-[#C9A84C] hover:underline disabled:opacity-40">
                         {seeding ? "Creating…" : "Create default templates"}
                       </button>
                     </div>
                   ) : (
-                    <div className="space-y-3">
+                    <>
                       <div>
                         <label className="block text-[10px] uppercase tracking-[0.1em] text-neutral-400 mb-1">Coupon</label>
-                        <select
-                          value={issueCouponId}
-                          onChange={e => setIssueCouponId(e.target.value)}
-                          className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:border-[#C9A84C] bg-white"
-                        >
+                        <select value={issueCouponId} onChange={e => setIssueCouponId(e.target.value)}
+                          className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:border-[#C9A84C] bg-white">
                           {couponTemplates.map(t => (
-                            <option key={t.id} value={t.id}>
-                              {t.name} ({discountLabel(t)})
-                            </option>
+                            <option key={t.id} value={t.id}>{t.name} ({discountLabel(t)})</option>
                           ))}
                         </select>
                       </div>
                       <div>
                         <label className="block text-[10px] uppercase tracking-[0.1em] text-neutral-400 mb-1">Notes (optional)</label>
-                        <input
-                          value={issueCouponNotes}
-                          onChange={e => setIssueCouponNotes(e.target.value)}
+                        <input value={issueCouponNotes} onChange={e => setIssueCouponNotes(e.target.value)}
                           placeholder="e.g. Loyalty reward"
-                          className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:border-[#C9A84C]"
-                        />
+                          className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:border-[#C9A84C]" />
                       </div>
                       {issueMsg && (
-                        <p className={`text-[12px] font-semibold ${issueMsg.startsWith("Error") ? "text-red-500" : "text-green-600"}`}>
-                          {issueMsg}
-                        </p>
+                        <p className={`text-[12px] font-semibold ${issueMsg.startsWith("Error") ? "text-red-500" : "text-green-600"}`}>{issueMsg}</p>
                       )}
-                      <button
-                        onClick={issueCoupon}
-                        disabled={issuing || !issueCouponId}
-                        className="w-full py-2.5 bg-[#1C1C1C] text-white text-[12px] font-semibold rounded-lg hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all disabled:opacity-40"
-                      >
+                      <button onClick={issueCoupon} disabled={issuing || !issueCouponId}
+                        className="w-full py-2 bg-[#1C1C1C] text-white text-[12px] font-semibold rounded-lg hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all disabled:opacity-40">
                         {issuing ? "Issuing…" : "Issue Coupon"}
                       </button>
-                    </div>
+                    </>
                   )}
                 </div>
               )}
-            </div>
 
-            {/* Member's coupons */}
-            {detail.coupons.length > 0 && (
-              <div className="bg-white rounded-xl border border-neutral-100 overflow-hidden">
-                <div className="px-4 py-3 border-b border-neutral-100">
-                  <p className="text-[13px] font-bold text-[#1C1C1C]">Coupons</p>
-                </div>
+              {/* Coupon list */}
+              {detail.coupons.length === 0 ? (
+                <p className="text-[12px] text-neutral-400 text-center py-5">No coupons issued</p>
+              ) : (
                 <div className="divide-y divide-neutral-50">
                   {detail.coupons.map(mc => {
                     const isActive = mc.status === "available" || mc.status === "reserved";
@@ -687,26 +672,19 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
                             {mc.coupons ? discountLabel(mc.coupons) : ""}
                             {mc.expires_at && ` · Exp ${new Date(mc.expires_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`}
                             {mc.notes && ` · ${mc.notes}`}
+                            {mc.used_at && ` · Used ${new Date(mc.used_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`}
                           </p>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
-                          <span
-                            className="text-[10px] font-bold uppercase"
-                            style={{
-                              color: mc.status === "available" ? "#C9A84C"
-                                : mc.status === "used" ? "#9CA3AF"
-                                : mc.status === "expired" ? "#9CA3AF"
-                                : "#6B7280",
-                            }}
-                          >
+                          <span className="text-[10px] font-bold uppercase" style={{
+                            color: mc.status === "available" ? "#C9A84C" : "#9CA3AF",
+                          }}>
                             {mc.status}
                           </span>
                           {isActive && (
-                            <button
-                              onClick={() => redeemCoupon(mc.id)}
-                              className="text-[10px] px-2 py-1 bg-[#1C1C1C] text-white rounded hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all"
-                            >
-                              Redeem
+                            <button onClick={() => redeemCoupon(mc.id)}
+                              className="text-[10px] px-2.5 py-1 bg-[#1C1C1C] text-white rounded-lg hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all font-semibold">
+                              核銷
                             </button>
                           )}
                         </div>
@@ -714,8 +692,8 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
                     );
                   })}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* 3x Package */}
             <div className="bg-white rounded-xl border border-neutral-100 overflow-hidden">
