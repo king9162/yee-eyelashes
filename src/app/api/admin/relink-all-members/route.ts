@@ -47,6 +47,7 @@ export async function POST(req: NextRequest) {
   let totalLinked = 0;
   let notesSynced = 0;
   const errors: string[] = [];
+  const debugLines: string[] = [];
 
   for (const profile of profiles ?? []) {
     const phone10 = normP(profile.phone);
@@ -90,8 +91,9 @@ export async function POST(req: NextRequest) {
     }
 
     // 3. Backfill confirmed visit bookings for client dates not yet tracked at all
+    debugLines.push(`${profile.first_name}: clients=${matchingClients.length} memberDates=[${[...allMemberDates].join(",")}]`);
     for (const cv of matchingClients as { phone: string | null; email: string | null; visit_date: string }[]) {
-      if (allMemberDates.has(cv.visit_date)) continue; // booking already exists (any status)
+      if (allMemberDates.has(cv.visit_date)) { debugLines.push(`  skip ${cv.visit_date} (exists)`); continue; }
 
       const { error: insertErr } = await db.from("bookings").insert({
         member_id:     profile.id,
@@ -137,5 +139,5 @@ export async function POST(req: NextRequest) {
     await issueMilestoneRewards(db, profile.id, visits);
   }
 
-  return NextResponse.json({ linked: totalLinked, notesSynced, errors });
+  return NextResponse.json({ linked: totalLinked, notesSynced, errors, debug: debugLines.join(" | ") });
 }
