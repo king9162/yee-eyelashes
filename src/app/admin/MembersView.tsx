@@ -98,9 +98,13 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
   const [issuing, setIssuing] = useState(false);
   const [issueMsg, setIssueMsg] = useState("");
 
-  // Re-link bookings
+  // Re-link bookings (single member)
   const [relinking, setRelinking] = useState(false);
   const [relinkMsg, setRelinkMsg] = useState("");
+
+  // Re-link all members
+  const [relinkingAll, setRelinkingAll] = useState(false);
+  const [relinkAllMsg, setRelinkAllMsg] = useState("");
 
   // Lash record
 
@@ -204,6 +208,24 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
     setRelinking(false);
     setRelinkMsg(res.ok ? `Done — linked ${d.linked} booking${d.linked !== 1 ? "s" : ""}` : `Error: ${d.error}`);
     if (res.ok) { await loadDetail(selected); search(query); }
+  }
+
+  async function relinkAllMembers() {
+    setRelinkingAll(true); setRelinkAllMsg("");
+    const res = await fetch("/api/admin/relink-all-members", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${adminKey}` },
+    });
+    const d = await res.json();
+    setRelinkingAll(false);
+    if (res.ok) {
+      setRelinkAllMsg(`✓ ${d.linked} linked · ${d.notesSynced} notes synced`);
+      search(query);
+      if (selected) await loadDetail(selected);
+    } else {
+      setRelinkAllMsg(`Error: ${d.error}`);
+    }
+    setTimeout(() => setRelinkAllMsg(""), 5000);
   }
 
   async function addPackageForMember() {
@@ -331,7 +353,24 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
       {/* Left: list */}
       <div className="w-80 border-r border-neutral-100 flex flex-col flex-shrink-0">
         <div className="p-4 border-b border-neutral-100">
-          <h2 className="text-[15px] font-bold text-[#1C1C1C] mb-3">Members</h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-[15px] font-bold text-[#1C1C1C]">Members</h2>
+            <div className="flex items-center gap-2">
+              {relinkAllMsg && (
+                <span className={`text-[10px] ${relinkAllMsg.startsWith("Error") ? "text-red-500" : "text-green-600"}`}>
+                  {relinkAllMsg}
+                </span>
+              )}
+              <button
+                onClick={relinkAllMembers}
+                disabled={relinkingAll}
+                className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-neutral-100 hover:bg-[#C9A84C] hover:text-white transition-colors text-neutral-500 disabled:opacity-40"
+                title="Re-link bookings and sync notes for all members"
+              >
+                {relinkingAll ? "Syncing…" : "↻ Sync All"}
+              </button>
+            </div>
+          </div>
           <input
             value={query}
             onChange={e => setQuery(e.target.value)}
