@@ -18,7 +18,6 @@ export default function MemberProfilePage() {
   const [birthday, setBirthday] = useState("");
   const [email, setEmail] = useState("");
   const [memberId, setMemberId] = useState("");
-  const [birthdayLocked, setBirthdayLocked] = useState(false);
   const [notifBirthday, setNotifBirthday] = useState(true);
   const [notifRefill, setNotifRefill] = useState(true);
   const [notifMarketing, setNotifMarketing] = useState(false);
@@ -36,7 +35,7 @@ export default function MemberProfilePage() {
 
       const { data: p } = await supabase
         .from("profiles")
-        .select("first_name, last_name, phone, birthday, birthday_set_at, email, member_id, referral_code, notif_birthday, notif_refill, notif_marketing")
+        .select("first_name, last_name, phone, birthday, email, member_id, referral_code, notif_birthday, notif_refill, notif_marketing")
         .eq("id", session.user.id)
         .single();
 
@@ -47,7 +46,6 @@ export default function MemberProfilePage() {
         setBirthday(p.birthday ?? "");
         setEmail(p.email ?? session.user.email ?? "");
         setMemberId(p.member_id ?? "");
-        if (p.birthday_set_at) setBirthdayLocked(true);
         setReferralCode(p.referral_code ?? "");
         setNotifBirthday(p.notif_birthday ?? true);
         setNotifRefill(p.notif_refill ?? true);
@@ -69,7 +67,6 @@ export default function MemberProfilePage() {
       last_name: lastName.trim(),
       phone: phone.trim(),
     };
-    if (!birthdayLocked && birthday) body.birthday = birthday;
 
     const res = await fetch("/api/member/profile", {
       method: "PATCH",
@@ -175,17 +172,16 @@ export default function MemberProfilePage() {
               className="w-full border border-[#D4CCC0] rounded-xl px-3.5 py-3 text-[13px] focus:outline-none focus:border-[#C9A84C] transition-colors" />
           </div>
 
-          {/* Birthday */}
+          {/* Birthday — always locked; set at signup, admin-only to change */}
           <div>
             <label className="block text-[10px] uppercase tracking-[0.12em] text-neutral-400 mb-1.5">
               Birthday
-              {birthdayLocked && <span className="ml-2 text-neutral-300 normal-case tracking-normal">(locked after first save)</span>}
-              {!birthdayLocked && <span className="ml-2 text-[#C9A84C] normal-case tracking-normal">✦ unlocks your 20% birthday reward</span>}
+              <span className="ml-2 text-neutral-300 normal-case tracking-normal">
+                {birthday ? "(contact us to update)" : "set during signup"}
+              </span>
             </label>
-            <input value={birthday} onChange={e => setBirthday(e.target.value)} type="date" disabled={birthdayLocked}
-              className={`w-full border rounded-xl px-3.5 py-3 text-[13px] focus:outline-none focus:border-[#C9A84C] transition-colors ${
-                birthdayLocked ? "border-[#E8E4DC] bg-neutral-50 text-neutral-400 cursor-not-allowed" : "border-[#D4CCC0]"
-              }`} />
+            <input value={birthday} readOnly type="date"
+              className="w-full border border-[#E8E4DC] rounded-xl px-3.5 py-3 text-[13px] bg-neutral-50 text-neutral-400 cursor-not-allowed" />
           </div>
 
           {error && <p className="text-[12px] text-red-500">{error}</p>}

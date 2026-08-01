@@ -233,10 +233,7 @@ export default function MemberDashboardPage() {
                   </p>
                 </div>
               ) : (
-                <a href="/member/profile"
-                  className="text-[11px] text-[#C9A84C] font-semibold hover:underline">
-                  + Add birthday →
-                </a>
+                <p className="text-[11px] text-neutral-400">Not set</p>
               )}
             </div>
 
@@ -259,6 +256,13 @@ export default function MemberDashboardPage() {
               </div>
             )}
           </div>
+
+          {/* Edit profile link */}
+          <div className="border-t border-[#D4CCC0]/50 pt-2.5 mt-2 flex justify-end">
+            <a href="/member/profile" className="text-[11px] text-neutral-400 hover:text-[#C9A84C] transition-colors">
+              Edit profile →
+            </a>
+          </div>
         </div>
 
         {/* Admin notes — read-only */}
@@ -269,20 +273,32 @@ export default function MemberDashboardPage() {
           </div>
         )}
 
-        {/* Stats row */}
+        {/* Stats + Quick links — 4-grid */}
         <div className="grid grid-cols-2 gap-3">
-          {[
-            { label: "Total Visits", value: `${visits}` },
-            { label: "Last Visit",   value: profile.last_visit_date
-              ? new Date(profile.last_visit_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })
-              : "—"
-            },
-          ].map((s) => (
-            <div key={s.label} className="bg-white rounded-xl p-3.5 text-center border border-neutral-100">
-              <p className="text-[18px] font-semibold text-[#1C1C1C]">{s.value}</p>
-              <p className="text-[10px] text-neutral-400 mt-0.5">{s.label}</p>
-            </div>
-          ))}
+          <div className="bg-white rounded-xl p-3.5 text-center border border-neutral-100">
+            <p className="text-[18px] font-semibold text-[#1C1C1C]">{visits}</p>
+            <p className="text-[10px] text-neutral-400 mt-0.5">Total Visits</p>
+          </div>
+          <div className="bg-white rounded-xl p-3.5 text-center border border-neutral-100">
+            <p className="text-[18px] font-semibold text-[#1C1C1C]">
+              {profile.last_visit_date
+                ? new Date(profile.last_visit_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+                : "—"}
+            </p>
+            <p className="text-[10px] text-neutral-400 mt-0.5">Last Visit</p>
+          </div>
+          <a href="/member/bookings"
+            className="bg-white rounded-xl border border-neutral-100 p-3 text-center hover:border-[#C9A84C]/40 transition-colors">
+            <p className="text-[18px] mb-1">📅</p>
+            <p className="text-[10px] text-neutral-500 font-semibold leading-tight">Appointments</p>
+          </a>
+          <a href="/member/coupons"
+            className="bg-white rounded-xl border border-neutral-100 p-3 text-center hover:border-[#C9A84C]/40 transition-colors">
+            <p className="text-[18px] mb-1">🎟</p>
+            <p className="text-[10px] text-neutral-500 font-semibold leading-tight">
+              {couponCount > 0 ? `Coupons (${couponCount})` : "Coupons"}
+            </p>
+          </a>
         </div>
 
         {/* Upcoming appointment */}
@@ -339,21 +355,6 @@ export default function MemberDashboardPage() {
             </div>
           );
         })}
-
-        {/* Quick links row */}
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { label: "Appointments", icon: "📅", href: "/member/bookings" },
-            { label: `Coupons${couponCount > 0 ? ` (${couponCount})` : ""}`, icon: "🎟", href: "/member/coupons" },
-            { label: "Edit Profile",  icon: "👤", href: "/member/profile" },
-          ].map(item => (
-            <a key={item.label} href={item.href}
-              className="bg-white rounded-xl border border-neutral-100 p-3 text-center hover:border-[#C9A84C]/40 transition-colors">
-              <p className="text-[18px] mb-1">{item.icon}</p>
-              <p className="text-[10px] text-neutral-500 font-semibold leading-tight">{item.label}</p>
-            </a>
-          ))}
-        </div>
 
         {/* Book CTA */}
         <a
