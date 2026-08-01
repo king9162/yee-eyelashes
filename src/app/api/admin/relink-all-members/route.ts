@@ -53,6 +53,7 @@ export async function POST(req: NextRequest) {
 
   let totalLinked = 0;
   let notesSynced = 0;
+  const insertErrors: string[] = [];
 
   for (const profile of profiles ?? []) {
     const phone10 = normP(profile.phone);
@@ -103,19 +104,23 @@ export async function POST(req: NextRequest) {
         if (existingDates.has(cv.visit_date)) continue;
         if (myCancelledDates.has(cv.visit_date)) continue; // skip cancelled
 
-        const { error } = await db.from("bookings").insert({
+        const { error: insertErr } = await db.from("bookings").insert({
           member_id:     profile.id,
           name:          profile.first_name ?? "",
           phone:         profile.phone ?? cv.phone ?? "",
           email:         cleanEmail ?? cv.email ?? "",
           date:          cv.visit_date,
-          time:          null,
+          time:          "",
+          duration_min:  0,
           service:       "square",
           service_label: "Visit",
           status:        "confirmed",
           notes:         "",
         });
-        if (!error) {
+        if (insertErr) {
+          console.error("Booking insert error:", insertErr.message, "for date", cv.visit_date, "member", profile.id);
+          insertErrors.push(`${cv.visit_date}: ${insertErr.message}`);
+        } else {
           existingDates.add(cv.visit_date);
           totalLinked++;
         }
@@ -143,5 +148,5 @@ export async function POST(req: NextRequest) {
     await issueMilestoneRewards(db, profile.id, visits);
   }
 
-  return NextResponse.json({ linked: totalLinked, notesSynced });
+  return NextResponse.json({ linked: totalLinked, notesSynced, insertErrors });
 }
