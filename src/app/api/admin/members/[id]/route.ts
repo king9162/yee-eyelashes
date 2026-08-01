@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { linkMemberBookings } from "@/lib/linkMemberBookings";
 
+export const dynamic = "force-dynamic";
+
 function auth(req: NextRequest) {
   return req.headers.get("authorization")?.replace("Bearer ", "") === process.env.ADMIN_SECRET_KEY;
 }
@@ -120,5 +122,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     coupons: couponsRes.data ?? [],
     bookings: bookingsRes.data ?? [],
     packages,
+    _debug: { bookingsCount: bookingsRes.data?.length ?? 0, bookingsError: bookingsRes.error?.message ?? null, profileId: id },
   });
 }

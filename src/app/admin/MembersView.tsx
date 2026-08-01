@@ -175,6 +175,7 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
 
     const detailRes = await fetch(`/api/admin/members/${m.id}`, { headers: { Authorization: `Bearer ${adminKey}` } });
     const data = await detailRes.json();
+    console.log("[loadDetail]", data._debug, "bookings:", data.bookings?.length);
     setDetail(data);
     setDetailLoading(false);
   }
