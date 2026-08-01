@@ -36,6 +36,24 @@ const TIER_CONFIG = {
   diamond: { label: "Diamond", color: "#A8DAFF", next: null,      threshold: null },
 };
 
+const TIER_CARD_STYLE: Record<Profile["vip_tier"], {
+  bg: string; accent: string; text: string; sub: string; bar: string; barBg: string; activeBg: string;
+}> = {
+  member:  { bg: "linear-gradient(135deg, #141414 0%, #2C2C2C 60%, #1a1a1a 100%)",                 accent: "#C9A84C", text: "#fff", sub: "rgba(255,255,255,0.45)", bar: "#C9A84C", barBg: "rgba(255,255,255,0.1)",  activeBg: "#2a2a2a" },
+  silver:  { bg: "linear-gradient(135deg, #4a4a4a 0%, #969696 45%, #636363 100%)",                 accent: "#fff",    text: "#fff", sub: "rgba(255,255,255,0.55)", bar: "#fff",    barBg: "rgba(255,255,255,0.18)", activeBg: "#6a6a6a" },
+  gold:    { bg: "linear-gradient(135deg, #6b4410 0%, #C9A84C 38%, #f0d88a 65%, #b8903a 100%)",   accent: "#fff",    text: "#fff", sub: "rgba(255,255,255,0.6)",  bar: "#fff",    barBg: "rgba(255,255,255,0.2)",  activeBg: "#b8903a" },
+  diamond: { bg: "linear-gradient(135deg, #0a1929 0%, #0d3060 38%, #1a5296 65%, #4a90c4 100%)",   accent: "#A8DAFF", text: "#fff", sub: "rgba(168,218,255,0.55)", bar: "#A8DAFF", barBg: "rgba(168,218,255,0.15)", activeBg: "#0d3060" },
+};
+
+const TIER_ORDER: Profile["vip_tier"][] = ["member", "silver", "gold", "diamond"];
+const TIER_VISITS_REQ: Record<Profile["vip_tier"], number> = { member: 0, silver: 5, gold: 10, diamond: 20 };
+const TIER_BENEFITS: Record<Profile["vip_tier"], string[]> = {
+  member:  ["Every 5 visits → 20% off coupon", "Birthday reward — 20% off", "Member-only promotions"],
+  silver:  ["Every 5 visits → 20% off coupon", "Birthday reward — 20% off", "Priority booking", "Exclusive Silver coupons"],
+  gold:    ["Every 5 visits → 20% off coupon", "Birthday reward — 20% off", "Priority booking", "Seasonal VIP gift"],
+  diamond: ["Every 5 visits → 20% off coupon", "Birthday reward — 20% off", "VIP priority booking", "Monthly exclusive gift", "Free treatment upgrade"],
+};
+
 function calcTier(visits: number): Profile["vip_tier"] {
   if (visits >= 20) return "diamond";
   if (visits >= 10) return "gold";
@@ -53,6 +71,11 @@ export default function MemberDashboardPage() {
   const [referralStats, setReferralStats] = useState<{ pending: number; completed: number }>({ pending: 0, completed: 0 });
   const [activePackages, setActivePackages] = useState<{ id: string; notes: string | null; purchase_date: string | null; use1_date: string | null; use2_date: string | null; use3_date: string | null }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedTier, setSelectedTier] = useState<Profile["vip_tier"]>("member");
+
+  useEffect(() => {
+    if (profile) setSelectedTier(calcTier(profile.total_visits_all_time));
+  }, [profile]);
 
   useEffect(() => {
     const supabase = getSupabase();
@@ -133,6 +156,7 @@ export default function MemberDashboardPage() {
   const visits = profile.total_visits_all_time;
   const currentTier = calcTier(visits);
   const tier = TIER_CONFIG[currentTier];
+  const cardStyle = TIER_CARD_STYLE[currentTier];
   const avatarUrl = (user?.user_metadata?.avatar_url as string) ?? "";
   const visitsInCycle = visits % 5;
   const visitsToNextCoupon = 5 - visitsInCycle;
@@ -162,107 +186,111 @@ export default function MemberDashboardPage() {
       </header>
 
       <div className="max-w-lg mx-auto px-4 py-6 pb-28 space-y-4">
-        {/* Member card */}
-        <div
-          className="rounded-2xl p-5 relative overflow-hidden border border-[#E8E4DC]"
-          style={{ background: "#F8F5EF" }}
-        >
-          {/* Subtle gold top bar */}
-          <div className="absolute top-0 left-0 right-0 h-[3px] rounded-t-2xl"
-            style={{ background: "linear-gradient(90deg, #C9A84C, #e8c97a)" }} />
+        {/* Premium member card */}
+        <div className="rounded-[20px] overflow-hidden shadow-lg relative" style={{ background: cardStyle.bg }}>
+          {/* Watermark */}
+          <div className="absolute inset-0 flex items-center justify-end pr-5 pointer-events-none select-none">
+            <span style={{ fontSize: 110, color: "rgba(255,255,255,0.04)", fontFamily: "var(--font-cormorant)", lineHeight: 1 }}>✦</span>
+          </div>
 
-          <div className="flex items-start justify-between mb-5 pt-1">
-            <div className="flex items-center gap-3">
-              {avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={avatarUrl} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-[#C9A84C]/30" />
-              ) : (
-                <div className="w-10 h-10 rounded-full border-2 border-[#C9A84C]/40 flex items-center justify-center font-bold text-[16px]"
-                  style={{ background: "#EDE9DF", color: "#C9A84C" }}>
-                  {profile.first_name[0] ?? "M"}
-                </div>
-              )}
+          {/* Card body */}
+          <div className="relative px-5 pt-5 pb-4">
+            {/* Top row */}
+            <div className="flex items-start justify-between mb-5">
               <div>
-                <p className="text-[15px] font-semibold text-[#1C1C1C]">{profile.first_name} {profile.last_name}</p>
-                <p className="text-[11px] text-neutral-400">{profile.member_id}</p>
+                <p className="text-[7px] tracking-[0.3em] uppercase font-semibold mb-3" style={{ color: cardStyle.sub }}>
+                  Yee Eyelashes
+                </p>
+                <div className="flex items-center gap-3">
+                  {avatarUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={avatarUrl} alt="" className="w-9 h-9 rounded-full object-cover flex-shrink-0"
+                      style={{ border: `1.5px solid ${cardStyle.accent}50` }} />
+                  ) : (
+                    <div className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-[15px] flex-shrink-0"
+                      style={{ background: `${cardStyle.accent}20`, color: cardStyle.accent, border: `1.5px solid ${cardStyle.accent}40` }}>
+                      {profile.first_name[0] ?? "M"}
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-[20px] font-light leading-none" style={{ color: cardStyle.text, fontFamily: "var(--font-cormorant)" }}>
+                      {profile.first_name} {profile.last_name}
+                    </p>
+                    <p className="text-[10px] font-mono tracking-wider mt-0.5" style={{ color: cardStyle.sub }}>
+                      {profile.member_id}
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
-            <TierBadge tier={currentTier} />
-          </div>
-
-          {/* Visit progress toward next coupon */}
-          <div className="mb-4">
-            <p className="text-[10px] uppercase tracking-[0.12em] text-neutral-400 mb-1.5">Progress to 20% Off Coupon</p>
-            <div className="flex items-end gap-2 mb-2">
-              <p className="text-[40px] font-light leading-none text-[#1C1C1C]" style={{ fontFamily: "var(--font-cormorant)" }}>
-                {visitsInCycle}<span className="text-[18px] text-neutral-400"> / 5</span>
-              </p>
-              {visitsInCycle === 0 && visits > 0 && (
-                <p className="text-[12px] text-[#C9A84C] font-semibold mb-1">Coupon issued!</p>
-              )}
-            </div>
-            <div className="flex gap-1.5 mb-1.5">
-              {[1, 2, 3, 4, 5].map(i => (
-                <div key={i} className="flex-1 h-1.5 rounded-full transition-all"
-                  style={{ background: i <= visitsInCycle ? "#C9A84C" : "#D4CCC0" }} />
-              ))}
-            </div>
-            <p className="text-[11px] text-neutral-400">
-              {visitsInCycle === 0 && visits > 0
-                ? `${visits} total visits — keep it up!`
-                : `${visitsToNextCoupon} more visit${visitsToNextCoupon !== 1 ? "s" : ""} to earn 20% off`}
-            </p>
-          </div>
-
-          {/* Birthday countdown + Tier progress row */}
-          <div className="border-t border-[#D4CCC0]/50 pt-3 mt-1 flex items-end justify-between gap-4">
-            {/* Birthday countdown */}
-            <div className="flex-1">
-              <p className="text-[10px] uppercase tracking-[0.1em] text-neutral-400 mb-0.5">Birthday</p>
-              {birthdayCountdown !== null ? (
-                <div>
-                  <p className="text-[13px] font-semibold text-[#1C1C1C]">{birthdayDisplay}</p>
-                  <p className="text-[11px] text-neutral-400 mt-0.5">
-                    {birthdayCountdown === 0
-                      ? "🎂 Today!"
-                      : birthdayCountdown === 1
-                      ? "🎉 Tomorrow!"
-                      : birthdayCountdown <= 30
-                      ? `🎂 ${birthdayCountdown} days away`
-                      : `${birthdayCountdown} days away`}
-                  </p>
-                </div>
-              ) : (
-                <p className="text-[11px] text-neutral-400">Not set</p>
-              )}
+              {/* Tier badge */}
+              <span className="text-[8px] font-bold uppercase tracking-[0.15em] px-2.5 py-1 rounded-full mt-1 flex-shrink-0"
+                style={{ color: cardStyle.accent, background: "rgba(255,255,255,0.1)", border: `1px solid ${cardStyle.accent}40` }}>
+                {TIER_CONFIG[currentTier].label}
+              </span>
             </div>
 
-            {/* Tier progress */}
-            {tier.next && tier.threshold && (
-              <div className="flex-1">
-                <div className="flex justify-between text-[10px] text-neutral-400 mb-1">
-                  <span>To {tier.next}</span>
-                  <span>{visits < tier.threshold ? `${tier.threshold - visits} visits away` : "Reached"}</span>
+            {/* Tier progress bar */}
+            {tier.next && tier.threshold ? (
+              <div>
+                <div className="flex justify-between mb-1.5">
+                  <span className="text-[8px] uppercase tracking-[0.1em]" style={{ color: cardStyle.sub }}>To {tier.next}</span>
+                  <span className="text-[8px]" style={{ color: cardStyle.sub }}>{visits} / {tier.threshold} visits</span>
                 </div>
-                <div className="h-1 bg-[#D4CCC0] rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all"
-                    style={{
-                      background: tier.color === "#888" ? "#C9A84C" : tier.color,
-                      width: `${Math.min(100, (visits / tier.threshold) * 100)}%`,
-                    }}
-                  />
+                <div className="h-[3px] rounded-full overflow-hidden" style={{ background: cardStyle.barBg }}>
+                  <div className="h-full rounded-full transition-all duration-700"
+                    style={{ background: cardStyle.bar, width: `${Math.min(100, (visits / tier.threshold) * 100)}%` }} />
                 </div>
+              </div>
+            ) : (
+              <div className="flex items-baseline gap-1.5">
+                <p className="text-[38px] font-light leading-none" style={{ color: cardStyle.text, fontFamily: "var(--font-cormorant)" }}>
+                  {visits}
+                </p>
+                <p className="text-[11px]" style={{ color: cardStyle.sub }}>lifetime visits · Diamond</p>
               </div>
             )}
           </div>
 
-          {/* Edit profile link */}
-          <div className="border-t border-[#D4CCC0]/50 pt-2.5 mt-2 flex justify-end">
-            <a href="/member/profile" className="text-[11px] text-neutral-400 hover:text-[#C9A84C] transition-colors">
-              Edit profile →
-            </a>
+          {/* Footer strip */}
+          <div className="relative px-5 py-3 flex items-center justify-between"
+            style={{ background: "rgba(0,0,0,0.2)", borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+            {/* Coupon dots */}
+            <div>
+              <p className="text-[7px] uppercase tracking-[0.12em] mb-1.5" style={{ color: cardStyle.sub }}>
+                {visitsInCycle === 0 && visits > 0 ? "Coupon ready!" : `${visitsToNextCoupon} to next coupon`}
+              </p>
+              <div className="flex gap-1.5">
+                {[1,2,3,4,5].map(i => (
+                  <div key={i} className="w-2.5 h-2.5 rounded-full transition-all duration-300"
+                    style={{ background: i <= visitsInCycle ? cardStyle.bar : cardStyle.barBg }} />
+                ))}
+              </div>
+            </div>
+            {/* Birthday */}
+            {birthdayDisplay ? (
+              <div className="text-right">
+                <p className="text-[7px] uppercase tracking-[0.1em] mb-0.5" style={{ color: cardStyle.sub }}>Birthday</p>
+                <p className="text-[12px] font-medium" style={{ color: cardStyle.text }}>{birthdayDisplay}</p>
+                {birthdayCountdown !== null && birthdayCountdown <= 30 && (
+                  <p className="text-[9px] font-semibold mt-0.5" style={{ color: cardStyle.accent }}>
+                    {birthdayCountdown === 0 ? "Today!" : birthdayCountdown === 1 ? "Tomorrow!" : `${birthdayCountdown}d away`}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <a href="/member/profile" className="text-right" style={{ color: cardStyle.sub }}>
+                <p className="text-[7px] uppercase tracking-[0.1em] mb-0.5">Birthday</p>
+                <p className="text-[10px]">Not set</p>
+              </a>
+            )}
           </div>
+        </div>
+
+        {/* Edit profile link */}
+        <div className="flex justify-end -mt-1">
+          <a href="/member/profile" className="text-[10px] text-neutral-400 hover:text-[#C9A84C] transition-colors">
+            Edit profile →
+          </a>
         </div>
 
         {/* Admin notes — read-only */}
@@ -365,8 +393,86 @@ export default function MemberDashboardPage() {
           Book an Appointment
         </a>
 
-        {/* VIP benefits */}
-        <TierBenefitsCard tier={currentTier} />
+        {/* Tier selector + benefits */}
+        <div>
+          <div className="flex gap-2 mb-3">
+            {TIER_ORDER.map(t => {
+              const isSelected = selectedTier === t;
+              const isCurrent = t === currentTier;
+              const cs = TIER_CARD_STYLE[t];
+              const unlocked = visits >= TIER_VISITS_REQ[t];
+              return (
+                <button key={t} onClick={() => setSelectedTier(t)}
+                  className="flex-1 py-2.5 rounded-xl transition-all"
+                  style={{
+                    background: isSelected ? cs.activeBg : "#fff",
+                    border: isSelected ? "none" : "1px solid #E8E4DC",
+                    boxShadow: isSelected ? "0 2px 8px rgba(0,0,0,0.15)" : "none",
+                  }}>
+                  <p className="text-[9px] font-bold uppercase tracking-[0.1em]"
+                    style={{ color: isSelected ? "#fff" : "#1C1C1C" }}>
+                    {TIER_CONFIG[t].label}
+                  </p>
+                  {isCurrent && (
+                    <p className="text-[7px] mt-0.5 font-semibold"
+                      style={{ color: isSelected ? `${cs.accent}cc` : "#C9A84C" }}>
+                      ✦ Current
+                    </p>
+                  )}
+                  {!isCurrent && unlocked && (
+                    <p className="text-[7px] mt-0.5" style={{ color: isSelected ? "rgba(255,255,255,0.7)" : "#22C55E" }}>✓</p>
+                  )}
+                  {!isCurrent && !unlocked && (
+                    <p className="text-[7px] mt-0.5" style={{ color: isSelected ? "rgba(255,255,255,0.5)" : "#C0BAB0" }}>
+                      {TIER_VISITS_REQ[t] - visits}v
+                    </p>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Benefits panel */}
+          <div className="bg-white rounded-2xl border border-neutral-100 p-4">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[13px] font-semibold text-[#1C1C1C]">
+                {TIER_CONFIG[selectedTier].label} Benefits
+              </p>
+              {selectedTier === currentTier ? (
+                <span className="text-[8px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full"
+                  style={{ color: TIER_CARD_STYLE[selectedTier].activeBg, background: `${TIER_CARD_STYLE[selectedTier].activeBg}1a` }}>
+                  Your tier
+                </span>
+              ) : visits >= TIER_VISITS_REQ[selectedTier] ? (
+                <span className="text-[9px] font-bold text-green-600">✓ Unlocked</span>
+              ) : (
+                <span className="text-[9px] text-neutral-400">
+                  {TIER_VISITS_REQ[selectedTier] - visits} visits to unlock
+                </span>
+              )}
+            </div>
+            <div className="space-y-2.5">
+              {TIER_BENEFITS[selectedTier].map(b => (
+                <div key={b} className="flex items-start gap-2.5">
+                  <span className="text-[#C9A84C] text-[9px] mt-0.5 flex-shrink-0">✦</span>
+                  <p className="text-[12px] text-neutral-600 leading-snug">{b}</p>
+                </div>
+              ))}
+            </div>
+            {selectedTier === currentTier && TIER_CONFIG[selectedTier].next && tier.threshold && (
+              <p className="text-[11px] text-neutral-400 mt-3 pt-3 border-t border-neutral-100">
+                {tier.threshold - visits > 0
+                  ? `${tier.threshold - visits} more visits to unlock ${TIER_CONFIG[selectedTier].next} →`
+                  : `${TIER_CONFIG[selectedTier].next} unlocked →`}
+              </p>
+            )}
+            {selectedTier === currentTier && !TIER_CONFIG[selectedTier].next && (
+              <p className="text-[11px] text-[#A8DAFF] font-semibold mt-3 pt-3 border-t border-neutral-100">
+                ✦ You&apos;ve reached the highest tier
+              </p>
+            )}
+          </div>
+        </div>
 
         {/* Referral */}
         <ReferralCard
