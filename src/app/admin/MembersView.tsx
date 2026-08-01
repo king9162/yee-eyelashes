@@ -219,9 +219,7 @@ export default function MembersView({ adminKey }: { adminKey: string }) {
     const d = await res.json();
     setRelinkingAll(false);
     if (res.ok) {
-      const errSuffix = (d.errors ?? d.insertErrors ?? []).length > 0 ? ` · ⚠ ${(d.errors ?? d.insertErrors)[0]}` : "";
-      const debugSuffix = d.debug ? ` [${d.debug}]` : "";
-      setRelinkAllMsg(`✓ ${d.linked} linked · ${d.notesSynced} notes synced${errSuffix}${debugSuffix}`);
+      setRelinkAllMsg(`✓ ${d.linked} visits · ${d.notesSynced} notes synced`);
       search(query);
       if (selected) await loadDetail(selected);
     } else {
