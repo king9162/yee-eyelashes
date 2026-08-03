@@ -389,5 +389,11 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // After booking sync, immediately update revenue placeholders
+  await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/admin/revenue/sync-square`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${process.env.ADMIN_SECRET_KEY}` },
+  }).catch(() => {});
+
   return NextResponse.json({ synced, total: unique.length, clientsSynced, membersLinked });
 }
