@@ -75,9 +75,22 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // ── Step 2: Sync today's completed Square payments ──────────────
+  // ── Step 2: Sync last 7 days of Square payments (catch-up window) ──
+  const sevenDaysAgo = new Date(new Date().toLocaleString("en-US", { timeZone: "America/New_York" }));
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const syncStart = sevenDaysAgo.toLocaleDateString("en-CA", { timeZone: "America/New_York" });
   const endTime   = new Date(today + "T23:59:59-04:00").toISOString();
-  const beginTime = new Date(today + "T00:00:00-04:00").toISOString();
+  const beginTime = new Date(syncStart + "T00:00:00-04:00").toISOString();
+
+  // Expand byKey to cover the sync window so past $0 placeholders can be updated
+  const { data: pastEntries } = await db
+    .from("revenue_entries")
+    .select("id, date, client_name, amount, square_payment_id, service_label")
+    .gte("date", syncStart)
+    .lt("date", today);
+  for (const e of (pastEntries ?? []) as RevEntry[]) {
+    byKey.set(`${e.date}|${e.client_name}`, e);
+  }
 
   let allPayments: Record<string, unknown>[] = [];
   let cursor: string | undefined;
