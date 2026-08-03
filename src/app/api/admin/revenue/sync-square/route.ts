@@ -35,18 +35,18 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // ── Step 1: Import ALL confirmed bookings (today + future) as $0 placeholders ──
+  // ── Step 1: Import ALL confirmed bookings since REVENUE_START as $0 placeholders ──
   const { data: upcomingBookings } = await db
     .from("bookings")
     .select("id, date, name, service_label, square_order_id")
     .eq("status", "confirmed")
-    .gte("date", today);
+    .gte("date", REVENUE_START);
 
-  // Load existing revenue entries from today onwards
+  // Load existing revenue entries from REVENUE_START onwards
   const { data: existingFwd } = await db
     .from("revenue_entries")
     .select("id, date, client_name, amount, square_payment_id, service_label")
-    .gte("date", today);
+    .gte("date", REVENUE_START);
 
   type RevEntry = { id: string; date: string; client_name: string; amount: number; square_payment_id: string | null; service_label: string };
   const byKey = new Map<string, RevEntry>();
@@ -82,15 +82,6 @@ export async function POST(req: NextRequest) {
   const endTime   = new Date(today + "T23:59:59-04:00").toISOString();
   const beginTime = new Date(syncStart + "T00:00:00-04:00").toISOString();
 
-  // Expand byKey to cover the sync window so past $0 placeholders can be updated
-  const { data: pastEntries } = await db
-    .from("revenue_entries")
-    .select("id, date, client_name, amount, square_payment_id, service_label")
-    .gte("date", syncStart)
-    .lt("date", today);
-  for (const e of (pastEntries ?? []) as RevEntry[]) {
-    byKey.set(`${e.date}|${e.client_name}`, e);
-  }
 
   let allPayments: Record<string, unknown>[] = [];
   let cursor: string | undefined;
