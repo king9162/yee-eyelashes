@@ -1,4 +1,9 @@
 {
+  "redirects": [
+    { "source": "/booking", "destination": "/", "permanent": false },
+    { "source": "/en/booking", "destination": "/", "permanent": false },
+    { "source": "/zh/booking", "destination": "/", "permanent": false }
+  ],
   "crons": [
     {
       "path": "/api/cron/refill-reminder",
