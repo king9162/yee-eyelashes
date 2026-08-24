@@ -101,7 +101,7 @@ export default function BookingsPage() {
               {tab === "upcoming" ? "Ready for your next visit?" : "Your appointment history will appear here"}
             </p>
             {tab === "upcoming" && (
-              <a href="/en/booking"
+              <a href="/"
                 className="inline-block px-6 py-3 bg-[#C9A84C] text-[#1C1C1C] text-[12px] font-semibold rounded-xl">
                 Book Now
               </a>
@@ -152,7 +152,7 @@ export default function BookingsPage() {
         {/* Book again */}
         {!loading && (
           <div className="mt-6 text-center">
-            <a href="/en/booking"
+            <a href="/"
               className="inline-block px-6 py-3 bg-[#C9A84C] text-[#1C1C1C] text-[12px] font-semibold rounded-xl hover:bg-[#b8953d] transition-colors">
               Book an Appointment
             </a>

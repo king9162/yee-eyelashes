@@ -386,7 +386,7 @@ export default function MemberDashboardPage() {
 
         {/* Book CTA */}
         <a
-          href="/en/booking"
+          href="/"
           className="block text-[#1C1C1C] font-semibold text-[13px] text-center py-3.5 rounded-xl transition-colors"
           style={{ background: "#C9A84C" }}
         >
@@ -554,7 +554,7 @@ function RefillCard({ lastVisitDate }: { lastVisitDate: string }) {
         <span>Last visit: {last.toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
         <span>Day 24 → New Full Set</span>
       </div>
-      <a href="/en/booking"
+      <a href="/"
         className="mt-3 block text-center text-[12px] font-semibold text-[#C9A84C] hover:underline">
         Book {refillType} →
       </a>

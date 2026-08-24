@@ -74,7 +74,7 @@ export default function PromoPopup({ lang }: Props) {
 
           {/* CTA */}
           <Link
-            href="https://square.site/appointments/buyer/widget/qe4tfv3078b5gx/LYH1D5CHJ3Q63"
+            href="/"
             target="_blank"
             rel="noopener noreferrer"
             onClick={dismiss}

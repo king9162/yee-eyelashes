@@ -436,7 +436,7 @@ function DesignStyleCard({ lang, bookHref }: { lang: Lang; bookHref: string }) {
 
 export default function ServicesAccordion({ lang }: Props) {
   const zh = lang === "zh";
-  const bookHref = "https://square.site/appointments/buyer/widget/qe4tfv3078b5gx/LYH1D5CHJ3Q63";
+  const bookHref = "/";
 
   const msTypes = buildLashTypes(MS);
   const pcTypes = buildLashTypes(PC);

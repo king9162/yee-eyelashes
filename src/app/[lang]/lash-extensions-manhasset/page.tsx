@@ -170,7 +170,7 @@ export default async function LashExtensionsManhassetPage({ params }: Props) {
   const { lang } = await params;
   if (!isValidLang(lang) || lang !== "en") notFound();
 
-  const bookHref = "https://square.site/appointments/buyer/widget/qe4tfv3078b5gx/LYH1D5CHJ3Q63";
+  const bookHref = "/";
 
   return (
     <div>

@@ -124,7 +124,7 @@ export default async function AboutPage({ params }: Props) {
   const lang = rawLang as Lang;
   const zh = lang === "zh";
 
-  const bookHref = "https://square.site/appointments/buyer/widget/qe4tfv3078b5gx/LYH1D5CHJ3Q63";
+  const bookHref = "/";
 
   return (
     <div>

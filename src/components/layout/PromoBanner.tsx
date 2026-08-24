@@ -20,7 +20,7 @@ export default function PromoBanner({ lang }: Props) {
       <span className="sm:hidden text-neutral-300">
         {lang === "zh" ? "新客 8 折優惠" : "New clients: 20% off"}{" "}
         <Link
-          href="https://square.site/appointments/buyer/widget/qe4tfv3078b5gx/LYH1D5CHJ3Q63"
+          href="/"
           target="_blank"
           rel="noopener noreferrer"
           className="text-[#C9A84C] underline underline-offset-2"
@@ -33,7 +33,7 @@ export default function PromoBanner({ lang }: Props) {
       <span className="hidden sm:inline">
         {" "}
         <Link
-          href="https://square.site/appointments/buyer/widget/qe4tfv3078b5gx/LYH1D5CHJ3Q63"
+          href="/"
           target="_blank"
           rel="noopener noreferrer"
           className="text-[#C9A84C] hover:text-[#DFC078] transition-colors ml-2 underline underline-offset-2"

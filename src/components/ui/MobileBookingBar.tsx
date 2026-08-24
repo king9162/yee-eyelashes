@@ -36,7 +36,7 @@ export default function MobileBookingBar({ lang }: Props) {
 
         {/* Book Now */}
         <Link
-          href="https://square.site/appointments/buyer/widget/qe4tfv3078b5gx/LYH1D5CHJ3Q63"
+          href="/"
           target="_blank"
           rel="noopener noreferrer"
           className="flex-1 text-center text-[10px] uppercase tracking-[0.3em] text-[#1C1C1C] bg-[#C9A84C] py-4 font-medium hover:bg-[#DFC078] transition-colors"

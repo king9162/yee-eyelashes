@@ -40,7 +40,7 @@ export default function Footer({ lang }: Props) {
             </p>
           </div>
           <Link
-            href="https://square.site/appointments/buyer/widget/qe4tfv3078b5gx/LYH1D5CHJ3Q63"
+            href="/"
             className="w-full md:w-auto flex-shrink-0 text-center text-[10px] uppercase tracking-[0.25em] text-[#1C1C1C] border border-[#1C1C1C] px-10 py-4 hover:bg-[#1C1C1C] hover:text-white transition-all duration-300"
           >
             {t.nav.booking}

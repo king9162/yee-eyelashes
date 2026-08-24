@@ -123,7 +123,7 @@ export default async function CouponPage({ params }: Props) {
 
                 {/* CTA */}
                 <Link
-                  href="https://square.site/appointments/buyer/widget/qe4tfv3078b5gx/LYH1D5CHJ3Q63"
+                  href="/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-3 text-[10px] uppercase tracking-[0.3em] text-white bg-[#1C1C1C] px-8 py-3.5 hover:bg-[#C9A84C] transition-all duration-300"

@@ -237,7 +237,7 @@ export default async function LashHealthSafetyPage({ params }: Props) {
   if (!isValidLang(lang)) notFound();
 
   const isZh = lang === "zh";
-  const bookHref = "https://square.site/appointments/buyer/widget/qe4tfv3078b5gx/LYH1D5CHJ3Q63";
+  const bookHref = "/";
   const breadcrumb = isZh ? breadcrumbZh : breadcrumbEn;
   const faqSchema = isZh ? faqSchemaZh : faqSchemaEn;
   const aftercareTips = isZh ? aftercareTipsZh : aftercareTipsEn;
